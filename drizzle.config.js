@@ -1,10 +1,10 @@
+import 'dotenv/config';  // dotenv ko import kar raha hai
+
 /** @type { import("drizzle-kit").Config } */
 export default {
-    schema: "./utils/schema.tsx",
+    schema: "./utils/schema.tsx",  // Agar schema.tsx hai toh .tsx likh
     dialect: 'postgresql',
     dbCredentials: {
-      url: 'postgresql://accounts:ypvN2ke3PGFE@ep-weathered-heart-a58wmzem.us-east-2.aws.neon.tech/AI-Content-Genrator?sslmode=require',
-
+      url: process.env.DATABASE_URL,  // Direct URL hata diya, ab .env se lega
     }
-  };
-  
+};

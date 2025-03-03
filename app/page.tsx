@@ -1,7 +1,9 @@
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Header from "./dashboard/_components/Header";
 import Link from "next/link";
+import styled from 'styled-components';
 
 export default function Home() {
   return (
@@ -31,7 +33,7 @@ export default function Home() {
 </header>
 <div className="relative overflow-hidden before:absolute before:top-0 before:start-1/2 before:bg-[url('https://preline.co/assets/svg/examples/polygon-bg-element.svg')] dark:before:bg-[url('https://preline.co/assets/svg/examples-dark/polygon-bg-element.svg')] before:bg-no-repeat before:bg-top before:bg-cover before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
   <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
-
+\\
     <div className="flex justify-center">
       <a className="inline-flex items-center gap-x-2 bg-white border border-gray-200 text-sm text-gray-800 p-1 ps-3 rounded-full transition hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-neutral-600 dark:text-neutral-200" 
       href="https://github.com/shohail-DeV/Creator-AI" target="_blank">

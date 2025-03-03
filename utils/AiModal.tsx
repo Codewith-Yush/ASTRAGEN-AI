@@ -28,7 +28,8 @@ const {
       ],
     });
   
-   
+    console.log("Loaded API Key:", apiKey);
+
   
   
  
