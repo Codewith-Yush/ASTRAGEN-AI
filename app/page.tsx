@@ -57,7 +57,7 @@ const AboutSection = () => {
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div data-scroll className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           className="text-center mb-20"
           variants={fadeInUp}
@@ -145,7 +145,7 @@ const UseCasesSection = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.9  ,
       },
     },
   };
@@ -156,7 +156,7 @@ const UseCasesSection = () => {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
+        duration: 0.7,
       },
     },
   };
@@ -284,17 +284,17 @@ const TestimonialsSection = () => {
     {
       quote: "This AI tool has doubled our content production with the same team size. The quality is impressive, requiring minimal editing.",
       author: "Rajendra T.",
-      role: "Content Manager"
+      role: "CS Student"
     },
     {
       quote: "As a solopreneur, this platform has been a game-changer for creating professional marketing materials consistently.",
       author: "Raj S.",
-      role: "E-commerce Founder"
+      role: "CS Student"
     },
     {
       quote: "The ability to customize the AI output to match our brand voice has been invaluable for our marketing team.",
       author: "Vikrant C.",
-      role: "Marketing Director"
+      role: "CS Student"
     }
   ];
 
@@ -394,7 +394,7 @@ const PricingSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.7 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-teal-800 mb-6 dark:text-teal-300 tracking-tight">
             Simple, Transparent Pricing
@@ -480,7 +480,7 @@ export default function Home(): JSX.Element {
     hover: {
       scale: 1.05,
       boxShadow: "0 10px 25px -5px rgba(20, 184, 166, 0.4)",
-      transition: { duration: 0.3 },
+      transition: { duration: 0.7 },
     },
     tap: { scale: 0.95 },
   };
@@ -511,8 +511,8 @@ export default function Home(): JSX.Element {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.7 }}
-          className="mb-10"
+          transition={{ duration: 0.9 }}
+          className="mb-7"
         >
           {/* Image Above Text */}
           <Image
@@ -528,7 +528,7 @@ export default function Home(): JSX.Element {
 
         {/* Text Below Image */}
         <motion.h1
-          className="font-extrabold text-transparent text-5xl md:text-7xl lg:text-8xl bg-clip-text bg-gradient-to-r from-teal-600 to-sky-500 mb-6 tracking-tight"
+          className="font-extrabold text-transparent text-5xl md:text-7xl lg:text-8xl bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500 mb-1 tracking-tight"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.2 }}

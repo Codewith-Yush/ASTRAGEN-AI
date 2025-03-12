@@ -202,4 +202,4 @@ z-index: 9999; /* To ensure it's above other elements */
 }
 `;
 
-export default Loader;
+export default Loader;  

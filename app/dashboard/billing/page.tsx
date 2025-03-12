@@ -79,21 +79,34 @@ function Billing() {
 
   const SaveSubscription = async (paymentId: string) => {
     try {
-      const result = await db.insert(UserSubscription).values({
-        email: user?.primaryEmailAddress?.emailAddress,
-        userName: user?.fullName,
-        active: true,
-        paymentId: paymentId,
-        joinDate: moment().format("DD/MM/yyyy"),
-      });
-      console.log(result);
-      if (result) {
-        window.location.reload();
-      }
+        const joinDate = new Date();
+        console.log("Raw joinDate:", joinDate); // ✅ Check Date object
+        console.log("Type of joinDate:", typeof joinDate); // ✅ Ensure it's 'object'
+
+        if (!(joinDate instanceof Date)) {
+            throw new Error("joinDate is not a Date object!"); // ❌ Debugging error
+        }
+
+        console.log("ISO joinDate:", joinDate.toISOString()); // ✅ Ensure it prints a correct timestamp
+
+        const result = await db.insert(UserSubscription).values({
+            email: user?.primaryEmailAddress?.emailAddress ?? "", 
+            userName: user?.fullName ?? "Unknown User",
+            active: true,
+            paymentId: paymentId,
+            joinDate: joinDate, // ✅ Pass a valid Date object
+        });
+
+        console.log("Subscription saved:", result);
+        if (result) {
+            window.location.reload();
+        }
     } catch (error) {
-      console.error("Subscription save failed:", error);
+        console.error("Subscription save failed:", error);
     }
-  };
+};
+
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
