@@ -1,4 +1,5 @@
-"use client"
+'use client'
+
 import React, { useContext, useState } from 'react'
 import FormSection from '../_components/FormSection'
 import OutputSection from '../_components/OutputSection'
@@ -18,77 +19,76 @@ import { UserSubscriptionContext } from '@/app/(context)/UserSubscriptionContext
 import { UpdateCreditUsageContext } from '@/app/(context)/UpdateCreditUsageContext'
 import { useUser } from '@clerk/nextjs'
 
-interface PROPS{
-    params:{
-        'template-slug':string
-    }
+interface PROPS {
+  params: {
+    'template-slug': string
+  }
 }
 
+function CreateNewContent(props: PROPS) {
+  // Unwrap the `params` Promise using React.use()
+  const templateSlug = React.use(props.params)['template-slug']; // Unwrap `params` using `React.use()`
 
-function CreateNewContent(props:PROPS) {
-   
-    const selectedTemplate:TEMPLATE|undefined=Templates?.find((item)=>item.slug==props.params['template-slug']);
-    const [loading,setLoading]=useState(false);
-    const [aiOutput,setAiOutput]=useState<string>('');
-    const {user}=useUser();
-    const router=useRouter();
-    const {totalUsage,setTotalUsage}=useContext(TotalUsageContext)
-    const {userSubscription,setUserSubscription}=useContext(UserSubscriptionContext);
-    const {updateCreditUsage,setUpdateCreditUsage}=useContext(UpdateCreditUsageContext)
-    /**
-     * Used to generate content from AI
-     * @param formData 
-     * @returns 
-     */
-    const GenerateAIContent=async(formData:any)=>{
-        if(totalUsage>=10000&&!userSubscription)
-            {
-                console.log("Please Upgrade");
-                router.push('/dashboard/billing')
-                return ;
-            }
-        setLoading(true);
-        const SelectedPrompt=selectedTemplate?.aiPrompt;
-        const FinalAIPrompt=JSON.stringify(formData)+", "+SelectedPrompt;
-        const result=await chatSession.sendMessage(FinalAIPrompt);
-        
-        setAiOutput(result?.response.text());
-        await SaveInDb(JSON.stringify(formData),selectedTemplate?.slug,result?.response.text())
-        setLoading(false);
-        
-        setUpdateCreditUsage(Date.now())
+  const selectedTemplate: TEMPLATE | undefined = Templates?.find((item) => item.slug == templateSlug);
+  const [loading, setLoading] = useState(false);
+  const [aiOutput, setAiOutput] = useState<string>('');
+  const { user } = useUser();
+  const router = useRouter();
+  const { totalUsage, setTotalUsage } = useContext(TotalUsageContext)
+  const { userSubscription, setUserSubscription } = useContext(UserSubscriptionContext);
+  const { updateCreditUsage, setUpdateCreditUsage } = useContext(UpdateCreditUsageContext)
 
+  /**
+   * Used to generate content from AI
+   * @param formData 
+   * @returns 
+   */
+  const GenerateAIContent = async (formData: any) => {
+    if (totalUsage >= 10000 && !userSubscription) {
+      console.log("Please Upgrade");
+      router.push('/dashboard/billing')
+      return;
     }
+    setLoading(true);
+    const SelectedPrompt = selectedTemplate?.aiPrompt;
+    const FinalAIPrompt = JSON.stringify(formData) + ", " + SelectedPrompt;
+    const result = await chatSession.sendMessage(FinalAIPrompt);
 
-    const SaveInDb = async (formData: any, slug: any, aiResp: string) => {
-        const result = await db.insert(AIOutput).values({
-            formData: formData,
-            templateSlug: slug,
-            aiResponse: aiResp,
-            createdBy: user?.primaryEmailAddress?.emailAddress,
-            createdAt: new Date(),  // ✅ FIXED: Timestamp correctly stored
-        });
-    
-        console.log(result);
-    };
-    
+    setAiOutput(result?.response.text());
+    await SaveInDb(JSON.stringify(formData), selectedTemplate?.slug, result?.response.text())
+    setLoading(false);
+
+    setUpdateCreditUsage(Date.now())
+  }
+
+  const SaveInDb = async (formData: any, slug: any, aiResp: string) => {
+    const result = await db.insert(AIOutput).values({
+      formData: formData,
+      templateSlug: slug,
+      aiResponse: aiResp,
+      createdBy: user?.primaryEmailAddress?.emailAddress,
+      createdAt: moment().format('DD/MM/yyyy'),
+    });
+
+    console.log(result);
+  }
 
   return (
     <div className='p-5'>
-        <Link href={"/dashboard"}>
-            <Button> <ArrowLeft/> Back</Button>
-        </Link>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-5 py-5 '>
-            {/* FormSection  */}
-                <FormSection 
-                selectedTemplate={selectedTemplate}
-                userFormInput={(v:any)=>GenerateAIContent(v)}
-                loading={loading} />
-            {/* OutputSection  */}
-            <div className='col-span-2'>
-                <OutputSection aiOutput={aiOutput} />
-                </div>
+      <Link href={"/dashboard"}>
+        <Button> <ArrowLeft /> Back</Button>
+      </Link>
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-5 py-5 '>
+        {/* FormSection  */}
+        <FormSection
+          selectedTemplate={selectedTemplate}
+          userFormInput={(v: any) => GenerateAIContent(v)}
+          loading={loading} />
+        {/* OutputSection  */}
+        <div className='col-span-2'>
+          <OutputSection aiOutput={aiOutput} />
         </div>
+      </div>
     </div>
   )
 }

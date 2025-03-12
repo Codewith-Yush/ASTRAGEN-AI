@@ -3,15 +3,17 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
-import ThemeToggle from "@/components/ThemeToggle"; // Import the toggle button
-
-
+import ThemeToggle from "@/app/components/ThemeToggle";
+import ClientWrapper from "@/app/components/ClientWrapper"; // ✅ Import new Client Component
 
 const inter = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CreatorAI",
+  title: "CrafterAi",
   description: "AI Content Generator",
+  icons: {
+    icon: '/favicon.ico', // This is where you set the favicon
+  },  
 };
 
 export default function RootLayout({
@@ -22,10 +24,12 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className} bg-background text-foreground`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="p-4 flex justify-end"> {/* Positioning the button */}
+            <div className="p-4 flex justify-end">
               <ThemeToggle />
             </div>
-            {children}
+
+            {/* ✅ Wrap children inside ClientWrapper */}
+            <ClientWrapper>{children}</ClientWrapper>
           </ThemeProvider>
         </body>
       </html>
