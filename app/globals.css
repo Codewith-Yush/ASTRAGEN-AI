@@ -59,29 +59,10 @@
     overflow-x: hidden; /* Prevents horizontal scrolling */
   }
 
-  /* ✅ Fix Locomotive Scroll Issues */
-  [data-scroll-container] {
-    min-height: 100vh;
-  }
-
-  .has-scroll-smooth {
-    overflow: hidden;
-  }
-
-  .has-scroll-dragging {
-    cursor: grabbing;
-  }
-
   /* Fixes black screen issue */
   html, body {
     height: auto;
     min-height: 100vh;
     background: var(--background); /* Ensures correct background */
-  }
-
-  /* Prevents content from disappearing */
-  [data-scroll-container] > * {
-    opacity: 1;
-    transform: none;
   }
 }

@@ -1,8 +1,19 @@
 "use client";
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { TextPlugin } from 'gsap/TextPlugin';
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import Lenis from "@studio-freight/lenis";
 
+
+gsap.registerPlugin(ScrollTrigger);
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, TextPlugin);
+}
 
 // Define the type for feature items
 interface FeatureItem {
@@ -32,7 +43,7 @@ const AboutSection = () => {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
+        duration: 0.6,
         ease: "easeOut",
       },
     },
@@ -44,7 +55,7 @@ const AboutSection = () => {
       opacity: 1,
       scale: 1,
       transition: {
-        duration: 0.6,
+        duration: 0.5,
         ease: [0.22, 1, 0.36, 1], // Custom cubic-bezier for modern feel
       },
     },
@@ -189,7 +200,7 @@ const UseCasesSection = () => {
           {useCases.map((useCase, index) => (
             <motion.div 
               key={index} 
-              className="bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden group hover:shadow-lg transition-all duration-300"
+              className="bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden group hover:shadow-x1 transition-all duration-300"
               variants={fadeIn}
             >
               <div className="aspect-[3/2] relative overflow-hidden">
@@ -454,6 +465,94 @@ const PricingSection = () => {
 };
 
 export default function Home(): JSX.Element {
+  useEffect(() => {
+    // Initialize Lenis
+    const lenis = new Lenis({
+      duration: 1.5, // Smoothness duration
+      easing: (t) => 1 - Math.pow(1 - t, 3), // Smooth easing
+    });
+
+    // Sync Lenis with GSAP ScrollTrigger
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // Update GSAP ScrollTrigger on Lenis scroll
+    lenis.on("scroll", ScrollTrigger.update);
+
+    return () => {
+      lenis.destroy(); // Cleanup
+    };
+  }, []);
+  useEffect(() => {
+    gsap.from(".content", {
+      opacity: 0,
+      y: 50,
+      duration: 1,
+      scrollTrigger: {
+        trigger: ".content",
+        start: "top 80%",
+        end: "top 50%",
+        scrub: true,
+      },
+    });
+  }, []);
+  // Create refs for the elements we want to animate
+  const headerRef = useRef(null);
+  const headingRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const buttonsRef = useRef(null);
+  
+  useEffect(() => {
+    // GSAP animation code goes here
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    
+    // Heading animation
+    tl.from(headingRef.current, {
+      duration: 1.2,
+      opacity: 0,
+      y: 50,
+      skewY: 5
+    });
+    
+    // Description animation
+    tl.from(descriptionRef.current, {
+      duration: 1,
+      opacity: 0,
+      y: 30,
+      delay: 0.2
+    });
+    
+    /// Buttons animation
+if (buttonsRef.current) {
+  tl.from(buttonsRef.current.children, {
+    duration: 0.8,
+    opacity: 0,
+    y: 20,
+    stagger: 0.15,
+    ease: "back.out(1.7)"
+  });
+}
+    
+    // Floating animation
+    gsap.to(headerRef.current, {
+      y: 15,
+      duration: 2,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+    
+    // Clean up on unmount
+    return () => {
+      tl.kill();
+      gsap.killTweensOf(headerRef.current);
+    };
+  }, []);
+
+  // Rest of your component...
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -511,7 +610,7 @@ export default function Home(): JSX.Element {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.9 }}
+          transition={{ duration: 0.7 }}
           className="mb-7"
         >
           {/* Image Above Text */}
@@ -533,7 +632,7 @@ export default function Home(): JSX.Element {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
-          AI Content Generation
+          AI Content Generation 
         </motion.h1>
 
         <motion.p
