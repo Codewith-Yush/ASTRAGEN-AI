@@ -605,7 +605,10 @@ if (buttonsRef.current) {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-white to-teal-50 dark:from-slate-900 dark:to-slate-800 min-h-screen flex items-center flex-col justify-center text-center">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#FFDADA] to-[#AEE2FF] dark:from-slate-900 dark:to-slate-800 min-h-screen flex items-center flex-col justify-center text-center">
+
+
+
         {/* Add Flex Column for Image and Text */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
