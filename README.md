@@ -1,120 +1,166 @@
-Got it! Here's a **cleaner, more aesthetic** version of your AI Content Generator README with a **modern layout**, subtle emoji accents, and a high-quality **hero image** included. It's focused, professional, and looks great on GitHub.
+# 🪄 AI Content Generator
 
----
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![GitHub stars](https://img.shields.io/github/stars/yourname/ai-content-generator?style=social)
+![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
 
-```md
-<h1 align="center">✨ AI Content Generator</h1>
+<div align="center">
+  <img src="https://images.unsplash.com/photo-1676099677644-84aa227969bc?auto=format&fit=crop&w=1200&q=80" alt="AI Content Generator" width="80%" />
+  <p><em>Transform your ideas into polished content with the power of AI</em></p>
+</div>
 
-<p align="center">
-  Create content like never before with the power of AI.<br/>
-  Powered by Google Gemini, built with Next.js & modern web tech.
-</p>
+## 🌟 Overview
 
-<p align="center">
-  <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1350&q=80" alt="AI Content Generator" width="80%" />
-</p>
+**AI Content Generator** harnesses cutting-edge AI technology to help creators produce high-quality content in seconds. Perfect for writers, marketers, and content creators looking to enhance their productivity while maintaining creative control.
 
----
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>🚀 Instant</b><br>Generate content within seconds</td>
+      <td align="center"><b>✨ Creative</b><br>Diverse styles and tones</td>
+      <td align="center"><b>🔍 Smart</b><br>Context-aware suggestions</td>
+    </tr>
+  </table>
+</div>
 
-## 🚀 About the Project
+## 💻 Technology Stack
 
-**AI Content Generator** is a modern web application that uses AI to help you generate high-quality, creative content in seconds. Designed for bloggers, marketers, and creators, it provides a seamless, responsive experience with intuitive animations and user flows.
+```mermaid
+graph TD
+    A[Frontend] --> B[Next.js]
+    A --> C[React]
+    A --> D[Tailwind CSS]
+    E[Backend] --> F[Google Gemini API]
+    G[Infrastructure] --> H[Clerk Auth]
+    G --> I[PostgreSQL]
+    G --> J[Drizzle ORM]
+    K[Animations] --> L[GSAP]
+    K --> M[Framer Motion]
+    K --> N[Lenis]
+```
 
----
+## ✨ Key Features
 
-## 🧠 Tech Stack
+- **AI-Powered Content Creation** - Generate blog posts, marketing copy, social media content and more
+- **Customization Options** - Adjust tone, style, and length to match your brand
+- **User Authentication** - Secure access with Clerk authentication
+- **Content History** - Save and revisit your generated content
+- **Responsive Design** - Perfect experience on any device
+- **Stunning Animations** - Beautiful UI transitions powered by GSAP and Framer Motion
 
-- **Frontend**: Next.js, React, Tailwind CSS  
-- **Backend**: Google Gemini API  
-- **Auth**: Clerk  
-- **Database**: PostgreSQL (via Drizzle ORM)  
-- **Animations**: GSAP, Framer Motion, Lenis  
+## 📱 App Preview
 
----
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://via.placeholder.com/300x600/3A1C71/ffffff?text=Dashboard" width="220px" /><br />
+        <em>Dashboard</em>
+      </td>
+      <td align="center">
+        <img src="https://via.placeholder.com/300x600/4C3F91/ffffff?text=Generator" width="220px" /><br />
+        <em>Content Generator</em>
+      </td>
+      <td align="center">
+        <img src="https://via.placeholder.com/300x600/5E60CE/ffffff?text=History" width="220px" /><br />
+        <em>Content History</em>
+      </td>
+    </tr>
+  </table>
+</div>
 
-## 🎯 Features
-
-- 🔐 Authentication & User Management via Clerk  
-- ✨ Generate AI-based content using Gemini  
-- 🎨 Smooth animations with GSAP & Framer Motion  
-- 📱 Mobile-responsive UI built with Tailwind  
-- 🧩 Organized component architecture  
-- 🧪 Scalable full-stack setup
-
----
-
-## 📸 Preview
-
-| Homepage | Generator UI | Auth Flow |
-|----------|--------------|-----------|
-| ![Homepage](https://via.placeholder.com/300x200/8e44ad/ffffff?text=Homepage) | ![Generate](https://via.placeholder.com/300x200/8e44ad/ffffff?text=Generate+Content) | ![Auth](https://via.placeholder.com/300x200/8e44ad/ffffff?text=Login/Register) |
-
----
-
-## 📦 Getting Started
+## 🚀 Getting Started
 
 ```bash
-# Clone the repo
-git clone https://github.com/your-username/ai-content-generator.git
+# Clone the repository
+git clone https://github.com/yourname/ai-content-generator.git
+
+# Navigate to the project directory
 cd ai-content-generator
 
 # Install dependencies
 npm install
 
 # Set up environment variables
-cp .env.example .env
+cp .env.example .env.local
 
-# Run development server
+# Start the development server
 npm run dev
 ```
 
----
+### Prerequisites
 
-## 🔑 Environment Variables
+- Node.js 18+ 
+- Google Gemini API key
+- Clerk account for authentication
+- PostgreSQL database
 
-| Variable Name            | Description                 |
-|--------------------------|-----------------------------|
-| `GEMINI_API_KEY`         | Your Google Gemini API Key |
-| `CLERK_SECRET_KEY`       | Clerk backend key          |
-| `NEXT_PUBLIC_CLERK_KEY`  | Clerk frontend key         |
-| `DATABASE_URL`           | PostgreSQL DB connection   |
-
----
-
-## 📁 Folder Structure
+## 📊 Project Architecture
 
 ```
 ai-content-generator/
-├── app/                 # App router & pages
-├── components/          # UI components
-├── lib/                 # Utility logic
-├── styles/              # Global styles
-├── public/              # Assets
-└── prisma/              # Drizzle ORM config
+├── app/
+│   ├── api/
+│   ├── auth/
+│   ├── dashboard/
+│   ├── generate/
+│   └── history/
+├── components/
+│   ├── ui/
+│   ├── auth/
+│   ├── content/
+│   └── shared/
+├── lib/
+│   ├── db/
+│   ├── ai/
+│   └── utils/
+├── styles/
+├── public/
+└── ...configuration files
 ```
 
----
+## 🔒 Environment Variables
 
-## ❤️ Credits
+```
+# API Keys
+GEMINI_API_KEY=your_gemini_api_key
 
-- [Google Gemini](https://deepmind.google/technologies/gemini)
-- [Clerk Auth](https://clerk.com)
-- [Drizzle ORM](https://orm.drizzle.team/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [GSAP](https://greensock.com/gsap/)
-- [Lenis Smooth Scroll](https://lenis.studiofreight.com)
+# Authentication
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
 
----
-
-## 🙌 Support
-
-If you like this project, don't forget to ⭐ the repo and share it!
-
----
-
-## 👨‍💻 Created by [Ayush](mailto:ayushsingh7360@gmail.com)
+# Database
+DATABASE_URL=your_postgresql_connection_string
 ```
 
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Google Gemini for the powerful AI capabilities
+- The Next.js team for the amazing framework
+- Tailwind CSS for the utility-first CSS framework
+- All open-source contributors who make this possible
+
 ---
 
-Let me know if you want this as a downloadable file or want me to customize it with your actual GitHub repo URL and image previews!
+<div align="center">
+  <p>
+    <a href="https://twitter.com/yourhandle">Twitter</a> •
+    <a href="https://www.linkedin.com/in/yourprofile/">LinkedIn</a> •
+    <a href="https://www.buymeacoffee.com/yourusername">Buy Me a Coffee</a>
+  </p>
+  <p>Made with ❤️ by Your Name</p>
+</div>
