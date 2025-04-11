@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1534270804882-6b5048b1c1fc?auto=format&fit=crop&w=1200&q=80" alt="AI Content Generator Banner" width="100%" class="animate-fade-in"/>
+  <img src="https://images.unsplash.com/photo-1534270804882-6b5048b1c1fc?auto=format&fit=crop&w=1200&q=80" alt="AI Content Generator Banner" width="100%" />
 </div>
 
 <h1 align="center">
@@ -40,7 +40,7 @@
 ## ✨ Demo
 
 <div align="center">
-  <img src="https://via.placeholder.com/1200x600/000000/FFFFFF?text=AI+Content+Generator+Demo" alt="Demo Screenshot" width="80%" class="animate-scale-in"/>
+  <img src="https://via.placeholder.com/1200x600/000000/FFFFFF?text=AI+Content+Generator+Demo" alt="Demo Screenshot" width="80%" />
   
   <p align="center">
     <a href="https://ai-content-generator.demo" target="_blank">
@@ -56,7 +56,7 @@
 ## 🚀 Features
 
 <div align="center">
-  <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/Handshake.gif" height="60px">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Handshake.png" alt="Handshake" width="80" height="80" />
 </div>
 
 <table>
@@ -64,26 +64,26 @@
     <td width="50%">
       <h3 align="center">Content Creation</h3>
       <div align="center">
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Blog Posts</strong> - Generate complete articles with customizable sections<br/>
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Marketing Copy</strong> - Create compelling ad copy and campaign text<br/>
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Social Media</strong> - Design engaging posts for multiple platforms<br/>
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Email Templates</strong> - Craft professional email sequences
       </div>
     </td>
     <td width="50%">
       <h3 align="center">Creator Tools</h3>
       <div align="center">
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Style Customization</strong> - Select from multiple writing styles and tones<br/>
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Length Control</strong> - Generate content from short snippets to long-form<br/>
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Export Options</strong> - Download as Markdown, TXT, or copy directly<br/>
-        <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/wave.gif" height="30px" width="30px">
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Backhand%20Index%20Pointing%20Right.png" alt="Point" width="25" height="25" />
         <strong>Content History</strong> - Access all your previously generated content
       </div>
     </td>
@@ -91,12 +91,14 @@
 </table>
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 💻 Installation
 
-<img src="https://media2.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif?cid=ecf05e47a0n3gi1bfqntqmob8g9aid1oyj2wr3ds3mg700bl&rid=giphy.gif" width="50px" height="50px">
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Laptop.png" alt="Laptop" width="80" height="80" />
+</div>
 
 ```bash
 # Clone repository
@@ -116,14 +118,15 @@ npm run dev
 ```
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 🔧 Tech Stack
 
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png" width="40" alt="AI">
-  <p>Cutting-edge architecture built with the best in modern web technology</p>
+  <h3>
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=25&pause=1000&color=22C55E&center=true&vCenter=true&repeat=false&random=false&width=435&lines=Cutting-edge+Technology" alt="Typing SVG" />
+  </h3>
 </div>
 
 <div align="center">
@@ -144,20 +147,20 @@ npm run dev
 </div>
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 📱 Showcase
 
 <div align="center">
   <h3>
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=25&pause=1000&color=22C55E&center=true&vCenter=true&repeat=false&random=false&width=435&lines=Live+Application+Preview" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=25&pause=1000&color=F59E0B&center=true&vCenter=true&repeat=false&random=false&width=435&lines=Live+Application+Preview" alt="Typing SVG" />
   </h3>
 </div>
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eyes.png" alt="Eyes" width="25" height="25" />
-  <strong>Hover over screenshots to see animation</strong>
+  <strong>Application Screenshots</strong>
   <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eyes.png" alt="Eyes" width="25" height="25" />
 </div>
 
@@ -165,75 +168,52 @@ npm run dev
   <table>
     <tr>
       <td>
-        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Home+Screen" alt="Home Screen" width="100%" class="image-hover-effect"/>
+        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Home+Screen" alt="Home Screen" width="100%"/>
         <p align="center">Home Screen</p>
       </td>
       <td>
-        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Generator" alt="Generator Interface" width="100%" class="image-hover-effect"/>
+        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Generator" alt="Generator Interface" width="100%"/>
         <p align="center">Generator Interface</p>
       </td>
       <td>
-        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Content+Library" alt="Content Library" width="100%" class="image-hover-effect"/>
+        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Content+Library" alt="Content Library" width="100%"/>
         <p align="center">Content Library</p>
       </td>
     </tr>
   </table>
 </div>
 
-<style>
-  .image-hover-effect {
-    transition: transform 0.3s ease;
-  }
-  .image-hover-effect:hover {
-    transform: scale(1.05);
-  }
-  .animate-fade-in {
-    animation: fadeIn 2s ease-in-out;
-  }
-  .animate-scale-in {
-    animation: scaleIn 1s ease-in-out;
-  }
-  @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
-  @keyframes scaleIn {
-    0% { transform: scale(0.95); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-</style>
-
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 🗺️ Roadmap
 
 <div align="center">
   <h3>
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=25&pause=1000&color=F59E0B&center=true&vCenter=true&repeat=false&random=false&width=435&lines=Project+Evolution+Timeline" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=25&pause=1000&color=DC2626&center=true&vCenter=true&repeat=false&random=false&width=435&lines=Project+Evolution+Timeline" alt="Typing SVG" />
   </h3>
 </div>
 
 <div align="center">
-  <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/Point.gif" height="25px" width="25px">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Rocket" width="25" height="25" />
   <b>Q2 2025:</b> Multi-language support
   <br>
-  <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/Point.gif" height="25px" width="25px">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Rocket" width="25" height="25" />
   <b>Q3 2025:</b> Advanced SEO optimization features
   <br>
-  <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/Point.gif" height="25px" width="25px">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Rocket" width="25" height="25" />
   <b>Q3 2025:</b> Custom templates library
   <br>
-  <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/Point.gif" height="25px" width="25px">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Rocket" width="25" height="25" />
   <b>Q4 2025:</b> Team collaboration tools
   <br>
-  <img src="https://github.com/SatYu26/SatYu26/blob/master/Assets/Point.gif" height="25px" width="25px">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Rocket" width="25" height="25" />
   <b>Q1 2026:</b> AI image generation integration
 </div>
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 💎 Why Choose AI Content Generator?
@@ -242,24 +222,24 @@ npm run dev
   <table>
     <tr>
       <td align="center">
-        <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" width="200px" height="100px"/>
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Trophy.png" alt="Trophy" width="80" height="80" />
         <h3>Professional Quality</h3>
         <p>Content that reads like it was written by experts</p>
       </td>
       <td align="center">
-        <img src="https://media.giphy.com/media/RhMmGFlRGT1UtgGTaD/giphy.gif" width="200px" height="100px"/>
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Hourglass%20Done.png" alt="Hourglass" width="80" height="80" />
         <h3>Time Saving</h3>
         <p>Reduce content creation time by up to 80%</p>
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="https://media.giphy.com/media/3o7TKTDn976rzVgky4/giphy.gif" width="200px" height="100px"/>
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Balance%20Scale.png" alt="Balance" width="80" height="80" />
         <h3>Consistency</h3>
         <p>Maintain a consistent voice across all your content</p>
       </td>
       <td align="center">
-        <img src="https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif" width="200px" height="100px"/>
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Chart%20Increasing.png" alt="Chart" width="80" height="80" />
         <h3>Scalability</h3>
         <p>Generate content at scale without sacrificing quality</p>
       </td>
@@ -268,7 +248,7 @@ npm run dev
 </div>
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 🔒 Environment Setup
@@ -289,16 +269,14 @@ ANALYTICS_ID=your_analytics_id
 ```
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 🤝 Contributing
 
 <div align="center">
-  <img src="https://media.giphy.com/media/LnQjpWaON8nhr21vNW/giphy.gif" width="60"> <em>Your contributions make this project better for everyone!</em>
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" width="80" height="80" />
 </div>
-
-<br>
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -307,18 +285,18 @@ ANALYTICS_ID=your_analytics_id
 5. Open a Pull Request
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 ## 📄 License
 
 <div align="center">
-  <img src="https://media.giphy.com/media/VeerqLAX1iI3sEwOPJ/giphy.gif" width="100">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20with%20Curl.png" alt="License" width="80" height="80" />
   <p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
 </div>
 
 <div align="center">
-  <a href="#"><img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png"></a>
+  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" />
 </div>
 
 <div align="center">
@@ -343,32 +321,7 @@ ANALYTICS_ID=your_analytics_id
 
 <div align="center">
   <img src="https://profile-counter.glitch.me/{yourusername}/count.svg" alt="Visitor Count">
-  <p>Built with ❤️ by <a href="https://github.com/yourusername">Your Name</a></p>
+  <p>Built with ❤️ by Ayush <a href="https://github.com/yourusername">Your Name</a></p>
   
-  <img src="https://raw.githubusercontent.com/trinib/trinib/main/assets/footer.svg" width="100%">
-</div>
-
-<!-- Invisible section with CSS for animations -->
-<div style="display:none">
-  <style>
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    
-    .float {
-      animation: float 3s ease-in-out infinite;
-    }
-    
-    .pulse {
-      animation: pulse 2s ease-in-out infinite;
-    }
-  </style>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%">
 </div>
