@@ -162,5 +162,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
     <a href="https://www.linkedin.com/in/yourprofile/">LinkedIn</a> •
     <a href="https://www.buymeacoffee.com/yourusername">Buy Me a Coffee</a>
   </p>
-  <p>Made with ❤️ by Your Name</p>
+  <p>Made with ❤️ by Ayush</p>
 </div>
