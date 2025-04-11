@@ -1,40 +1,118 @@
+Here's a modern and aesthetic GitHub `README.md` template for your **AI Content Generator** project. I’ve made it visually appealing, informative, and suitable for a serious portfolio or open-source project:
 
-## AI Content Generator App 
+---
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+```md
+# ✨ AI Content Generator
 
-## Getting Started
+> A modern AI-powered platform to generate high-quality content effortlessly. Built with Next.js, React, Tailwind CSS, and powered by Google Gemini API.
 
-First, run the development server:
+![AI Content Generator Banner](https://via.placeholder.com/1200x400?text=AI+Content+Generator)
+
+---
+
+## 🚀 Features
+
+- 🔐 Authentication via Clerk
+- 🤖 AI Content Generation using Gemini API
+- 🎨 Beautiful, modern UI with Tailwind CSS
+- 🧠 Smooth animations using GSAP, Framer Motion & Lenis
+- 🛠️ Full-stack setup with Next.js & PostgreSQL via Drizzle ORM
+- 📱 Fully responsive & mobile-first design
+
+---
+
+## 🛠️ Tech Stack
+
+| Category        | Tools / Frameworks |
+|----------------|--------------------|
+| Frontend       | Next.js, React, Tailwind CSS |
+| Backend        | Google Gemini API, Drizzle ORM |
+| Authentication | Clerk |
+| Database       | PostgreSQL |
+| Animations     | GSAP, Framer Motion, Lenis |
+| Styling        | Tailwind CSS, Custom Themes |
+
+---
+
+## 📸 UI Preview
+
+| Home Page | Content Generator | Auth Flow |
+|----------|-------------------|-----------|
+| ![Home](https://via.placeholder.com/300x200) | ![Generate](https://via.placeholder.com/300x200) | ![Auth](https://via.placeholder.com/300x200) |
+
+---
+
+## 🧑‍💻 Installation
 
 ```bash
+# Clone the repo
+git clone https://github.com/your-username/ai-content-generator.git
+
+# Navigate into the project
+cd ai-content-generator
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔑 Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Key | Description |
+|-----|-------------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Your Clerk public key |
+| `CLERK_SECRET_KEY` | Your Clerk secret key |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `DATABASE_URL` | PostgreSQL database URL |
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+---
 
-## Learn More
+## 📂 Folder Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+.
+├── app/                 # Next.js App Directory
+├── components/          # Reusable UI Components
+├── lib/                 # Utility Functions and Helpers
+├── prisma/              # Database schema & Drizzle config
+├── public/              # Static assets
+├── styles/              # Global styles
+└── types/               # TypeScript types
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## ✨ Credits
 
-## Deploy on Vercel
+- [Google Gemini](https://deepmind.google/technologies/gemini/)
+- [Clerk Auth](https://clerk.com)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [Framer Motion](https://www.framer.com/motion/)
+- [GSAP](https://greensock.com/gsap/)
+- [Lenis](https://github.com/studio-freight/lenis)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 💖 Support
+
+If you find this project helpful, consider giving it a ⭐ or sharing it with others!
+
+---
+
+## 📬 Contact
+
+Made with 💜 by [Ayush](mailto:ayushsingh7360@gmail.com)
+
+```
+
+---
+
+Would you like me to generate placeholder preview images or a dark-theme variant too?
