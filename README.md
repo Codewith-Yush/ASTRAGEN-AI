@@ -321,7 +321,7 @@ ANALYTICS_ID=your_analytics_id
 
 <div align="center">
   <img src="https://profile-counter.glitch.me/{yourusername}/count.svg" alt="Visitor Count">
-  <p>Built with ❤️ by Ayush <a href="https://github.com/yourusername">Your Name</a></p>
+  <p>Built with ❤️ by <a href="https://github.com/yourusername">Ayush</a></p>
   
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%">
 </div>
