@@ -1,141 +1,144 @@
-# 🪄 AI Content Generator
-
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![GitHub stars](https://img.shields.io/github/stars/yourname/ai-content-generator?style=social)
-![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
-
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1676099677644-84aa227969bc?auto=format&fit=crop&w=1200&q=80" alt="AI Content Generator" width="80%" />
-  <p><em>Transform your ideas into polished content with the power of AI</em></p>
+  <img src="https://images.unsplash.com/photo-1534270804882-6b5048b1c1fc?auto=format&fit=crop&w=1200&q=80" alt="AI Content Generator Banner" width="100%"/>
 </div>
 
-## 🌟 Overview
+# AI Content Generator
 
-**AI Content Generator** harnesses cutting-edge AI technology to help creators produce high-quality content in seconds. Perfect for writers, marketers, and content creators looking to enhance their productivity while maintaining creative control.
+> Transform your ideas into compelling content powered by Google Gemini AI
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center"><b>🚀 Instant</b><br>Generate content within seconds</td>
-      <td align="center"><b>✨ Creative</b><br>Diverse styles and tones</td>
-      <td align="center"><b>🔍 Smart</b><br>Context-aware suggestions</td>
-    </tr>
-  </table>
-</div>
-
-## 💻 Technology Stack
-
-```mermaid
-graph TD
-    A[Frontend] --> B[Next.js]
-    A --> C[React]
-    A --> D[Tailwind CSS]
-    E[Backend] --> F[Google Gemini API]
-    G[Infrastructure] --> H[Clerk Auth]
-    G --> I[PostgreSQL]
-    G --> J[Drizzle ORM]
-    K[Animations] --> L[GSAP]
-    K --> M[Framer Motion]
-    K --> N[Lenis]
-```
-
-## ✨ Key Features
-
-- **AI-Powered Content Creation** - Generate blog posts, marketing copy, social media content and more
-- **Customization Options** - Adjust tone, style, and length to match your brand
-- **User Authentication** - Secure access with Clerk authentication
-- **Content History** - Save and revisit your generated content
-- **Responsive Design** - Perfect experience on any device
-- **Stunning Animations** - Beautiful UI transitions powered by GSAP and Framer Motion
-
-## 📱 App Preview
+[![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
 <div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="https://via.placeholder.com/300x600/3A1C71/ffffff?text=Dashboard" width="220px" /><br />
-        <em>Dashboard</em>
-      </td>
-      <td align="center">
-        <img src="https://via.placeholder.com/300x600/4C3F91/ffffff?text=Generator" width="220px" /><br />
-        <em>Content Generator</em>
-      </td>
-      <td align="center">
-        <img src="https://via.placeholder.com/300x600/5E60CE/ffffff?text=History" width="220px" /><br />
-        <em>Content History</em>
-      </td>
-    </tr>
-  </table>
+  <a href="#-demo">Demo</a> •
+  <a href="#-features">Features</a> •
+  <a href="#-installation">Installation</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-showcase">Showcase</a> •
+  <a href="#-roadmap">Roadmap</a>
 </div>
 
-## 🚀 Getting Started
+## ✨ Demo
+
+Try the AI Content Generator now at [https://ai-content-generator.demo](https://ai-content-generator.demo)
+
+<div align="center">
+  <img src="https://via.placeholder.com/1200x600/000000/FFFFFF?text=AI+Content+Generator+Demo" alt="Demo Screenshot" width="80%" />
+</div>
+
+## 🚀 Features
+
+### Content Creation
+
+- **Blog Posts** - Generate complete articles with customizable sections
+- **Marketing Copy** - Create compelling ad copy and campaign text
+- **Social Media** - Design engaging posts for multiple platforms
+- **Email Templates** - Craft professional email sequences
+
+### Creator Tools
+
+- **Style Customization** - Select from multiple writing styles and tones
+- **Length Control** - Generate content from short snippets to long-form
+- **Export Options** - Download as Markdown, TXT, or copy directly
+- **Content History** - Access all your previously generated content
+
+### Platform Benefits
+
+- **Lightning Fast** - Generate content in seconds, not minutes
+- **User-Friendly** - Intuitive interface with minimal learning curve
+- **Mobile Optimized** - Create content on any device, anywhere
+- **Secure** - End-to-end encryption for all your data
+
+## 💻 Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourname/ai-content-generator.git
+# Clone repository
+git clone https://github.com/yourusername/ai-content-generator.git
 
-# Navigate to the project directory
+# Navigate to project directory
 cd ai-content-generator
 
 # Install dependencies
 npm install
 
-# Set up environment variables
+# Configure environment variables
 cp .env.example .env.local
 
-# Start the development server
+# Start development server
 npm run dev
 ```
 
-### Prerequisites
+## 🔧 Tech Stack
 
-- Node.js 18+ 
-- Google Gemini API key
-- Clerk account for authentication
-- PostgreSQL database
+| Category | Technologies |
+|----------|-------------|
+| **Frontend** | Next.js, React, Tailwind CSS |
+| **Backend** | Google Gemini API |
+| **Authentication** | Clerk |
+| **Database** | PostgreSQL with Drizzle ORM |
+| **Animations** | GSAP, Framer Motion, Lenis |
+| **Deployment** | Vercel |
+| **Analytics** | Vercel Analytics |
 
-## 📊 Project Architecture
+## 📱 Showcase
 
-```
-ai-content-generator/
-├── app/
-│   ├── api/
-│   ├── auth/
-│   ├── dashboard/
-│   ├── generate/
-│   └── history/
-├── components/
-│   ├── ui/
-│   ├── auth/
-│   ├── content/
-│   └── shared/
-├── lib/
-│   ├── db/
-│   ├── ai/
-│   └── utils/
-├── styles/
-├── public/
-└── ...configuration files
-```
+<div align="center">
+  <table>
+    <tr>
+      <td>
+        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Home+Screen" alt="Home Screen" width="100%" />
+        <p align="center">Home Screen</p>
+      </td>
+      <td>
+        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Generator" alt="Generator Interface" width="100%" />
+        <p align="center">Generator Interface</p>
+      </td>
+      <td>
+        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Content+Library" alt="Content Library" width="100%" />
+        <p align="center">Content Library</p>
+      </td>
+    </tr>
+  </table>
+</div>
 
-## 🔒 Environment Variables
+## 🗺️ Roadmap
+
+- [ ] **Q2 2025:** Multi-language support
+- [ ] **Q3 2025:** Advanced SEO optimization features
+- [ ] **Q3 2025:** Custom templates library
+- [ ] **Q4 2025:** Team collaboration tools
+- [ ] **Q1 2026:** AI image generation integration
+
+## 💎 Why Choose AI Content Generator?
+
+- **Professional Quality** - Content that reads like it was written by experts
+- **Time Saving** - Reduce content creation time by up to 80%
+- **Consistency** - Maintain a consistent voice across all your content
+- **Scalability** - Generate content at scale without sacrificing quality
+
+## 🔒 Environment Setup
 
 ```
 # API Keys
 GEMINI_API_KEY=your_gemini_api_key
 
 # Authentication
-CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-CLERK_SECRET_KEY=your_clerk_secret_key
+CLERK_PUBLISHABLE_KEY=your_clerk_key
+CLERK_SECRET_KEY=your_clerk_secret
 
 # Database
-DATABASE_URL=your_postgresql_connection_string
+DATABASE_URL=your_postgresql_url
+
+# Optional
+ANALYTICS_ID=your_analytics_id
 ```
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are always welcome! Please check out our [Contribution Guidelines](CONTRIBUTING.md) first.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -143,24 +146,22 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📜 License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Google Gemini for the powerful AI capabilities
-- The Next.js team for the amazing framework
-- Tailwind CSS for the utility-first CSS framework
-- All open-source contributors who make this possible
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <p>
-    <a href="https://twitter.com/yourhandle">Twitter</a> •
-    <a href="https://www.linkedin.com/in/yourprofile/">LinkedIn</a> •
-    <a href="https://www.buymeacoffee.com/yourusername">Buy Me a Coffee</a>
-  </p>
-  <p>Made with ❤️ by Ayush</p>
+  <p>Built with ❤️ by <a href="https://github.com/yourusername">Your Name</a></p>
+  
+  <a href="https://twitter.com/yourusername">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter" />
+  </a>
+  <a href="https://linkedin.com/in/yourusername">
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+  </a>
+  <a href="https://discord.gg/yourinvite">
+    <img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
+  </a>
 </div>
