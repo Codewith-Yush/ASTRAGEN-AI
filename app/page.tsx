@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { useState } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
 import { motion } from "framer-motion";
@@ -290,27 +291,38 @@ const HowItWorksSection = () => {
 };
 
 // Testimonials Section
+
+interface Testimonial {
+  quote: string;
+  author: string;
+  role: string;
+  image: string;
+}
+
 const TestimonialsSection = () => {
   const testimonials: Testimonial[] = [
     {
       quote: "This AI tool has doubled our content production with the same team size. The quality is impressive, requiring minimal editing.",
       author: "Rajendra T.",
-      role: "CS Student"
+      role: "CS Student",
+      image: "/raju.jpg"
     },
     {
       quote: "As a solopreneur, this platform has been a game-changer for creating professional marketing materials consistently.",
-      author: "Raj S.",
-      role: "CS Student"
+      author: "Kuldeep Y.",
+      role: "CS Student",
+      image: "/kuldeep.jpg"
     },
     {
       quote: "The ability to customize the AI output to match our brand voice has been invaluable for our marketing team.",
-      author: "Vikrant C.",
-      role: "CS Student"
+      author: "Nitin G.",
+      role: "CS Student",
+      image: "/nitin.jpg"
     }
   ];
-
+  
   return (
-    <section className="py-24 bg-white dark:bg-slate-900">
+    <section className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-slate-900 dark:to-slate-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -319,32 +331,64 @@ const TestimonialsSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-teal-800 mb-6 dark:text-teal-300 tracking-tight">
-            What Our Users Say
+          <span className="inline-block px-3 py-1 bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-100 rounded-full text-sm font-medium mb-4">
+            Testimonials
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 dark:text-white tracking-tight">
+            Trusted by <span className="text-teal-600 dark:text-teal-400">Students</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto dark:text-gray-300 leading-relaxed">
-            Join thousands of satisfied users creating content with our AI
+            See how our AI platform is transforming content creation for students and professionals
           </p>
         </motion.div>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
-              className="bg-gray-100 dark:bg-slate-800 p-8 rounded-lg"
+              className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg hover:shadow-xl group transition-all duration-300 border border-gray-100 dark:border-slate-700 relative overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
             >
-              <svg className="w-8 h-8 text-teal-500 mb-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{testimonial.quote}</p>
-              <div>
-                <p className="font-medium text-teal-700 dark:text-teal-300">{testimonial.author}</p>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{testimonial.role}</p>
+              {/* Decorative element */}
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-teal-50 dark:bg-teal-900/30 rounded-full transition-all duration-500 group-hover:scale-150"></div>
+              
+              {/* Quote icon */}
+              <div className="relative">
+                <svg className="w-10 h-10 text-teal-500 opacity-80 mb-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                </svg>
               </div>
+              
+              {/* Quote text */}
+              <p className="text-gray-700 dark:text-gray-300 mb-8 relative z-10 leading-relaxed">
+                "{testimonial.quote}"
+              </p>
+              
+              {/* Profile section */}
+              <div className="flex items-center relative z-10">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.author}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-md relative z-10 group-hover:border-teal-100 dark:group-hover:border-teal-900 transition-all duration-300"
+                  />
+                </div>
+                <div className="ml-4 transition-all duration-300">
+                  <p className="font-semibold text-gray-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors duration-300">
+                    {testimonial.author}
+                  </p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    {testimonial.role}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Accent line */}
+              <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-teal-400 to-teal-600 group-hover:w-full transition-all duration-500 ease-out"></div>
             </motion.div>
           ))}
         </div>
@@ -503,7 +547,8 @@ export default function Home(): JSX.Element {
   const headerRef = useRef(null);
   const headingRef = useRef(null);
   const descriptionRef = useRef(null);
-  const buttonsRef = useRef(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+
   
   useEffect(() => {
     // GSAP animation code goes here
@@ -525,16 +570,18 @@ export default function Home(): JSX.Element {
       delay: 0.2
     });
     
-    /// Buttons animation
-if (buttonsRef.current) {
-  tl.from(buttonsRef.current.children, {
-    duration: 0.8,
-    opacity: 0,
-    y: 20,
-    stagger: 0.15,
-    ease: "back.out(1.7)"
-  });
-}
+    if (buttonsRef.current) {
+      const childrenArray = Array.from(buttonsRef.current.children);
+    
+      tl.from(childrenArray, {
+        duration: 0.8,
+        opacity: 0,
+        y: 20,
+        stagger: 0.15,
+        ease: "back.out(1.7)",
+      });
+    }
+    
     
     // Floating animation
     gsap.to(headerRef.current, {
@@ -618,10 +665,10 @@ if (buttonsRef.current) {
         >
           {/* Image Above Text */}
           <Image
-            src="/logo.jpg"
+            src="/logos.png"
             alt="Logo"
-            width={220}
-            height={220}
+            width={330}
+            height={330}
             priority
             className="drop-shadow-xl mx-auto"
             style={{ transformOrigin: "center" }}
@@ -758,8 +805,8 @@ if (buttonsRef.current) {
       {/* Pricing section */}
       <PricingSection />
 
-      {/* CTA section */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-teal-50 to-white py-20 dark:from-slate-800 dark:to-slate-900">
+          {/* CTA section */}
+          <div className="relative overflow-hidden bg-gradient-to-b from-teal-50 to-white py-20 dark:from-slate-800 dark:to-slate-900">
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center"
@@ -772,7 +819,15 @@ if (buttonsRef.current) {
               Ready to transform your content creation?
             </h2>
             <motion.div
-              variants={buttonVariants}
+              variants={{
+                idle: { scale: 1 },
+                hover: {
+                  scale: 1.05,
+                  boxShadow: "0 10px 25px -5px rgba(20, 184, 166, 0.4)",
+                  transition: { duration: 0.7 },
+                },
+                tap: { scale: 0.95 },
+              }}
               initial="idle"
               whileHover="hover"
               whileTap="tap"
@@ -787,6 +842,37 @@ if (buttonsRef.current) {
           </motion.div>
         </div>
       </div>
+
+      {/* Floating Contact/Help Button - Fixed position */}
+      <motion.div
+        className="fixed bottom-8 right-8 z-50"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5, duration: 0.5 }}
+      >
+        <Link href="/contact" className="relative group">
+          <button className="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 transform group-hover:scale-110">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+          </button>
+          <div className="absolute right-14 bottom-0 bg-white dark:bg-slate-800 text-gray-800 dark:text-white text-sm px-3 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            Contact Us / Help
+            <div className="absolute right-0 top-1/2 transform translate-x-1 -translate-y-1/2 w-2 h-2 bg-white dark:bg-slate-800 rotate-45"></div>
+          </div>
+        </Link>
+      </motion.div>
     </div>
   );
 }

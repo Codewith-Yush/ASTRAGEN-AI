@@ -49,7 +49,7 @@ function CreateNewContent(props: PROPS) {
   const GenerateAIContent = async (formData: any) => {
     if (!templateSlug) return; // Ensure slug is loaded
 
-    if (totalUsage >= 10000 && !userSubscription) {
+    if (totalUsage >= 80000 && !userSubscription) {
       console.log('Please Upgrade');
       router.push('/dashboard/billing');
       return;
@@ -85,7 +85,8 @@ function CreateNewContent(props: PROPS) {
         templateSlug: slug,
         aiResponse: aiResp,
         createdBy: user.primaryEmailAddress.emailAddress,
-        createdAt: moment().format('DD/MM/yyyy'),
+        createdAt: new Date(),  // This ensures a proper Date object
+
       });
 
       console.log('Saved in DB:', result);
