@@ -4,7 +4,7 @@ import gsap from 'gsap';
 import { useState } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
-import { motion } from "framer-motion";
+import { motion,useTransform, useScroll,AnimatePresence} from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import Lenis from "@studio-freight/lenis";
@@ -36,102 +36,397 @@ interface Testimonial {
   author: string;
   role: string;
 }
-
 const AboutSection = () => {
+  const [isInView, setIsInView] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const sectionRef = useRef(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+  
+  // Enhanced parallax effects
+  const backgroundY = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const textY = useTransform(scrollYProgress, [0, 1], [0, 50]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.6, 1], [1, 1, 1, 0.3]);
+  
+  // Glow effects
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.5], [0.1, 0.3]);
+  
+  // Staggered animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.3
+      }
+    }
+  };
+
   const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      },
-    },
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
+  
+  const cardHover = {
+    scale: 1.03,
+    y: -10,
+    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
   };
 
-  const imageReveal = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1], // Custom cubic-bezier for modern feel
-      },
-    },
+  const imageHover = {
+    scale: 1.1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
   };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   return (
-    <motion.section
-      className="py-20 bg-gray-100 dark:bg-slate-900"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-100px" }}
+    <section 
+      ref={sectionRef}
+      className="relative py-32 overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800"
     >
-      <div data-scroll className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          className="text-center mb-20"
-          variants={fadeInUp}
-        >
-          <h2 data-scroll data-scroll-speed="2" className="text-3xl md:text-4xl font-bold text-teal-800 mb-6 dark:text-teal-300 tracking-tight">
-            About Us
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto dark:text-gray-300 leading-relaxed">
-            Learn more about our company and our mission to revolutionize content creation using AI.
-          </p>
-        </motion.div>
-
-        {/* Minimalist Image Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
-          {/* First Image */}
-          <motion.div 
-            className="group aspect-[4/3] relative overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-800"
-            variants={imageReveal}
-          >
-            <Image
-              src="/3852.gif" 
-              alt="Our approach" 
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: "cover" }}
-              className="transition-all duration-500 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-teal-900/20 transition-all duration-500"/>
-            <div className="absolute bottom-0 left-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-              <h3 className="text-xl font-medium text-white mb-1">Human-centered design</h3>
-              <div className="h-0.5 w-10 bg-teal-300 mb-3"></div>
-              <p className="text-white/90 text-sm">Creating AI solutions with people in mind.</p>
-            </div>
-          </motion.div>
-
-          {/* Second Image */}
-          <motion.div 
-            className="group aspect-[4/3] relative overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-800"
-            variants={imageReveal}
-            transition={{ delay: 0.15 }}
-          >
-            <Image
-              src="/car.gif" 
-              alt="Our technology" 
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: "cover" }}
-              className="transition-all duration-500 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-teal-900/20 transition-all duration-500"/>
-            <div className="absolute bottom-0 left-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-              <h3 className="text-xl font-medium text-white mb-1">Cutting-edge AI</h3>
-              <div className="h-0.5 w-10 bg-teal-300 mb-3"></div>
-              <p className="text-white/90 text-sm">Leveraging the latest in AI technology.</p>
-            </div>
-          </motion.div>
-        </div>
+      {/* Animated gradient background */}
+      <motion.div 
+        className="absolute inset-0 opacity-20 dark:opacity-30 pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at 30% 50%, rgba(94, 234, 212, 0.3), transparent 50%), radial-gradient(circle at 70% 30%, rgba(96, 165, 250, 0.3), transparent 50%)",
+          y: backgroundY,
+          opacity: glowOpacity
+        }}
+      />
+      
+      {/* Floating particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(15)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-teal-400 dark:bg-teal-600 opacity-10"
+            initial={{
+              x: Math.random() * 100 + '%',
+              y: Math.random() * 100 + '%',
+              width: Math.random() * 10 + 5 + 'px',
+              height: Math.random() * 10 + 5 + 'px',
+            }}
+            animate={{
+              y: [0, Math.random() * 100 - 50],
+              x: [0, Math.random() * 100 - 50],
+              transition: {
+                duration: Math.random() * 20 + 10,
+                repeat: Infinity,
+                repeatType: 'reverse',
+                ease: 'easeInOut'
+              }
+            }}
+          />
+        ))}
       </div>
-    </motion.section>
+      
+      {/* Decorative border */}
+      <motion.div 
+        className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600"
+        initial={{ scaleX: 0 }}
+        animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        style={{ originX: 0 }}
+      />
+      
+      {/* Floating blobs */}
+      <motion.div 
+        className="absolute right-0 top-0 h-96 w-96 -mr-48 -mt-48 opacity-20 dark:opacity-10"
+        animate={{
+          rotate: [0, 15, 0],
+          transition: {
+            duration: 20,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'linear'
+          }
+        }}
+      >
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M44.3,-76.8C55.9,-69.4,63.2,-55,70.8,-41C78.5,-27,86.3,-13.5,84.8,-0.9C83.2,11.7,72.3,23.4,62.2,33.5C52.1,43.6,42.8,52.1,32.1,58.4C21.4,64.6,10.7,68.5,-2.1,71.9C-14.9,75.3,-29.9,78.1,-41.5,72.3C-53.1,66.4,-61.5,51.9,-67.7,37.9C-73.9,23.9,-78.1,11.9,-79,0C-79.9,-11.9,-77.4,-23.8,-71.6,-34.4C-65.8,-45,-56.7,-54.3,-44.9,-61.7C-33.1,-69.1,-18.6,-74.6,-2.5,-71.5C13.7,-68.4,27.3,-56.8,44.3,-76.8Z" transform="translate(100 100)" className="text-teal-400 dark:text-teal-800" />
+        </svg>
+      </motion.div>
+      
+      <motion.div 
+        className="absolute left-0 bottom-0 h-96 w-96 -ml-48 -mb-48 opacity-20 dark:opacity-10"
+        animate={{
+          rotate: [0, -15, 0],
+          transition: {
+            duration: 25,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'linear'
+          }
+        }}
+      >
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M39.9,-68.9C51.1,-62.9,59.5,-50.1,64.6,-37C69.8,-23.8,71.7,-10.4,71.2,3C70.7,16.5,67.8,29.9,60.8,41.1C53.8,52.2,42.7,61.1,30.1,67.3C17.4,73.5,3.3,77,-10.9,76.5C-25.1,76,-39.5,71.4,-51.5,63C-63.6,54.5,-73.4,42.1,-77.7,28.1C-82,14.1,-80.8,-1.4,-76.9,-16C-73,-30.5,-66.5,-44.1,-56.3,-51.5C-46.2,-58.9,-32.5,-60,-20.4,-63.6C-8.3,-67.2,2.3,-73.3,14.2,-75.2C26.1,-77.2,39.3,-75,39.9,-68.9Z" transform="translate(100 100)" className="text-blue-400 dark:text-blue-800" />
+        </svg>
+      </motion.div>
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={containerVariants}
+          className="space-y-20"
+          style={{ opacity }}
+        >
+          {/* Header Section */}
+          <motion.div variants={fadeInUp} className="text-center">
+            <motion.div 
+              className="inline-block overflow-hidden"
+              initial={{ y: 20, opacity: 0 }}
+              animate={isInView ? { y: 0, opacity: 1 } : {}}
+              transition={{ delay: 0.3 }}
+            >
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium tracking-wider text-teal-700 uppercase bg-teal-100 dark:bg-teal-900/50 dark:text-teal-200 mb-4 shadow-sm">
+                <span className="relative flex h-3 w-3 mr-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                </span>
+                Our Story
+              </span>
+            </motion.div>
+            
+            <motion.h2 
+              className="mt-4 text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-white"
+              style={{ y: textY }}
+            >
+              <span className="relative inline-block">
+                <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-300 dark:to-blue-400">
+                  About Us
+                </span>
+                <span className="absolute inset-0 bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-300 dark:to-blue-400 opacity-10 blur-xl -z-10"></span>
+              </span>
+            </motion.h2>
+            
+            <motion.div 
+              className="h-1.5 w-24 bg-gradient-to-r from-teal-500 to-blue-500 mx-auto mt-8 rounded-full"
+              initial={{ width: 0 }}
+              animate={isInView ? { width: 96 } : { width: 0 }}
+              transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            />
+            
+            <motion.p 
+              variants={fadeInUp} 
+              className="mt-8 text-xl text-gray-600 max-w-3xl mx-auto dark:text-gray-300 leading-relaxed"
+            >
+              We're revolutionizing content creation through cutting-edge AI technology, 
+              designed with <span className="font-semibold text-teal-600 dark:text-teal-400">creativity</span> and <span className="font-semibold text-blue-600 dark:text-blue-400">human connection</span> at its core.
+            </motion.p>
+          </motion.div>
+          
+          {/* Feature Cards */}
+          <motion.div 
+            variants={fadeInUp}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12"
+          >
+            {/* First Feature Card */}
+            <motion.div
+              variants={fadeInUp}
+              whileHover="hover"
+              onHoverStart={() => setHoveredCard(1)}
+              onHoverEnd={() => setHoveredCard(null)}
+              className="relative group rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-slate-800 transition-all duration-300 border border-gray-100 dark:border-slate-700"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-100/30 to-blue-100/30 dark:from-teal-900/20 dark:to-blue-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="aspect-video relative overflow-hidden">
+                <motion.img
+                  src="/content.gif"
+                  alt="Human-centered design"
+                  className="w-full h-full object-cover"
+                  whileHover={imageHover}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </div>
+              
+              <div className="p-8 relative">
+                <div className="flex items-center mb-6">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/50 shadow-sm group-hover:shadow-md transition-shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-teal-600 dark:text-teal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="ml-5 text-2xl font-bold text-gray-900 dark:text-white">Human-Centered Design</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mt-2">
+                  We build intuitive AI solutions that adapt to how people naturally work and create, 
+                  enhancing human capabilities without replacing the human touch.
+                </p>
+                <div className="mt-8">
+  <Link 
+    href="/about/learnmore" 
+    className="inline-flex items-center text-sm font-medium text-teal-600 dark:text-teal-400 group-hover:text-teal-800 dark:group-hover:text-teal-300 transition-colors duration-300"
+  >
+    Learn more
+    <svg className="ml-2 w-4 h-4 transform group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    </svg>
+  </Link>
+</div>
+              </div>
+              
+              <AnimatePresence>
+                {hoveredCard === 1 && (
+                  <motion.div 
+                    className="absolute inset-0 pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+            
+            {/* Second Feature Card */}
+            <motion.div
+              variants={fadeInUp}
+              whileHover="hover"
+              onHoverStart={() => setHoveredCard(2)}
+              onHoverEnd={() => setHoveredCard(null)}
+              className="relative group rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-slate-800 transition-all duration-300 border border-gray-100 dark:border-slate-700"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 to-purple-100/30 dark:from-blue-900/20 dark:to-purple-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="aspect-video relative overflow-hidden">
+                <motion.img
+                  src="/3852.gif"
+                  alt="Cutting-edge AI"
+                  className="w-full h-full object-cover"
+                  whileHover={imageHover}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </div>
+              
+              <div className="p-8 relative">
+                <div className="flex items-center mb-6">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-100 dark:bg-blue-900/50 shadow-sm group-hover:shadow-md transition-shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <h3 className="ml-5 text-2xl font-bold text-gray-900 dark:text-white">Cutting-Edge Technology</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mt-2">
+                  Our platform leverages state-of-the-art AI models to deliver intelligent content 
+                  generation that adapts to your unique style and requirements.
+                </p>
+                <div className="mt-8">
+  <Link
+    href="/about/technology"
+    className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors duration-300"
+  >
+    Explore technology
+    <svg className="ml-2 w-4 h-4 transform group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    </svg>
+  </Link>
+</div>
+              </div>
+              
+              <AnimatePresence>
+                {hoveredCard === 2 && (
+                  <motion.div 
+                    className="absolute inset-0 pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+          
+          {/* Stats Section */}
+          <motion.div 
+            variants={fadeInUp}
+            className="relative rounded-3xl p-8 md:p-12 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 opacity-100"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-[url('/api/placeholder/800/400')] bg-cover opacity-5 dark:opacity-[0.02]"></div>
+            
+            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { value: "98%", label: "Customer Satisfaction", color: "teal" },
+                { value: "1M+", label: "Content Pieces Generated", color: "blue" },
+                { value: "24/7", label: "Support Available", color: "purple" }
+              ].map((stat, index) => (
+                <motion.div 
+                  key={index}
+                  className="text-center p-6 rounded-xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { 
+                    opacity: 1, 
+                    y: 0,
+                    transition: { 
+                      delay: 0.3 + index * 0.15,
+                      duration: 0.6,
+                      ease: [0.22, 1, 0.36, 1]
+                    } 
+                  } : {}}
+                  whileHover={{ 
+                    y: -5,
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                  }}
+                >
+                  <h3 className={`text-5xl md:text-6xl font-bold text-${stat.color}-600 dark:text-${stat.color}-300 mb-3`}>
+                    {stat.value}
+                  </h3>
+                  <p className={`text-lg font-medium text-gray-600 dark:text-gray-300 border-t border-${stat.color}-100 dark:border-${stat.color}-900/50 pt-4`}>
+                    {stat.label}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
   );
 };
-
 // Use Cases Section
 const UseCasesSection = () => {
   const useCases: UseCase[] = [
@@ -174,7 +469,7 @@ const UseCasesSection = () => {
   };
 
   return (
-    <section className="py-24 bg-white dark:bg-slate-900">
+    <section className="py-16 bg-white dark:bg-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -226,65 +521,115 @@ const UseCasesSection = () => {
   );
 };
 
-// How It Works Section
 const HowItWorksSection = () => {
   const steps = [
-    { 
-      number: "01", 
-      title: "Select Content Type", 
-      description: "Choose from a variety of content types including blog posts, product descriptions, or creative writing." 
+    {
+      number: "01",
+      title: "Select Content Type",
+      description: "Choose from a variety of content types including blog posts, product descriptions, or creative writing.",
+      icon: "DocumentTextIcon"
     },
-    { 
-      number: "02", 
-      title: "Define Parameters", 
-      description: "Set your requirements such as tone, length, keywords, and target audience." 
+    {
+      number: "02",
+      title: "Define Parameters",
+      description: "Set your requirements such as tone, length, keywords, and target audience.",
+      icon: "AdjustmentsIcon"
     },
-    { 
-      number: "03", 
-      title: "Generate & Edit", 
-      description: "Our AI creates content instantly, which you can then refine and personalize." 
+    {
+      number: "03",
+      title: "Generate & Edit",
+      description: "Our AI creates content instantly, which you can then refine and personalize.",
+      icon: "SparklesIcon"
     },
   ];
-
+  
   return (
-    <section className="py-24 bg-gray-100 dark:bg-slate-800">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
+      {/* Abstract Background Elements */}
+      <div className="absolute inset-0 overflow-hidden opacity-10">
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-teal-300 dark:bg-teal-600 blur-3xl"></div>
+        <div className="absolute top-1/2 right-0 w-72 h-72 rounded-full bg-purple-300 dark:bg-purple-800 blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-blue-300 dark:bg-blue-800 blur-3xl"></div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 20 }}
+          className="text-center mb-24"
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-teal-800 mb-6 dark:text-teal-300 tracking-tight">
-            How It Works
+          <span className="inline-block px-4 py-1 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-300 text-sm font-medium mb-6">
+            Simple Process
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
+            How <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-500 dark:from-teal-400 dark:to-cyan-300">It Works</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto dark:text-gray-300 leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto dark:text-gray-300 leading-relaxed">
             Get your content created in three simple steps
           </p>
         </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+          {/* Connecting Lines */}
+          <motion.div 
+            className="hidden md:block absolute top-1/3 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-teal-500 to-teal-300 dark:from-teal-600 dark:to-teal-400 z-0"
+            initial={{ scaleX: 0, opacity: 0 }}
+            whileInView={{ scaleX: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+          ></motion.div>
+          
           {steps.map((step, index) => (
             <motion.div
               key={index}
-              className="relative"
-              initial={{ opacity: 0, y: 20 }}
+              className="relative z-10"
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
+              transition={{ delay: index * 0.2, duration: 0.7, ease: "easeOut" }}
+              whileHover={{ translateY: -8, transition: { duration: 0.3 } }}
             >
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-lg">
-                <div className="text-teal-500 text-4xl font-light mb-4">{step.number}</div>
-                <h3 className="text-xl font-medium text-teal-700 dark:text-teal-300 mb-3">{step.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300">{step.description}</p>
+              <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-lg dark:shadow-slate-900/50 border border-gray-100 dark:border-slate-700 h-full flex flex-col">
+                {/* Circular Icon Container */}
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 dark:from-teal-400 dark:to-cyan-400 flex items-center justify-center mb-6 text-white shadow-md">
+                  <span className="text-2xl font-bold">{step.number}</span>
+                </div>
+                
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                  {step.title}
+                </h3>
+                
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4 flex-grow">
+                  {step.description}
+                </p>
+                
+                {/* Animated Indicator */}
+                <motion.div 
+                  className="w-12 h-1 bg-gradient-to-r from-teal-500 to-cyan-500 dark:from-teal-400 dark:to-cyan-400 rounded-full mt-2"
+                  initial={{ width: "20px" }}
+                  whileInView={{ width: "48px" }}
+                  transition={{ delay: index * 0.2 + 0.4, duration: 0.5 }}
+                  viewport={{ once: true }}
+                ></motion.div>
               </div>
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 right-0 w-8 h-0.5 bg-teal-200 dark:bg-teal-700 transform translate-x-4"></div>
-              )}
             </motion.div>
           ))}
         </div>
+        
+        {/* Action Button */}
+        <motion.div 
+          className="text-center mt-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+        >
+          <button className="px-8 py-4 bg-gradient-to-r from-teal-600 to-cyan-500 hover:from-teal-500 hover:to-cyan-400 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            Start Creating Content
+          </button>
+        </motion.div>
       </div>
     </section>
   );
@@ -442,7 +787,7 @@ const PricingSection = () => {
   ];
 
   return (
-    <section className="py-24 bg-gray-100 dark:bg-slate-800">
+    <section className="py-16 bg-gray-100 dark:bg-slate-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -747,7 +1092,7 @@ export default function Home(): JSX.Element {
       </section>
 
       {/* Features section */}
-      <section className="py-20 bg-white dark:bg-slate-900">
+      <section className="py-16 bg-white dark:bg-slate-900">
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -806,7 +1151,7 @@ export default function Home(): JSX.Element {
       <PricingSection />
 
           {/* CTA section */}
-          <div className="relative overflow-hidden bg-gradient-to-b from-teal-50 to-white py-20 dark:from-slate-800 dark:to-slate-900">
+          <div className="relative overflow-hidden bg-gradient-to-b from-teal-50 to-white py-16 dark:from-slate-800 dark:to-slate-900">
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center"
@@ -843,36 +1188,205 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      {/* Floating Contact/Help Button - Fixed position */}
+{/* Ultra Dynamic Floating Button with Enhanced Visual Effects - Fixed Tooltip */}
+<motion.div
+  className="fixed bottom-8 right-8 z-50 cursor-pointer group"
+  initial={{ opacity: 0, scale: 0.5 }}
+  animate={{ 
+    opacity: 1, 
+    scale: 1,
+    y: [0, -15, 0], // Enhanced floating amplitude
+    transition: { 
+      delay: 0.8, 
+      duration: 0.8,
+      y: { 
+        repeat: Infinity, 
+        duration: 3, 
+        ease: "easeInOut" 
+      } 
+    }
+  }}
+  whileHover={{ 
+    scale: 1.25,
+    rotate: [0, 8, -8, 0], // More dynamic hover effect
+    transition: { 
+      rotate: { 
+        repeat: 1, 
+        duration: 0.5,
+        ease: "easeOut"
+      } 
+    }
+  }}
+  whileTap={{ 
+    scale: 0.85,
+    rotate: [0, 15, -15, 0] // More pronounced click feedback
+  }}
+>
+  <Link href="/contact" className="relative block">
+    {/* Main Button with Enhanced Glow & Multi-layered Effects */}
+    <motion.button
+      className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white p-5 rounded-full shadow-2xl relative overflow-hidden backdrop-blur-sm"
+      animate={{
+        boxShadow: [
+          "0 0 0 0 rgba(129, 140, 248, 0.7)",
+          "0 0 25px 15px rgba(129, 140, 248, 0.3)",
+          "0 0 0 0 rgba(129, 140, 248, 0.7)"
+        ],
+        background: [
+          "linear-gradient(to bottom right, #6366f1, #8b5cf6, #ec4899)",
+          "linear-gradient(to bottom right, #818cf8, #a78bfa, #f472b6)",
+          "linear-gradient(to bottom right, #6366f1, #8b5cf6, #ec4899)"
+        ]
+      }}
+      transition={{
+        duration: 5,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      aria-label="Contact us"
+    >
+      {/* Multiple Glow Rings */}
+      {[...Array(3)].map((_, i) => (
+        <motion.span
+          key={i}
+          className="absolute inset-0 rounded-full border-2 border-white/30"
+          animate={{
+            scale: [1, 1.5 + i * 0.2, 1],
+            opacity: [0.5, 0, 0.5]
+          }}
+          transition={{
+            duration: 2 + i * 0.5,
+            repeat: Infinity,
+            delay: i * 0.3
+          }}
+        />
+      ))}
+
+      {/* Spinning Highlight Effect */}
+      <motion.span
+        className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent"
+        animate={{
+          rotate: [0, 360],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+      />
+
+      {/* Chat Icon with Enhanced Animation */}
       <motion.div
-        className="fixed bottom-8 right-8 z-50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.5, duration: 0.5 }}
+        animate={{ 
+          scale: [1, 1.15, 1],
+          rotate: [0, 0, 5, -5, 0, 0]
+        }}
+        transition={{ 
+          duration: 3, 
+          repeat: Infinity,
+          ease: "easeInOut",
+          times: [0, 0.4, 0.5, 0.6, 0.7, 1]
+        }}
       >
-        <Link href="/contact" className="relative group">
-          <button className="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 transform group-hover:scale-110">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-              />
-            </svg>
-          </button>
-          <div className="absolute right-14 bottom-0 bg-white dark:bg-slate-800 text-gray-800 dark:text-white text-sm px-3 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-            Contact Us / Help
-            <div className="absolute right-0 top-1/2 transform translate-x-1 -translate-y-1/2 w-2 h-2 bg-white dark:bg-slate-800 rotate-45"></div>
-          </div>
-        </Link>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-7 w-7"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z" />
+          <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
+          <circle cx="12" cy="8" r="1" fill="white" />
+          <circle cx="8" cy="8" r="1" fill="white" />
+        </svg>
       </motion.div>
+
+      {/* Enhanced Floating Particles with Varied Sizes & Colors */}
+      {[...Array(12)].map((_, i) => {
+        const isLargeParticle = i < 3;
+        const size = isLargeParticle ? Math.random() * 5 + 3 : Math.random() * 3 + 1;
+        const colors = ['bg-blue-200', 'bg-purple-200', 'bg-pink-200', 'bg-white'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        return (
+          <motion.span
+            key={i}
+            className={`absolute ${color} rounded-full`}
+            style={{
+              width: `${size}px`,
+              height: `${size}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              opacity: 0
+            }}
+            animate={{
+              y: [0, (Math.random() - 0.5) * 60],
+              x: [0, (Math.random() - 0.5) * 60],
+              opacity: [0, isLargeParticle ? 0.9 : 0.7, 0],
+              scale: [1, 1.8, 0.4]
+            }}
+            transition={{
+              delay: Math.random() * 2,
+              duration: Math.random() * 4 + 2,
+              repeat: Infinity,
+              repeatDelay: Math.random() * 3
+            }}
+          />
+        );
+      })}
+    </motion.button>
+
+    {/* Fixed Tooltip with Explicit Transition for Group Hover */}
+    <div 
+      className="absolute right-16 bottom-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-x-8 group-hover:translate-x-0 transition-all duration-300 ease-in-out"
+      style={{
+        transitionProperty: "opacity, visibility, transform",
+        willChange: "opacity, visibility, transform"
+      }}
+    >
+      <div className="bg-black/80 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+        <span>NEED HELP? CLICK ME!</span>
+        
+        {/* Animated arrow inside tooltip */}
+        <motion.div 
+          className="ml-1 inline-block"
+          animate={{ 
+            x: [0, 3, 0],
+          }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          👋
+        </motion.div>
+        
+        {/* Tooltip pointer */}
+        <div className="absolute right-0 top-1/2 transform translate-x-1 -translate-y-1/2 w-3 h-3 bg-black/80 border-t border-r border-white/20 rotate-45"></div>
+      </div>
+    </div>
+    
+    {/* Ripple effect when the button appears */}
+    <motion.div
+      className="absolute inset-0 rounded-full border-4 border-white/40"
+      initial={{ scale: 0.2, opacity: 1 }}
+      animate={{
+        scale: 2.5,
+        opacity: 0
+      }}
+      transition={{
+        duration: 1.5,
+        delay: 1,
+        ease: "easeOut"
+      }}
+    />
+  </Link>
+</motion.div>
     </div>
   );
 }
