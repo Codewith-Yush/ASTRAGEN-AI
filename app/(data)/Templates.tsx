@@ -43,42 +43,54 @@ const tools = [
     ]
   },
   {
-    name: 'Blog Topic Ideas',
-    desc: 'Generate engaging blog topic ideas based on your niche',
-    category: 'Blog',
-    icon: 'https://cdn-icons-png.flaticon.com/128/11497/11497847.png',
-    slug: 'blog-topic-idea',
-    aiPrompt: 'Generate top 5 Blog Topic Ideas in bullet points only (no Description) based on niche in rich text editor format',
+    name: 'Reading Time Estimator',
+    desc: 'Estimate how long it will take to finish a book or article',
+    category: 'Learning',
+    icon: 'https://cdn-icons-png.flaticon.com/128/3523/3523063.png',
+    slug: 'reading-time-estimator',
+    aiPrompt: 'Estimate the reading time for the given content based on an average or specified reading speed. Output in minutes and hours.',
     form: [
       {
-        label: 'Enter your niche',
-        field: 'input',
-        name: 'niche',
-        required: true
-      }
-    ]
-  },
-  {
-    name: 'Youtube SEO Title',
-    desc: 'Create SEO-optimized YouTube video titles that rank higher',
-    category: 'Youtube',
-    icon: 'https://cdn-icons-png.flaticon.com/128/402/402075.png',
-    slug: 'youtube-seo-title',
-    aiPrompt: 'Give me best SEO-optimized high-ranked 5 title ideas in bullet points only based on keywords and outline in HTML tags format',
-    form: [
-      {
-        label: 'Enter your YouTube video topic keywords',
-        field: 'input',
-        name: 'keywords',
+        label: 'Paste your content or word count',
+        field: 'textarea',
+        name: 'content',
         required: true
       },
       {
-        label: 'Enter YouTube description outline here',
-        field: 'textarea',
-        name: 'outline'
+        label: 'Reading speed (words per minute)',
+        field: 'input',
+        name: 'wpm'
       }
     ]
   },
+  
+  {
+    name: 'Assignment Planner',
+    desc: 'Break your assignment into manageable daily goals',
+    category: 'Education',
+    icon: 'https://cdn-icons-png.flaticon.com/128/4201/4201125.png',
+    slug: 'assignment-planner',
+    aiPrompt: 'Generate a daily study plan to complete the assignment before the given deadline. Include goals, suggested time per day, and milestone checkpoints.',
+    form: [
+      {
+        label: 'Assignment title and description',
+        field: 'textarea',
+        name: 'assignmentDetails',
+        required: true
+      },
+      {
+        label: 'Deadline date',
+        field: 'input',
+        name: 'deadline'
+      },
+      {
+        label: 'How many hours can you study per day?',
+        field: 'input',
+        name: 'dailyHours'
+      }
+    ]
+  },
+  
   {
     name: 'Youtube Description',
     desc: 'Generate engaging YouTube video descriptions with appropriate emojis',
@@ -138,34 +150,52 @@ const tools = [
     ]
   },
   {
-    name: 'Text Improver',
-    desc: 'Refine your writing by eliminating errors and improving readability',
-    category: 'Writing',
-    icon: 'https://cdn-icons-png.flaticon.com/128/1686/1686815.png',
-    slug: 'text-improver',
-    aiPrompt: 'Given textToImprove, rewrite text without any grammar mistakes and professionally in rich text editor format',
+    name: 'Study Schedule Planner',
+    desc: 'Generate a personalized daily/weekly study timetable based on your subjects and goals',
+    category: 'Education',
+    icon: 'https://cdn-icons-png.flaticon.com/128/2088/2088617.png',
+    slug: 'study-schedule-planner',
+    aiPrompt: 'Create a customized study schedule based on subjects, available study hours, and priority level. Ensure a balanced distribution and include short breaks.',
     form: [
-      {
-        label: 'Enter text that you want to rewrite or improve',
-        field: 'textarea',
-        name: 'textToImprove',
-        required: true
-      }
+      { label: 'List of subjects/topics', field: 'textarea', name: 'subjects', required: true },
+      { label: 'Total hours per day available for study', field: 'input', name: 'hoursAvailable', required: true },
+      { label: 'Exam date or deadline (optional)', field: 'input', name: 'deadline' }
     ]
   },
   {
-    name: 'Add Emojis to Text',
-    desc: 'Enhance your text with relevant emojis to make it more engaging',
-    category: 'Writing',
-    icon: 'https://cdn-icons-png.flaticon.com/128/2584/2584606.png',
-    slug: 'add-emoji-to-text',
-    aiPrompt: 'Add emoji to outline text depends on outline and rewrite it in rich text editor format',
+    name: 'Concept Map Creator',
+    desc: 'Transform complex topics into visual concept maps showing relationships between key ideas and supporting details',
+    category: 'Education',
+    icon: 'https://cdn-icons-png.flaticon.com/128/2910/2910824.png',
+    slug: 'concept-map-creator',
+    aiPrompt: 'Create a detailed concept map based on the provided educational content. Identify central concepts and their relationships, organizing information hierarchically with primary, secondary, and tertiary connections. Generate a text-based map using indentation, symbols, and arrows to show relationships between ideas. Include brief explanations of key connections.',
     form: [
       {
-        label: 'Enter your text to add emojis',
+        label: 'Topic or subject to map',
         field: 'textarea',
-        name: 'outline',
+        name: 'conceptTopic',
         required: true
+      },
+      {
+        label: 'Content details or notes to include',
+        field: 'textarea',
+        name: 'contentDetails'
+      },
+      {
+        label: 'Academic discipline',
+        field: 'input',
+        name: 'discipline',
+        required: true
+      },
+      {
+        label: 'Complexity level (Basic, Intermediate, Comprehensive)',
+        field: 'input',
+        name: 'complexityLevel'
+      },
+      {
+        label: 'Specific relationships to highlight',
+        field: 'input',
+        name: 'relationships'
       }
     ]
   },
@@ -218,18 +248,39 @@ const tools = [
     ]
   },
   {
-    name: 'English Grammar Check',
-    desc: 'Correct grammar errors in your text',
-    category: 'Writing',
-    icon: 'https://cdn-icons-png.flaticon.com/128/12596/12596700.png',
-    slug: 'english-grammar-checker',
-    aiPrompt: 'Rewrite the inputText by correcting the grammar and give output in rich text editor format',
+    name: 'Essay Outline Builder',
+    desc: 'Generate structured essay outlines with thesis statements, topic sentences, and supporting evidence based on your research topic',
+    category: 'Education',
+    icon: 'https://cdn-icons-png.flaticon.com/128/2541/2541988.png',
+    slug: 'essay-outline-builder',
+    aiPrompt: 'Create a comprehensive essay outline based on the provided topic and research. Include a clear thesis statement, organized sections with topic sentences, supporting points, evidence suggestions, and counter-arguments if applicable. Format in a hierarchical structure with roman numerals, letters, and numbers for easy reference.',
     form: [
       {
-        label: 'Enter text to correct the grammar',
+        label: 'Essay topic or research question',
         field: 'textarea',
-        name: 'inputText',
+        name: 'essayTopic',
         required: true
+      },
+      {
+        label: 'Key research points, quotes, or evidence (separate with line breaks)',
+        field: 'textarea',
+        name: 'researchPoints'
+      },
+      {
+        label: 'Academic discipline (e.g., History, Literature, Science)',
+        field: 'input',
+        name: 'discipline',
+        required: true
+      },
+      {
+        label: 'Target word count for final essay',
+        field: 'input',
+        name: 'wordCount'
+      },
+      {
+        label: 'Citation style (APA, MLA, Chicago, etc.)',
+        field: 'input',
+        name: 'citationStyle'
       }
     ]
   },
