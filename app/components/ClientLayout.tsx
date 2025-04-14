@@ -7,19 +7,25 @@ import ClientWrapper from "@/app/components/ClientWrapper";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-
+  
   useEffect(() => {
     setMounted(true);
   }, []);
-
+  
   if (!mounted) return null; // Prevent SSR mismatch
-
+  
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="p-4 flex justify-end">
-        <ThemeToggle />
+      {/* Apply the same gradient background as the hero section */}
+      <div className="min-h-screen bg-gradient-to-b from-[#FFDADA] to-[#AEE2FF] dark:from-slate-900 dark:to-slate-800">
+        {/* Theme toggle container */}
+        <div className="p-4 flex justify-end">
+          <ThemeToggle />
+        </div>
+        
+        {/* Main content */}
+        <ClientWrapper>{children}</ClientWrapper>
       </div>
-      <ClientWrapper>{children}</ClientWrapper>
     </ThemeProvider>
   );
 }
