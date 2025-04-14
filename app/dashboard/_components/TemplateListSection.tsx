@@ -2,6 +2,7 @@ import Templates from '@/app/(data)/Templates'
 import React, { useMemo } from 'react'
 import TemplateCard from './TemplateCard'
 
+
 export interface TEMPLATE {
   name: string,
   desc: string,

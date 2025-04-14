@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 
+
 // Define proper types for the component props
 type TemplateCardProps = {
   icon: string;  // URL for the image

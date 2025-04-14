@@ -355,6 +355,87 @@ const tools = [
     ]
   },
   {
+    name: 'Language Drill Generator',
+    desc: 'Creates personalized vocabulary and grammar exercises from provided texts or word lists',
+    category: 'Language',
+    icon: 'https://cdn-icons-png.flaticon.com/128/3898/3898156.png',
+    slug: 'language-drill-generator',
+    aiPrompt: 'Generate targeted language learning exercises including: 1) Vocabulary matching 2) Fill-in-the-blank 3) Sentence restructuring 4) Translation practice 5) Contextual usage. Base on provided material with progressive difficulty.',
+    form: [
+      {
+        label: 'Source text or word list',
+        field: 'textarea',
+        name: 'sourceMaterial',
+        required: true
+      },
+      {
+        label: 'Target language',
+        field: 'input',
+        name: 'targetLanguage',
+        required: true
+      },
+      {
+        label: 'Native language',
+        field: 'input',
+        name: 'nativeLanguage'
+      },
+      {
+        label: 'Focus areas',
+        field: 'select',
+        name: 'focusAreas',
+        options: ['Vocabulary', 'Grammar', 'Reading', 'Writing', 'All'],
+        multiple: true
+      },
+      {
+        label: 'Difficulty level',
+        field: 'range',
+        name: 'difficulty',
+        min: 1,
+        max: 5
+      }
+    ]
+  },
+  {
+    name: 'Case Study Generator',
+    desc: 'Creates business, medical, or legal case studies with analysis frameworks and discussion questions',
+    category: 'Professional',
+    icon: 'https://cdn-icons-png.flaticon.com/128/3281/3281144.png',
+    slug: 'case-study-generator',
+    aiPrompt: 'Generate comprehensive case studies including: 1) Realistic scenario 2) Key facts 3) Relevant data 4) Analysis frameworks 5) Discussion questions 6) Possible solutions 7) Teaching notes. Adapt for different professional fields.',
+    form: [
+      {
+        label: 'Case study field',
+        field: 'select',
+        name: 'field',
+        options: ['Business', 'Medicine', 'Law', 'Education', 'Engineering', 'Other'],
+        required: true
+      },
+      {
+        label: 'Specific topic/issue',
+        field: 'input',
+        name: 'topic',
+        required: true
+      },
+      {
+        label: 'Target audience level',
+        field: 'select',
+        name: 'audienceLevel',
+        options: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+      },
+      {
+        label: 'Include ethical considerations?',
+        field: 'checkbox',
+        name: 'includeEthics'
+      },
+      {
+        label: 'Preferred case length',
+        field: 'select',
+        name: 'caseLength',
+        options: ['Brief (1-2 pages)', 'Standard (3-5 pages)', 'Detailed (5+ pages)']
+      }
+    ]
+  },
+  {
     name: 'Product Description',
     desc: 'Generate SEO-friendly e-commerce product descriptions',
     category: 'Marketing',
@@ -377,15 +458,47 @@ const tools = [
     ]
   },
   {
-    name: 'TikTok Script Generator',
-    desc: 'Create engaging short-form video scripts optimized for TikTok and similar platforms',
-    category: 'Social Media',
-    icon: 'https://cdn-icons-png.flaticon.com/128/9156/9156397.png',
-    slug: 'tiktok-script-generator',
-    aiPrompt: 'Generate a compelling 30-60 second TikTok script based on the trend/topic and target audience. Include hook, main content sections, and call-to-action in rich text editor format',
+    name: 'Research Paper Analyzer',
+    desc: 'Breaks down academic papers into understandable summaries with methodology, findings, and significance',
+    category: 'Academic',
+    icon: 'https://cdn-icons-png.flaticon.com/128/3652/3652191.png',
+    slug: 'paper-analyzer',
+    aiPrompt: 'Analyze the provided research paper and generate: 1) Plain language summary 2) Key findings 3) Methodology overview 4) Significance/limitations 5) Related works. Maintain academic rigor while improving accessibility.',
     form: [
       {
-        label: 'Enter trend/topic for your TikTok video',
+        label: 'Paste paper text or PDF upload',
+        field: 'textarea',
+        name: 'paperContent',
+        required: true
+      },
+      {
+        label: 'Academic field',
+        field: 'input',
+        name: 'field'
+      },
+      {
+        label: 'Target audience level',
+        field: 'select',
+        name: 'audienceLevel',
+        options: ['Undergraduate', 'Graduate', 'Researcher', 'General Public']
+      },
+      {
+        label: 'Include critical analysis?',
+        field: 'checkbox',
+        name: 'includeAnalysis'
+      }
+    ]
+  },
+  {
+    name: 'Youtube Shorts Script Generator',
+    desc: 'Create engaging short-form video scripts optimized for Youtube Shorts and similar platforms',
+    category: 'Social Media',
+    icon: 'https://cdn-icons-png.flaticon.com/128/9156/9156397.png',
+    slug: 'youtube-shorts-script-generator',
+    aiPrompt: 'Generate a compelling 30-60 second Youtube Shorts script based on the trend/topic and target audience. Include hook, main content sections, and call-to-action in rich text editor format',
+    form: [
+      {
+        label: 'Enter trend/topic for your Youtube Shorts video',
         field: 'input',
         name: 'topic',
         required: true
@@ -496,7 +609,7 @@ const tools = [
   },
   {
     name: 'Multi-Platform Content Repurposer',
-    desc: 'Transform a single piece of content into formats optimized for multiple platforms (Twitter, LinkedIn, Instagram, TikTok, Newsletter)',
+    desc: 'Transform a single piece of content into formats optimized for multiple platforms (Twitter, LinkedIn, Instagram, Youtube Shorts, Newsletter)',
     category: 'Content',
     icon: 'https://cdn-icons-png.flaticon.com/128/6664/6664504.png',
     slug: 'content-repurposer',
@@ -509,7 +622,7 @@ const tools = [
         required: true
       },
       {
-        label: 'Select target platforms (separate with commas: Twitter, LinkedIn, Instagram, TikTok, YouTube, Newsletter, Blog)',
+        label: 'Select target platforms (separate with commas: Twitter, LinkedIn, Instagram, Shorts, YouTube, Newsletter, Blog)',
         field: 'input',
         name: 'platforms',
         required: true
