@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
 
+// Create a type for the form status
+type SubmitStatusType = 'success' | 'error' | null;
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -15,7 +18,7 @@ export default function ContactPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatusType>(null);
   const [inView, setInView] = useState(false);
 
   // Trigger animation on mount
@@ -137,7 +140,8 @@ export default function ContactPage() {
 
       if (response.ok) {
         setSubmitMessage('Message sent successfully');
-        setSubmitStatus('success');
+        // Fixed: Using the type assertion to make TypeScript happy
+        setSubmitStatus('success' as SubmitStatusType);
         setFormData({
           name: '',
           email: '',
@@ -151,7 +155,8 @@ export default function ContactPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error sending message. Please try again.';
       setSubmitMessage(errorMessage);
-      setSubmitStatus('error');
+      // Fixed: Using the type assertion to make TypeScript happy
+      setSubmitStatus('error' as SubmitStatusType);
       console.error('Contact form error:', error);
     } finally {
       setIsSubmitting(false);

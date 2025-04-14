@@ -4,7 +4,7 @@ import SearchSection from "./_components/SearchSection";
 import TemplateListSection from "./_components/TemplateListSection";
 
 function Dashboard() {
-  const [userSearchInput, setUserSearchInput] = useState<string>();
+  const [userSearchInput, setUserSearchInput] = useState<string>("");
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">

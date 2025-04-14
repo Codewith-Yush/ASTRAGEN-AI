@@ -38,7 +38,7 @@ interface Testimonial {
 }
 const AboutSection = () => {
   const [isInView, setIsInView] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const sectionRef = useRef(null);
   
   const { scrollYProgress } = useScroll({
