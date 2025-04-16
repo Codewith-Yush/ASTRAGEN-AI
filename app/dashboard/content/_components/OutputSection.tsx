@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import PropTypes from "prop-types";
 import { debounce } from "lodash";
 
-// Utility functions
+// Utility functions extracted to a separate file
 const sanitizeHTML = (html: string): string => {
   return html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
@@ -46,7 +46,7 @@ const convertMarkdownToHTML = (markdown: string): string => {
       if (/\*(.*)\*/.test(line)) return line.replace(/\*(.*)\*/g, "<em>$1</em>");
       if (/```([^`]+)```/.test(line)) return `<pre><code>${line.replace(/```([^`]+)```/, "$1")}</code></pre>`;
       if (/`([^`]+)`/.test(line)) return line.replace(/`([^`]+)`/g, "<code>$1</code>");
-      if (/\[(.*)\]\((.*)\)/.test(line)) return line.replace(/\[(.*)\]\((.*)\)/g, '<a href="$2">$1</a>');
+      if (/$$ ([^ $$]+)\]$$ ([^)]+) $$/.test(line)) return line.replace(/$$ ([^ $$]+)\]$$ ([^)]+) $$/g, '<a href="$2">$1</a>');
       if (/^- (.*)$/.test(line)) return `<li>${line.replace(/^- (.*)$/, "$1")}</li>`;
       if (/^\d+\. (.*)$/.test(line)) return `<li>${line.replace(/^\d+\. (.*)$/, "$1")}</li>`;
       return line.trim() ? `<p>${line}</p>` : "<br>";
@@ -108,9 +108,9 @@ interface MarkdownComponentProps {
   inline?: boolean;
 }
 
-// Common styles for markdown content
+// Common styles
 const MARKDOWN_CLASSES = `
-  prose prose-sm sm:prose max-w-none
+  prose max-w-none
   prose-headings:font-semibold
   prose-h1:text-2xl prose-h1:font-bold prose-h1:mt-6 prose-h1:mb-4 prose-h1:pb-1 prose-h1:border-b
   prose-h2:text-xl prose-h2:font-bold prose-h2:mt-5 prose-h2:mb-3
@@ -127,8 +127,6 @@ const MARKDOWN_CLASSES = `
   prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:text-xs prose-th:font-medium prose-th:text-gray-500 prose-th:uppercase prose-th:tracking-wider
   prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:text-gray-800
   prose-tr:hover:bg-gray-50
-  prose-pre:mt-4 prose-pre:mb-6 prose-pre:rounded-md prose-pre:overflow-x-auto
-  prose-code:text-sm
 `;
 
 // Memoized Header Component
@@ -140,7 +138,7 @@ const Header: React.FC<{
 }> = memo(({ title, showWordCount, wordCount, theme }) => (
   <div
     className={`flex justify-between items-center px-4 py-3 border-b transition-colors ${
-      theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-50 text-gray-800"
+      theme === "dark" ? "bg-gray-800" : "bg-gray-50"
     }`}
   >
     <div className="flex items-center gap-2">
@@ -151,7 +149,7 @@ const Header: React.FC<{
       >
         {title}
         {showWordCount && (
-          <span className={`ml-2 text-xs font-normal ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
             {wordCount.words} words • {wordCount.chars} characters
           </span>
         )}
@@ -159,8 +157,6 @@ const Header: React.FC<{
     </div>
   </div>
 ));
-
-Header.displayName = "Header";
 
 // Memoized ActionButtons Component
 const ActionButtons: React.FC<{
@@ -239,8 +235,6 @@ const ActionButtons: React.FC<{
     </div>
   )
 );
-
-ActionButtons.displayName = "ActionButtons";
 
 // Memoized DownloadMenu Component
 const DownloadMenu: React.FC<{
@@ -327,9 +321,7 @@ const DownloadMenu: React.FC<{
   }
 );
 
-DownloadMenu.displayName = "DownloadMenu";
-
-// Improved ContentArea Component with better markdown/HTML rendering
+// Memoized ContentArea Component
 const ContentArea: React.FC<{
   isEditing: boolean;
   content: string;
@@ -350,133 +342,113 @@ const ContentArea: React.FC<{
     toggleEditMode,
     editorRef,
   }) => {
-    // Enhanced markdown components for better rendering
-    const markdownComponents = useMemo(() => {
-      return {
-        code: ({ node, className, children, inline }: MarkdownComponentProps) => {
-          const match = /language-(\w+)/.exec(className || "");
-          return !inline && match ? (
-            <div className="relative group mb-6 mt-4">
-              <div
-                className={`flex items-center justify-between px-4 py-1 text-xs rounded-t-md border-t border-r border-l ${
-                  theme === "dark"
-                    ? "bg-gray-800 text-gray-300 border-gray-700"
-                    : "bg-gray-100 text-gray-600 border-gray-200"
-                }`}
-              >
-                <span>{match[1]}</span>
-                <button
-                  className={`p-1 rounded transition-colors ${
-                    theme === "dark"
-                      ? "hover:bg-gray-700"
-                      : "hover:bg-gray-200"
-                  }`}
-                  onClick={() => navigator.clipboard.writeText(String(children))}
-                  aria-label="Copy code"
-                >
-                  <Copy className="w-3 h-3" />
-                </button>
-              </div>
-              <SyntaxHighlighter
-                style={theme === "dark" ? vscDarkPlus : prism}
-                language={match[1]}
-                PreTag="div"
-                className={`rounded-t-none rounded-b-md mt-0 pt-4 pb-4 border-r border-b border-l ${
-                  theme === "dark" ? "border-gray-700" : "border-gray-200"
-                }`}
-                customStyle={{ margin: 0, fontSize: "0.9rem" }}
-              >
-                {String(children).replace(/\n$/, "")}
-              </SyntaxHighlighter>
-            </div>
-          ) : (
-            <code
-              className={`px-1 py-0.5 rounded text-sm ${
-                theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+    const markdownComponents: Record<string, React.FC<MarkdownComponentProps>> = {
+      code: ({ node, className, children, inline }) => {
+        const match = /language-(\w+)/.exec(className || "");
+        return !inline && match ? (
+          <div className="relative group mb-6 mt-4">
+            <div
+              className={`flex items-center justify-between px-4 py-1 text-xs rounded-t-md border-t border-r border-l ${
+                theme === "dark"
+                  ? "bg-gray-800 text-gray-300 border-gray-700"
+                  : "bg-gray-100 text-gray-600 border-gray-200"
               }`}
             >
-              {children}
-            </code>
-          );
-        },
-        blockquote: ({ children }: MarkdownComponentProps) => (
-          <blockquote
-            className={`border-l-4 border-blue-500 pl-4 italic my-4 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            {children}
-          </blockquote>
-        ),
-        ul: ({ children }: MarkdownComponentProps) => (
-          <ul className="list-disc pl-6 my-4 space-y-2">{children}</ul>
-        ),
-        ol: ({ children }: MarkdownComponentProps) => (
-          <ol className="list-decimal pl-6 my-4 space-y-2">{children}</ol>
-        ),
-        li: ({ children }: MarkdownComponentProps) => <li className="mb-1">{children}</li>,
-        h1: ({ children }: MarkdownComponentProps) => (
-          <h1
-            className={`text-2xl font-bold mt-6 mb-4 pb-1 border-b ${
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
-            }`}
-          >
-            {children}
-          </h1>
-        ),
-        h2: ({ children }: MarkdownComponentProps) => (
-          <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
-        ),
-        h3: ({ children }: MarkdownComponentProps) => (
-          <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>
-        ),
-        table: ({ children }: MarkdownComponentProps) => (
-          <div className="overflow-x-auto my-6 rounded-md border border-gray-200 dark:border-gray-700">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              {children}
-            </table>
+              <span>{match[1]}</span>
+              <button
+                className={`p-1 rounded transition-colors ${
+                  theme === "dark"
+                    ? "hover:bg-gray-700"
+                    : "hover:bg-gray-200"
+                }`}
+                onClick={() => navigator.clipboard.writeText(String(children))}
+                aria-label="Copy code"
+              >
+                <Copy className="w-3 h-3" />
+              </button>
+            </div>
+            <SyntaxHighlighter
+              style={theme === "dark" ? vscDarkPlus : prism}
+              language={match[1]}
+              PreTag="div"
+              className="rounded-t-none rounded-b-md mt-0 pt-4 pb-4 border-r border-b border-l border-gray-200 dark:border-gray-700"
+              customStyle={{ margin: 0, fontSize: "0.9rem" }}
+            >
+              {String(children).replace(/\n$/, "")}
+            </SyntaxHighlighter>
           </div>
-        ),
-        thead: ({ children }: MarkdownComponentProps) => (
-          <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
-        ),
-        tbody: ({ children }: MarkdownComponentProps) => (
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {children}
-          </tbody>
-        ),
-        tr: ({ children }: MarkdownComponentProps) => (
-          <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-            {children}
-          </tr>
-        ),
-        th: ({ children }: MarkdownComponentProps) => (
-          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            {children}
-          </th>
-        ),
-        td: ({ children }: MarkdownComponentProps) => (
-          <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
-            {children}
-          </td>
-        ),
-        // Add paragraph handler for better spacing
-        p: ({ children }: MarkdownComponentProps) => (
-          <p className="mb-4 leading-relaxed">{children}</p>
-        ),
-        // Add link handler
-        a: ({ href, children }: any) => (
-          <a 
-            href={href} 
-            className="text-blue-600 hover:underline" 
-            target="_blank"
-            rel="noopener noreferrer"
+        ) : (
+          <code
+            className={`px-1 py-0.5 rounded text-sm ${
+              theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+            }`}
           >
             {children}
-          </a>
-        ),
-      };
-    }, [theme]);
+          </code>
+        );
+      },
+      blockquote: ({ children }) => (
+        <blockquote
+          className={`border-l-4 border-blue-500 pl-4 italic my-4 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {children}
+        </blockquote>
+      ),
+      ul: ({ children }) => (
+        <ul className="list-disc pl-6 my-4 space-y-2">{children}</ul>
+      ),
+      ol: ({ children }) => (
+        <ol className="list-decimal pl-6 my-4 space-y-2">{children}</ol>
+      ),
+      li: ({ children }) => <li className="mb-1">{children}</li>,
+      h1: ({ children }) => (
+        <h1
+          className={`text-2xl font-bold mt-6 mb-4 pb-1 border-b ${
+            theme === "dark" ? "border-gray-700" : "border-gray-200"
+          }`}
+        >
+          {children}
+        </h1>
+      ),
+      h2: ({ children }) => (
+        <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
+      ),
+      h3: ({ children }) => (
+        <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>
+      ),
+      table: ({ children }) => (
+        <div className="overflow-x-auto my-6 rounded-md border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            {children}
+          </table>
+        </div>
+      ),
+      thead: ({ children }) => (
+        <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
+      ),
+      tbody: ({ children }) => (
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          {children}
+        </tbody>
+      ),
+      tr: ({ children }) => (
+        <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+          {children}
+        </tr>
+      ),
+      th: ({ children }) => (
+        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          {children}
+        </th>
+      ),
+      td: ({ children }) => (
+        <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+          {children}
+        </td>
+      ),
+    };
 
     return (
       <div
@@ -505,11 +477,7 @@ const ContentArea: React.FC<{
                 variant="outline"
                 onClick={toggleEditMode}
                 aria-label="Finish editing"
-                className={`${
-                  theme === "dark"
-                    ? "text-gray-300 border-gray-600 hover:bg-gray-800"
-                    : "text-gray-600 border-gray-300 hover:bg-gray-100"
-                }`}
+                className="text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800"
               >
                 Done Editing
               </Button>
@@ -524,8 +492,8 @@ const ContentArea: React.FC<{
             <div
               className={`p-4 sm:p-6 m-2 rounded-lg shadow-sm border ${
                 theme === "dark"
-                  ? "bg-gray-900 border-gray-800 text-gray-100"
-                  : "bg-white border-gray-100 text-gray-800"
+                  ? "bg-gray-900 border-gray-800"
+                  : "bg-white border-gray-100"
               }`}
             >
               {contentType === "html" ? (
@@ -557,8 +525,6 @@ const ContentArea: React.FC<{
   }
 );
 
-ContentArea.displayName = "ContentArea";
-
 const OutputSection: React.FC<OutputSectionProps> = ({
   aiOutput,
   title = "AI Output",
@@ -575,7 +541,7 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   const [wordCount, setWordCount] = useState<WordCount>({ words: 0, chars: 0 });
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [contentType, setContentType] = useState<"html" | "markdown">(
-    isHTML ? "html" : "markdown"
+    "markdown"
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -588,31 +554,23 @@ const OutputSection: React.FC<OutputSectionProps> = ({
     [isHTML]
   );
 
-  // Calculate word count with improved accuracy
+  // Calculate word count
   const calculateWordCount = useCallback(
     (content: string, type: "html" | "markdown") => {
       if (!showWordCount) return { words: 0, chars: 0 };
 
       let cleanText = content;
       if (type === "html") {
-        // Create a temporary element to strip HTML tags
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = content;
         cleanText = tempDiv.textContent || tempDiv.innerText || "";
       } else {
-        // Clean markdown syntax
         cleanText = content
-          .replace(/```[\s\S]*?```/g, "") // Remove code blocks
-          .replace(/\*\*|__|\*|_|~~|`/g, "") // Remove formatting markers
-          .replace(/#+\s+/g, "") // Remove heading markers
-          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // Replace links with just the text
+          .replace(/```[\s\S]*?```/g, "")
+          .replace(/\*\*|__|\*|_|~~|`/g, "");
       }
 
-      const words = cleanText
-        .trim()
-        .split(/\s+/)
-        .filter((word) => word.length > 0).length || 0;
-        
+      const words = cleanText.trim().split(/\s+/).filter((word) => word.length > 0).length || 0;
       const chars = cleanText.replace(/\s/g, "").length || 0;
       return { words, chars };
     },
@@ -780,68 +738,60 @@ const OutputSection: React.FC<OutputSectionProps> = ({
       ref={containerRef}
       className={`bg-background border rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
         isFullscreen ? "fixed inset-0 z-50 m-1 sm:m-2" : "w-full"
-        }`}
-        >
-          <div className="flex flex-col h-full">
-            {/* Header Section */}
-            <Header
-              title={title}
-              showWordCount={showWordCount}
-              wordCount={wordCount}
-              theme={theme}
-            />
-    
-            {/* Toolbar Section */}
-            <div
-              className={`flex justify-end items-center px-4 py-2 border-b ${
-                theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
-              }`}
-            >
-              <ActionButtons
-                isEditing={isEditing}
-                readOnly={readOnly}
-                copied={copied}
-                isFullscreen={isFullscreen}
-                theme={theme}
-                toggleEditMode={toggleEditMode}
-                handleCopy={handleCopy}
-                toggleFullscreen={toggleFullscreen}
-              />
-              <DownloadMenu
-                showDownloadOptions={showDownloadOptions}
-                contentType={contentType}
-                theme={theme}
-                toggleDownloadOptions={toggleDownloadOptions}
-                handleDownloadMarkdown={handleDownloadMarkdown}
-                handleDownloadPDF={handleDownloadPDF}
-              />
-            </div>
-    
-            {/* Content Section */}
-            <ContentArea
-              isEditing={isEditing}
-              content={content}
-              contentType={contentType}
-              theme={theme}
-              isFullscreen={isFullscreen}
-              handleChange={handleChange}
-              toggleEditMode={toggleEditMode}
-              editorRef={editorRef}
-            />
-          </div>
+      } ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+    >
+      <Header
+        title={title}
+        showWordCount={showWordCount}
+        wordCount={wordCount}
+        theme={theme}
+      />
+      <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-gray-800">
+        <div />
+        <div className="flex gap-2">
+          <DownloadMenu
+            showDownloadOptions={showDownloadOptions}
+            contentType={contentType}
+            theme={theme}
+            toggleDownloadOptions={toggleDownloadOptions}
+            handleDownloadMarkdown={handleDownloadMarkdown}
+            handleDownloadPDF={handleDownloadPDF}
+          />
+          <ActionButtons
+            isEditing={isEditing}
+            readOnly={readOnly}
+            copied={copied}
+            isFullscreen={isFullscreen}
+            theme={theme}
+            toggleEditMode={toggleEditMode}
+            handleCopy={handleCopy}
+            toggleFullscreen={toggleFullscreen}
+          />
         </div>
-      );
-    };
-    
-    // PropTypes for type checking
-    OutputSection.propTypes = {
-      aiOutput: PropTypes.string.isRequired,
-      title: PropTypes.string,
-      onEdit: PropTypes.func,
-      readOnly: PropTypes.bool,
-      theme: PropTypes.oneOf(["light", "dark"]),
-      showWordCount: PropTypes.bool,
-      isHTML: PropTypes.bool,
-    };
-    
-    export default memo(OutputSection);
+      </div>
+      <ContentArea
+        isEditing={isEditing}
+        content={content}
+        contentType={contentType}
+        theme={theme}
+        isFullscreen={isFullscreen}
+        handleChange={handleChange}
+        toggleEditMode={toggleEditMode}
+        editorRef={editorRef}
+      />
+    </div>
+  );
+};
+
+// PropTypes for runtime validation
+OutputSection.propTypes = {
+  aiOutput: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  onEdit: PropTypes.func,
+  readOnly: PropTypes.bool,
+  theme: PropTypes.oneOf(["light", "dark"]),
+  showWordCount: PropTypes.bool,
+  isHTML: PropTypes.bool,
+};
+
+export default OutputSection;
