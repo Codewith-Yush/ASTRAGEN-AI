@@ -382,7 +382,7 @@ export default function ContactPage() {
                 <FaPhone className="text-white text-lg" />
               </div>
               <div>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">+1 (555) 123-4567</p>
+                <p className="text-gray-800 dark:text-gray-200 font-medium">+91867608296</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Mon-Fri, 9am-6pm</p>
               </div>
             </motion.div>
@@ -399,7 +399,7 @@ export default function ContactPage() {
                 <FaEnvelope className="text-white text-lg" />
               </div>
               <div>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">support@aicontentgen.com</p>
+                <p className="text-gray-800 dark:text-gray-200 font-medium">astragen07@gmail.com</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Reply within 24 hours</p>
               </div>
             </motion.div>
@@ -416,8 +416,9 @@ export default function ContactPage() {
                 <FaMapMarkerAlt className="text-white text-lg" />
               </div>
               <div>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">123 AI Street</p>
-                <p className="text-gray-600 dark:text-gray-400">Tech City, TC 10001</p>
+                <p className="text-gray-600 dark:text-gray-400">Kalyan (E) 421-306</p>
+                <p className="text-gray-800 dark:text-gray-200 font-medium"></p>
+                <p className="text-gray-600 dark:text-gray-400"></p>
               </div>
             </motion.div>
 

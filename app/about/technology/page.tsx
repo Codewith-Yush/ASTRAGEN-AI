@@ -87,13 +87,13 @@ const TechnologyPage = () => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Ready to experience our technology?</h2>
           <div className="flex justify-center space-x-4">
             <Link 
-              href="/learn-more" 
+              href="/about/learnmore" 
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity"
             >
               Learn More
             </Link>
             <Link 
-              href="/about" 
+              href="/" 
               className="px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
             >
               About Us

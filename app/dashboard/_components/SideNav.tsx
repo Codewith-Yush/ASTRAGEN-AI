@@ -67,7 +67,7 @@ function SideNav() {
           {/* Logo Area */}
           <div className="flex justify-center mb-8">
             <Image 
-              src="/logo.jpg" 
+              src="/logo.png" 
               alt="logo" 
               width={100} 
               height={100} 

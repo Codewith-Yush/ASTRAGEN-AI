@@ -97,7 +97,7 @@ export default function LearnMorePage() {
                 Back to About
               </Link>
               <Link 
-                href="/technology" 
+                href="/about/technology" 
                 className="px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
               >
                 Explore Technology

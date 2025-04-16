@@ -390,7 +390,7 @@ const AboutSection = () => {
             
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { value: "98%", label: "Customer Satisfaction", color: "teal" },
+                { value: "😊", label: "Customer Satisfaction", color: "teal" },
                 { value: "1M+", label: "Content Pieces Generated", color: "blue" },
                 { value: "24/7", label: "Support Available", color: "purple" }
               ].map((stat, index) => (
@@ -647,19 +647,19 @@ interface Testimonial {
 const TestimonialsSection = () => {
   const testimonials: Testimonial[] = [
     {
-      quote: "This AI tool has doubled our content production with the same team size. The quality is impressive, requiring minimal editing.",
+      quote: "The quality is impressive, and i use it for my Blogs and assignments.",
       author: "Rajendra T.",
       role: "CS Student",
       image: "/raju.jpg"
     },
     {
-      quote: "As a solopreneur, this platform has been a game-changer for creating professional marketing materials consistently.",
+      quote: "I liked it very much and I generated notes from here for study.",
       author: "Kuldeep Y.",
       role: "CS Student",
       image: "/kuldeep.jpg"
     },
     {
-      quote: "The ability to customize the AI output to match our brand voice has been invaluable for our marketing team.",
+      quote: "I use it for my personal work im a youtuber and this platform is do uefull.",
       author: "Nitin G.",
       role: "CS Student",
       image: "/nitin.jpg"
@@ -861,8 +861,8 @@ const DevelopersSection = () => {
       role: "CS Student",
       image: "/Ayush.jpeg",
       social: {
-        github: "https://github.com/AyushSingh", // Updated to match name
-        linkedin: "https://linkedin.com/in/ayush-singh" // Updated to match name
+        github: "https://github.com/codewith-yush", // Updated to match name
+        linkedin: "https://www.linkedin.com/in/ayush-singh-643a4b25a/" // Updated to match name
       }
     },
     {
@@ -870,8 +870,8 @@ const DevelopersSection = () => {
       role: "CS Student",
       image: "/om.png",
       social: {
-        github: "https://github.com/OmVishwakarma", // Updated to match name
-        linkedin: "https://linkedin.com/in/om-vishwakarma" // Updated to match name
+        github: "https://github.com/om-999", // Updated to match name
+        linkedin: "https://www.linkedin.com/in/om-vishwakarma-467b8933b/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" // Updated to match name
       }
     }
   ];
