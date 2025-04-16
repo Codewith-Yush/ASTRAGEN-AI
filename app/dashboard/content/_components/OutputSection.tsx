@@ -46,7 +46,7 @@ const convertMarkdownToHTML = (markdown: string): string => {
       if (/\*(.*)\*/.test(line)) return line.replace(/\*(.*)\*/g, "<em>$1</em>");
       if (/```([^`]+)```/.test(line)) return `<pre><code>${line.replace(/```([^`]+)```/, "$1")}</code></pre>`;
       if (/`([^`]+)`/.test(line)) return line.replace(/`([^`]+)`/g, "<code>$1</code>");
-      if (/\[(.*)\]\((.*)\)/.test(line)) return line.replace(/\[(.*)\]\((.*)\)/g, '<a href="$2">$1</a>');
+      if (/$$ (.*) $$$$ (.*) $$/.test(line)) return line.replace(/$$ (.*) $$$$ (.*) $$/g, '<a href="$2">$1</a>');
       if (/^- (.*)$/.test(line)) return `<li>${line.replace(/^- (.*)$/, "$1")}</li>`;
       if (/^\d+\. (.*)$/.test(line)) return `<li>${line.replace(/^\d+\. (.*)$/, "$1")}</li>`;
       return line.trim() ? `<p>${line}</p>` : "<br>";
@@ -102,10 +102,11 @@ interface OutputSectionProps {
 
 // Markdown component types
 interface MarkdownComponentProps {
-  children: React.ReactNode;
+  children?: React.ReactNode; // Made children optional
   className?: string;
   node?: any;
   inline?: boolean;
+  [key: string]: any; // Allow additional props
 }
 
 // Common styles for markdown content
@@ -353,7 +354,7 @@ const ContentArea: React.FC<{
     // Enhanced markdown components for better rendering
     const markdownComponents = useMemo(() => {
       return {
-        code: ({ node, className, children, inline }: MarkdownComponentProps) => {
+        code: ({ node, className, children, inline, ...props }: MarkdownComponentProps) => {
           const match = /language-(\w+)/.exec(className || "");
           return !inline && match ? (
             <div className="relative group mb-6 mt-4">
@@ -385,6 +386,7 @@ const ContentArea: React.FC<{
                   theme === "dark" ? "border-gray-700" : "border-gray-200"
                 }`}
                 customStyle={{ margin: 0, fontSize: "0.9rem" }}
+                {...props}
               >
                 {String(children).replace(/\n$/, "")}
               </SyntaxHighlighter>
@@ -394,83 +396,116 @@ const ContentArea: React.FC<{
               className={`px-1 py-0.5 rounded text-sm ${
                 theme === "dark" ? "bg-gray-800" : "bg-gray-100"
               }`}
+              {...props}
             >
               {children}
             </code>
           );
         },
-        blockquote: ({ children }: MarkdownComponentProps) => (
+        blockquote: ({ children, ...props }: MarkdownComponentProps) => (
           <blockquote
             className={`border-l-4 border-blue-500 pl-4 italic my-4 ${
               theme === "dark" ? "text-gray-300" : "text-gray-700"
             }`}
+            {...props}
           >
             {children}
           </blockquote>
         ),
-        ul: ({ children }: MarkdownComponentProps) => (
-          <ul className="list-disc pl-6 my-4 space-y-2">{children}</ul>
+        ul: ({ children, ...props }: MarkdownComponentProps) => (
+          <ul className="list-disc pl-6 my-4 space-y-2" {...props}>
+            {children}
+          </ul>
         ),
-        ol: ({ children }: MarkdownComponentProps) => (
-          <ol className="list-decimal pl-6 my-4 space-y-2">{children}</ol>
+        ol: ({ children, ...props }: MarkdownComponentProps) => (
+          <ol className="list-decimal pl-6 my-4 space-y-2" {...props}>
+            {children}
+          </ol>
         ),
-        li: ({ children }: MarkdownComponentProps) => <li className="mb-1">{children}</li>,
-        h1: ({ children }: MarkdownComponentProps) => (
+        li: ({ children, ...props }: MarkdownComponentProps) => (
+          <li className="mb-1" {...props}>
+            {children}
+          </li>
+        ),
+        h1: ({ children, ...props }: MarkdownComponentProps) => (
           <h1
             className={`text-2xl font-bold mt-6 mb-4 pb-1 border-b ${
               theme === "dark" ? "border-gray-700" : "border-gray-200"
             }`}
+            {...props}
           >
             {children}
           </h1>
         ),
-        h2: ({ children }: MarkdownComponentProps) => (
-          <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
+        h2: ({ children, ...props }: MarkdownComponentProps) => (
+          <h2 className="text-xl font-bold mt-5 mb-3" {...props}>
+            {children}
+          </h2>
         ),
-        h3: ({ children }: MarkdownComponentProps) => (
-          <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>
+        h3: ({ children, ...props }: MarkdownComponentProps) => (
+          <h3 className="text-lg font-semibold mt-4 mb-2" {...props}>
+            {children}
+          </h3>
         ),
-        table: ({ children }: MarkdownComponentProps) => (
-          <div className="overflow-x-auto my-6 rounded-md border border-gray-200 dark:border-gray-700">
+        table: ({ children, ...props }: MarkdownComponentProps) => (
+          <div
+            className="overflow-x-auto my-6 rounded-md border border-gray-200 dark:border-gray-700"
+            {...props}
+          >
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               {children}
             </table>
           </div>
         ),
-        thead: ({ children }: MarkdownComponentProps) => (
-          <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
+        thead: ({ children, ...props }: MarkdownComponentProps) => (
+          <thead className="bg-gray-50 dark:bg-gray-800" {...props}>
+            {children}
+          </thead>
         ),
-        tbody: ({ children }: MarkdownComponentProps) => (
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        tbody: ({ children, ...props }: MarkdownComponentProps) => (
+          <tbody
+            className="divide-y divide-gray-200 dark:divide-gray-700"
+            {...props}
+          >
             {children}
           </tbody>
         ),
-        tr: ({ children }: MarkdownComponentProps) => (
-          <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+        tr: ({ children, ...props }: MarkdownComponentProps) => (
+          <tr
+            className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            {...props}
+          >
             {children}
           </tr>
         ),
-        th: ({ children }: MarkdownComponentProps) => (
-          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        th: ({ children, ...props }: MarkdownComponentProps) => (
+          <th
+            className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+            {...props}
+          >
             {children}
           </th>
         ),
-        td: ({ children }: MarkdownComponentProps) => (
-          <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+        td: ({ children, ...props }: MarkdownComponentProps) => (
+          <td
+            className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200"
+            {...props}
+          >
             {children}
           </td>
         ),
-        // Add paragraph handler for better spacing
-        p: ({ children }: MarkdownComponentProps) => (
-          <p className="mb-4 leading-relaxed">{children}</p>
+        p: ({ children, ...props }: MarkdownComponentProps) => (
+          <p className="mb-4 leading-relaxed" {...props}>
+            {children}
+          </p>
         ),
-        // Add link handler
-        a: ({ href, children }: any) => (
-          <a 
-            href={href} 
-            className="text-blue-600 hover:underline" 
+        a: ({ href, children, ...props }: MarkdownComponentProps) => (
+          <a
+            href={href}
+            className="text-blue-600 hover:underline"
             target="_blank"
             rel="noopener noreferrer"
+            {...props}
           >
             {children}
           </a>
@@ -605,7 +640,7 @@ const OutputSection: React.FC<OutputSectionProps> = ({
           .replace(/```[\s\S]*?```/g, "") // Remove code blocks
           .replace(/\*\*|__|\*|_|~~|`/g, "") // Remove formatting markers
           .replace(/#+\s+/g, "") // Remove heading markers
-          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // Replace links with just the text
+          .replace(/$$ ([^ $$]+)\]$$ [^)]+ $$/g, "$1"); // Replace links with just the text
       }
 
       const words = cleanText
@@ -780,68 +815,68 @@ const OutputSection: React.FC<OutputSectionProps> = ({
       ref={containerRef}
       className={`bg-background border rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
         isFullscreen ? "fixed inset-0 z-50 m-1 sm:m-2" : "w-full"
-        }`}
+      }`}
+    >
+      <div className="flex flex-col h-full">
+        {/* Header Section */}
+        <Header
+          title={title}
+          showWordCount={showWordCount}
+          wordCount={wordCount}
+          theme={theme}
+        />
+
+        {/* Toolbar Section */}
+        <div
+          className={`flex justify-end items-center px-4 py-2 border-b ${
+            theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+          }`}
         >
-          <div className="flex flex-col h-full">
-            {/* Header Section */}
-            <Header
-              title={title}
-              showWordCount={showWordCount}
-              wordCount={wordCount}
-              theme={theme}
-            />
-    
-            {/* Toolbar Section */}
-            <div
-              className={`flex justify-end items-center px-4 py-2 border-b ${
-                theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
-              }`}
-            >
-              <ActionButtons
-                isEditing={isEditing}
-                readOnly={readOnly}
-                copied={copied}
-                isFullscreen={isFullscreen}
-                theme={theme}
-                toggleEditMode={toggleEditMode}
-                handleCopy={handleCopy}
-                toggleFullscreen={toggleFullscreen}
-              />
-              <DownloadMenu
-                showDownloadOptions={showDownloadOptions}
-                contentType={contentType}
-                theme={theme}
-                toggleDownloadOptions={toggleDownloadOptions}
-                handleDownloadMarkdown={handleDownloadMarkdown}
-                handleDownloadPDF={handleDownloadPDF}
-              />
-            </div>
-    
-            {/* Content Section */}
-            <ContentArea
-              isEditing={isEditing}
-              content={content}
-              contentType={contentType}
-              theme={theme}
-              isFullscreen={isFullscreen}
-              handleChange={handleChange}
-              toggleEditMode={toggleEditMode}
-              editorRef={editorRef}
-            />
-          </div>
+          <ActionButtons
+            isEditing={isEditing}
+            readOnly={readOnly}
+            copied={copied}
+            isFullscreen={isFullscreen}
+            theme={theme}
+            toggleEditMode={toggleEditMode}
+            handleCopy={handleCopy}
+            toggleFullscreen={toggleFullscreen}
+          />
+          <DownloadMenu
+            showDownloadOptions={showDownloadOptions}
+            contentType={contentType}
+            theme={theme}
+            toggleDownloadOptions={toggleDownloadOptions}
+            handleDownloadMarkdown={handleDownloadMarkdown}
+            handleDownloadPDF={handleDownloadPDF}
+          />
         </div>
-      );
-    };
-    
-    // PropTypes for type checking
-    OutputSection.propTypes = {
-      aiOutput: PropTypes.string.isRequired,
-      title: PropTypes.string,
-      onEdit: PropTypes.func,
-      readOnly: PropTypes.bool,
-      theme: PropTypes.oneOf(["light", "dark"]),
-      showWordCount: PropTypes.bool,
-      isHTML: PropTypes.bool,
-    };
-    
-    export default memo(OutputSection);
+
+        {/* Content Section */}
+        <ContentArea
+          isEditing={isEditing}
+          content={content}
+          contentType={contentType}
+          theme={theme}
+          isFullscreen={isFullscreen}
+          handleChange={handleChange}
+          toggleEditMode={toggleEditMode}
+          editorRef={editorRef}
+        />
+      </div>
+    </div>
+  );
+};
+
+// PropTypes for type checking
+OutputSection.propTypes = {
+  aiOutput: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  onEdit: PropTypes.func,
+  readOnly: PropTypes.bool,
+  theme: PropTypes.oneOf(["light", "dark"]),
+  showWordCount: PropTypes.bool,
+  isHTML: PropTypes.bool,
+};
+
+export default memo(OutputSection);
