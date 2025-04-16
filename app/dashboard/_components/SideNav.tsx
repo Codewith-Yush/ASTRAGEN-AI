@@ -1,5 +1,12 @@
 "use client";
-import { FileClock, Home, Settings, WalletCards, Menu, X } from "lucide-react";
+import {
+  FileClock,
+  Home,
+  Settings,
+  WalletCards,
+  Menu,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,28 +22,28 @@ function SideNav() {
       name: "Home",
       icon: Home,
       path: "/dashboard",
-      gradient: "from-cyan-500 to-blue-500"
+      gradient: "from-cyan-500 to-blue-500",
     },
     {
       id: "history",
       name: "History",
       icon: FileClock,
       path: "/dashboard/history",
-      gradient: "from-purple-500 to-pink-500"
+      gradient: "from-purple-500 to-pink-500",
     },
     {
       id: "billing",
       name: "Billing",
       icon: WalletCards,
       path: "/dashboard/billing",
-      gradient: "from-green-400 to-emerald-500"
+      gradient: "from-green-400 to-emerald-500",
     },
     {
       id: "settings",
       name: "Settings",
       icon: Settings,
       path: "/dashboard/settings",
-      gradient: "from-orange-400 to-red-500"
+      gradient: "from-orange-400 to-red-500",
     },
   ];
 
@@ -45,7 +52,7 @@ function SideNav() {
   return (
     <>
       {/* Mobile Toggle */}
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="md:hidden fixed top-4 left-4 z-50 bg-white/30 backdrop-blur-md p-2 rounded-full shadow-xl"
       >
@@ -53,7 +60,7 @@ function SideNav() {
       </button>
 
       {/* Desktop Navigation */}
-      <nav 
+      <nav
         className={`
           hidden md:block fixed left-0 top-0 h-full 
           bg-white/10 backdrop-blur-xl 
@@ -66,35 +73,35 @@ function SideNav() {
         <div className="p-6 flex flex-col h-full">
           {/* Logo Area */}
           <div className="flex justify-center mb-8">
-            <Image 
-              src="/logo.png" 
-              alt="logo" 
-              width={100} 
-              height={100} 
-              className="rounded-full shadow-lg"
-            />
+            <Link href="./">
+              <Image
+                src="/logo.png"
+                alt="logo"
+                width={100}
+                height={100}
+                className="rounded-full shadow-lg cursor-pointer"
+              />
+            </Link>
           </div>
 
           {/* Navigation Links */}
           <div className="space-y-4 flex-grow">
             {MenuList.map((menu) => (
-              <Link 
-                key={menu.id} 
-                href={menu.path}
-                className="block"
-              >
-                <div 
+              <Link key={menu.id} href={menu.path} className="block">
+                <div
                   className={`
                     flex items-center space-x-3 
                     p-3 rounded-xl 
                     transition-all duration-300 
                     hover:scale-105 
-                    ${path === menu.path 
-                      ? `bg-gradient-to-r ${menu.gradient} text-white shadow-lg` 
-                      : 'bg-white/10 hover:bg-white/20'}
+                    ${
+                      path === menu.path
+                        ? `bg-gradient-to-r ${menu.gradient} text-white shadow-lg`
+                        : "bg-white/10 hover:bg-white/20"
+                    }
                   `}
                 >
-                  <div 
+                  <div
                     className={`
                       p-2 rounded-lg 
                       bg-gradient-to-r ${menu.gradient}
@@ -117,47 +124,51 @@ function SideNav() {
       </nav>
 
       {/* Mobile Navigation */}
-      <div 
+      <div
         className={`
           md:hidden fixed inset-0 z-40 
           bg-white/10 backdrop-blur-xl
           transform transition-transform duration-300
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         <div className="p-6 flex flex-col h-full">
           {/* Logo Area */}
           <div className="flex justify-center mb-8">
-            <Image 
-              src="/logo.jpg" 
-              alt="logo" 
-              width={120} 
-              height={120} 
-              className="rounded-full shadow-lg"
-            />
+            <Link href="./" onClick={() => setIsOpen(false)}>
+              <Image
+                src="/logo.jpg"
+                alt="logo"
+                width={120}
+                height={120}
+                className="rounded-full shadow-lg cursor-pointer"
+              />
+            </Link>
           </div>
 
           {/* Navigation Links */}
           <div className="space-y-4 flex-grow">
             {MenuList.map((menu) => (
-              <Link 
-                key={menu.id} 
+              <Link
+                key={menu.id}
                 href={menu.path}
                 onClick={() => setIsOpen(false)}
                 className="block"
               >
-                <div 
+                <div
                   className={`
                     flex items-center space-x-3 
                     p-4 rounded-xl 
                     transition-all duration-300 
                     hover:scale-105 
-                    ${path === menu.path 
-                      ? `bg-gradient-to-r ${menu.gradient} text-white shadow-lg` 
-                      : 'bg-white/10 hover:bg-white/20'}
+                    ${
+                      path === menu.path
+                        ? `bg-gradient-to-r ${menu.gradient} text-white shadow-lg`
+                        : "bg-white/10 hover:bg-white/20"
+                    }
                   `}
                 >
-                  <div 
+                  <div
                     className={`
                       p-2 rounded-lg 
                       bg-gradient-to-r ${menu.gradient}
