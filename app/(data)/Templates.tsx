@@ -226,11 +226,11 @@ const tools = [
   },
   {
     "name": "Quiz Generator",
-    "desc": "Create customized quizzes with multiple-choice, true/false, or open-ended questions",
+    "desc": "Create customized quizzes with multiple-choice, true/false, or open-ended questions, complete with answers and explanations, in a structured and formatted layout.",
     "category": "Education",
     "icon": "https://cdn-icons-png.flaticon.com/128/2921/2921222.png",
     "slug": "quiz-generator",
-    "aiPrompt": "Generate a quiz with 5-15 questions (multiple-choice, true/false, or open-ended) based on the provided content or topic. Include answer keys and explanations for each question. Format in a rich text editor with clear question numbering and sections.",
+    "aiPrompt": "## 🧠 AI Prompt: Quiz Generator\n**Purpose**: Generate a **quiz** from the **provided content or topic** with multiple types of questions and a rich text format.\n\n---\n\n### ✅ Quiz Requirements\n- Number of questions: **5 to 15**\n- Types: \n  - Multiple Choice Questions (MCQs)\n  - True/False\n  - Open-Ended\n- Each question must include:\n  - **Question Number**\n  - **Question Text**\n  - **Answer Options** (if applicable)\n  - **Correct Answer** (bolded)\n  - **Explanation** (in italics or quotes)\n\n---\n\n### 🖍️ Formatting Instructions (Rich Text Editor Style)\n- Use **bold headings** for sections\n- Use **numbered questions** (e.g., Q1, Q2, etc.)\n- Use **bullet points (A–D)** for MCQ options\n- Highlight **correct answers** clearly\n- Add brief **explanations** for each answer\n\n---\n\n### 🧾 Example Output\n**🔹 Topic**: *Photosynthesis*\n\n**Q1. What is the main pigment involved in photosynthesis?**  \n- A. Hemoglobin  \n- B. Melanin  \n- C. Carotene  \n- D. **Chlorophyll**  \n*Explanation*: *Chlorophyll is responsible for absorbing light energy for photosynthesis.*\n\n**Q2. True or False: Photosynthesis occurs in the mitochondria.**  \n✅ **Correct Answer**: False  \n*Explanation*: *Photosynthesis happens in chloroplasts, not mitochondria.*",
     "form": [
       {
         "label": "Source material or quiz topic",
@@ -239,14 +239,14 @@ const tools = [
         "required": true
       },
       {
-        "label": "Question type (Multiple-choice, True/False, Open-ended, Mixed)",
+        "label": "Question type",
         "field": "select",
         "name": "questionType",
         "options": ["Multiple-choice", "True/False", "Open-ended", "Mixed"],
         "required": true
       },
       {
-        "label": "Number of questions (5-15)",
+        "label": "Number of questions (5–15)",
         "field": "range",
         "name": "questionCount",
         "min": 5,
@@ -260,13 +260,21 @@ const tools = [
         "required": false
       },
       {
-        "label": "Include explanations? (optional)",
+        "label": "Include explanations?",
         "field": "checkbox",
         "name": "includeExplanations",
+        "required": false
+      },
+      {
+        "label": "Formatting style (Rich text, Plain text, Markdown)",
+        "field": "select",
+        "name": "formatStyle",
+        "options": ["Rich text", "Plain text", "Markdown"],
         "required": false
       }
     ]
   },
+  
   // YouTube Tools
   {
     name: "YouTube Description Generator",
