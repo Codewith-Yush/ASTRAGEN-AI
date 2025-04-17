@@ -391,7 +391,7 @@ const AboutSection = () => {
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { value: "😊", label: "Customer Satisfaction", color: "teal" },
-                { value: "1M+", label: "Content Pieces Generated", color: "blue" },
+                { value: "Free to Use", label: "Content", color: "blue" },
                 { value: "24/7", label: "Support Available", color: "purple" }
               ].map((stat, index) => (
                 <motion.div 

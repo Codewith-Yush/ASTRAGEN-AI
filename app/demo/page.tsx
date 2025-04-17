@@ -24,7 +24,7 @@ export default function DemoPage() {
         {/* Video Frame */}
         <div className="w-full aspect-video relative">
           <iframe
-            src="https://www.youtube.com/embed/vsyrB13PYB4"
+            src="https://www.youtube.com/embed/jPskRlbqDPg?si=JytQPEQ1-dbOX1Q9"
             title="Demo Video"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
