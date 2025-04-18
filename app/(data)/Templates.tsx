@@ -1079,7 +1079,7 @@ Which hack will you try? Share below and follow for more tips! 🙌 #Productivit
 },
   // Coding Tools
   {
-    name: "Code Generators",
+    name: "Code Generator",
     desc: "Write programming code based on your specifications",
     category: "Coding",
     icon: "https://cdn-icons-png.flaticon.com/128/6062/6062646.png",

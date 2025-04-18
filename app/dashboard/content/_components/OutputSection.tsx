@@ -19,13 +19,17 @@ import {
   PenLine,
   ChevronDown,
   FileText,
+  Bold,
+  Italic,
+  List,
+  Link,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import PropTypes from "prop-types";
 import { debounce } from "lodash";
 
-// Utility functions extracted to a separate file
+// Utility functions
 const sanitizeHTML = (html: string): string => {
   return html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
@@ -46,14 +50,13 @@ const convertMarkdownToHTML = (markdown: string): string => {
       if (/\*(.*)\*/.test(line)) return line.replace(/\*(.*)\*/g, "<em>$1</em>");
       if (/```([^`]+)```/.test(line)) return `<pre><code>${line.replace(/```([^`]+)```/, "$1")}</code></pre>`;
       if (/`([^`]+)`/.test(line)) return line.replace(/`([^`]+)`/g, "<code>$1</code>");
-      if (/$$ ([^ $$]+)\]$$ ([^)]+) $$/.test(line)) return line.replace(/$$ ([^ $$]+)\]$$ ([^)]+) $$/g, '<a href="$2">$1</a>');
+      if (/$$   ([^   $$]+)\]$$   ([^)]+)   $$/.test(line)) return line.replace(/$$   ([^   $$]+)\]$$   ([^)]+)   $$/g, '<a href="$2">$1</a>');
       if (/^- (.*)$/.test(line)) return `<li>${line.replace(/^- (.*)$/, "$1")}</li>`;
       if (/^\d+\. (.*)$/.test(line)) return `<li>${line.replace(/^\d+\. (.*)$/, "$1")}</li>`;
       return line.trim() ? `<p>${line}</p>` : "<br>";
     })
     .join("\n");
 
-  // Wrap lists appropriately
   html = html.replace(/(<li>.*<\/li>)+/g, (match) => {
     const isOrdered = match.includes("1. ");
     return `<${isOrdered ? "ol" : "ul"} class="list-disc pl-6 my-4 space-y-2">${match}</${isOrdered ? "ol" : "ul"}>`;
@@ -100,12 +103,23 @@ interface OutputSectionProps {
   isHTML?: boolean;
 }
 
-// Markdown component types
 interface MarkdownComponentProps {
   children: React.ReactNode;
   className?: string;
   node?: any;
   inline?: boolean;
+}
+
+interface ContentAreaProps {
+  isEditing: boolean;
+  content: string;
+  contentType: "html" | "markdown";
+  theme: "light" | "dark";
+  isFullscreen: boolean;
+  handleChange: (e: ContentEditableEvent) => void;
+  toggleEditMode: () => void;
+  editorRef: React.RefObject<HTMLElement>;
+  onSave?: (newContent: string) => void;
 }
 
 // Common styles
@@ -206,7 +220,7 @@ const ActionButtons: React.FC<{
           theme === "dark"
             ? "text-gray-400 hover:text-gray-100"
             : "text-gray-600 hover:text-gray-900"
-        }`}
+          }`}
       >
         {copied ? (
           <CheckCircle className="w-4 h-4 text-green-500" />
@@ -224,7 +238,7 @@ const ActionButtons: React.FC<{
           theme === "dark"
             ? "text-gray-400 hover:text-gray-100"
             : "text-gray-600 hover:text-gray-900"
-        }`}
+          }`}
       >
         {isFullscreen ? (
           <Minimize2 className="w-4 h-4" />
@@ -321,17 +335,90 @@ const DownloadMenu: React.FC<{
   }
 );
 
-// Memoized ContentArea Component
-const ContentArea: React.FC<{
-  isEditing: boolean;
-  content: string;
-  contentType: "html" | "markdown";
+// Toolbar Component
+const EditorToolbar: React.FC<{
+  editorRef: React.RefObject<HTMLElement>;
   theme: "light" | "dark";
-  isFullscreen: boolean;
-  handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  toggleEditMode: () => void;
-  editorRef: React.RefObject<HTMLTextAreaElement>;
-}> = memo(
+}> = ({ editorRef, theme }) => {
+  const applyFormatting = (prefix: string, suffix: string) => {
+    if (!editorRef.current) return;
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+    if (!selectedText) return;
+
+    const newText = `${prefix}${selectedText}${suffix}`;
+    document.execCommand("insertText", false, newText);
+    selection.removeAllRanges();
+  };
+
+  const insertList = (type: "ul" | "ol") => {
+    if (!editorRef.current) return;
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+
+    const listItem = type === "ul" ? "- Item\n" : "1. Item\n";
+    document.execCommand("insertText", false, listItem);
+  };
+
+  const insertLink = () => {
+    const url = prompt("Enter the URL:");
+    if (url) {
+      const linkText = prompt("Enter the link text:") || "Link";
+      document.execCommand("insertText", false, `[${linkText}](${url})`);
+    }
+  };
+
+  return (
+    <div
+      className={`flex gap-2 p-2 border-b sticky top-0 z-10 ${
+        theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+      }`}
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => applyFormatting("**", "**")}
+        title="Bold"
+        aria-label="Bold"
+      >
+        <Bold className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => applyFormatting("*", "*")}
+        title="Italic"
+        aria-label="Italic"
+      >
+        <Italic className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => insertList("ul")}
+        title="Bullet List"
+        aria-label="Bullet List"
+      >
+        <List className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={insertLink}
+        title="Insert Link"
+        aria-label="Insert Link"
+      >
+        <Link className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
+
+// Memoized ContentArea Component
+const ContentArea: React.FC<ContentAreaProps> = memo(
   ({
     isEditing,
     content,
@@ -341,7 +428,13 @@ const ContentArea: React.FC<{
     handleChange,
     toggleEditMode,
     editorRef,
+    onSave,
   }) => {
+    // Debug logging for edit mode
+    useEffect(() => {
+      console.log("ContentArea: isEditing =", isEditing);
+    }, [isEditing]);
+
     const markdownComponents: Record<string, React.FC<MarkdownComponentProps>> = {
       code: ({ node, className, children, inline }) => {
         const match = /language-(\w+)/.exec(className || "");
@@ -450,42 +543,87 @@ const ContentArea: React.FC<{
       ),
     };
 
+    const handleSave = () => {
+      console.log("Saving content:", content);
+      if (onSave) {
+        onSave(content);
+      }
+      toggleEditMode();
+    };
+
+    const handleCancel = () => {
+      console.log("Cancel editing");
+      toggleEditMode();
+    };
+
     return (
       <div
         className={`${
           isFullscreen
             ? "h-[calc(100vh-120px)]"
-            : "h-auto max-h-[calc(100vh-200px)] min-h-[200px]"
-        } transition-all duration-300`}
+            : "h-auto min-h-[400px]"
+        } transition-all duration-300 flex flex-col`}
       >
         {isEditing ? (
-          <div className="p-1 h-full">
-            <Textarea
-              ref={editorRef}
-              value={content}
-              onChange={handleChange}
-              placeholder="Edit content here..."
-              className={`w-full h-[calc(100%-2.5rem)] p-4 font-mono text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:outline-none ${
-                theme === "dark"
-                  ? "bg-gray-900 text-gray-100 border-gray-700"
-                  : "bg-white text-gray-800 border-gray-200"
+          <>
+            <EditorToolbar editorRef={editorRef} theme={theme} />
+            <div className="flex-1 flex overflow-hidden">
+              <div className="w-1/2 p-4 overflow-auto border-r border-gray-200 dark:border-gray-700">
+                <ContentEditable
+                  innerRef={editorRef}
+                  html={content}
+                  onChange={handleChange}
+                  disabled={false}
+                  className={`w-full h-full p-4 font-mono text-sm outline-none focus:ring-1 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-900 text-gray-100"
+                      : "bg-white text-gray-800"
+                  }`}
+                />
+              </div>
+              <div className="w-1/2 p-4 overflow-auto">
+                <div
+                  className={`${MARKDOWN_CLASSES} ${
+                    theme === "dark" ? "prose-invert" : ""
+                  }`}
+                >
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
+                    {content}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </div>
+            <div
+              className={`flex justify-end gap-4 p-4 border-t sticky bottom-0 z-20 ${
+                theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
               }`}
-            />
-            <div className="flex justify-end mt-2 px-4 pb-2">
+            >
               <Button
-                size="sm"
+                size="lg"
                 variant="outline"
-                onClick={toggleEditMode}
-                aria-label="Finish editing"
-                className="text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800"
+                onClick={handleCancel}
+                aria-label="Cancel editing"
+                className="px-6 py-2 text-lg font-medium text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
               >
-                Done Editing
+                Cancel
+              </Button>
+              <Button
+                size="lg"
+                variant="default"
+                onClick={handleSave}
+                aria-label="Save changes"
+                className="px-6 py-2 text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              >
+                Save
               </Button>
             </div>
-          </div>
+          </>
         ) : (
           <div
-            className={`overflow-auto h-full ${
+            className={`flex-1 overflow-auto ${
               theme === "dark" ? "bg-gray-950" : "bg-gray-50"
             } transition-colors`}
           >
@@ -541,10 +679,15 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   const [wordCount, setWordCount] = useState<WordCount>({ words: 0, chars: 0 });
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [contentType, setContentType] = useState<"html" | "markdown">(
-    "markdown"
+    isHTML ? "html" : "markdown"
   );
   const containerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLElement>(null);
+
+  // Debug logging for component mount and props
+  useEffect(() => {
+    console.log("OutputSection mounted with props:", { aiOutput, readOnly, isEditing });
+  }, []);
 
   // Determine content type
   const determineContentType = useCallback(
@@ -612,13 +755,12 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   // Event handlers
   const handleChange = useMemo(
     () =>
-      debounce((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      debounce((e: ContentEditableEvent) => {
         const newContent = e.target.value;
         setContent(newContent);
-        if (onEdit) onEdit(newContent);
         setWordCount(calculateWordCount(newContent, contentType));
       }, 300),
-    [onEdit, calculateWordCount, contentType]
+    [calculateWordCount, contentType]
   );
 
   const handleCopy = useCallback(async () => {
@@ -637,7 +779,10 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   }, []);
 
   const toggleEditMode = useCallback(() => {
-    setIsEditing((prev) => !prev);
+    setIsEditing((prev) => {
+      console.log("Toggling edit mode:", !prev);
+      return !prev;
+    });
   }, []);
 
   const toggleDownloadOptions = useCallback(() => {
@@ -736,7 +881,7 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`bg-background border rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
+      className={`bg-background border rounded-lg shadow-md overflow-visible transition-all duration-300 ${
         isFullscreen ? "fixed inset-0 z-50 m-1 sm:m-2" : "w-full"
       } ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
     >
@@ -778,6 +923,7 @@ const OutputSection: React.FC<OutputSectionProps> = ({
         handleChange={handleChange}
         toggleEditMode={toggleEditMode}
         editorRef={editorRef}
+        onSave={onEdit}
       />
     </div>
   );
