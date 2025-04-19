@@ -47,7 +47,7 @@ function CreateNewContent(props: PROPS) {
       return;
     }
 
-    if (totalUsage >= 120000 && !userSubscription) {
+    if (totalUsage >= 300000 && !userSubscription) {
       console.log('Please Upgrade');
       router.push('/dashboard/billing');
       return;

@@ -118,7 +118,7 @@ const AboutSection = () => {
   return (
     <section 
       ref={sectionRef}
-      className="relative py-32 overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800"
+      className="relative py-30 overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800"
     >
       {/* Animated gradient background */}
       <motion.div 
@@ -860,118 +860,146 @@ const DevelopersSection = () => {
       name: "Ayush Singh",
       role: "CS Student",
       image: "/Ayush.jpeg",
+      bio: "Passionate about creating intuitive and impactful user experiences through clean code.",
       social: {
-        github: "https://github.com/codewith-yush", // Updated to match name
-        linkedin: "https://www.linkedin.com/in/ayush-singh-643a4b25a/" // Updated to match name
+        github: "https://github.com/codewith-yush",
+        linkedin: "https://www.linkedin.com/in/ayush-singh-643a4b25a/"
       }
     },
     {
       name: "Om Vishwakarma",
       role: "CS Student",
       image: "/om.png",
+      bio: "Dedicated to solving complex problems with elegant solutions and innovative approaches.",
       social: {
-        github: "https://github.com/om-999", // Updated to match name
-        linkedin: "https://www.linkedin.com/in/om-vishwakarma-467b8933b/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" // Updated to match name
+        github: "https://github.com/om-999",
+        linkedin: "https://www.linkedin.com/in/om-vishwakarma-467b8933b/"
       }
     }
   ];
 
   return (
-    <section className="py-14 bg-gradient-to-b from-white to-gray-50 dark:from-slate-900 dark:to-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-19 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -right-20 -top-20 w-72 h-72 bg-blue-500 opacity-5 rounded-full blur-3xl"></div>
+          <div className="absolute -left-20 top-40 w-72 h-72 bg-teal-500 opacity-5 rounded-full blur-3xl"></div>
+          <div className="absolute right-40 bottom-20 w-80 h-80 bg-purple-500 opacity-5 rounded-full blur-3xl"></div>
+        </div>
+        
+        {/* Section header */}
         <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 20 }}
+          className="text-center mb-16 relative z-10"
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.7 }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
+          <span className="text-sm uppercase tracking-wider font-semibold text-teal-600 dark:text-teal-400 mb-3 block">
+            The Team
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
             <span className="relative inline-block">
-              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-400 dark:to-blue-400">
-                Developed By
+              <span className="relative z-10">Meet Our</span>
+            </span>{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-600 dark:from-blue-400 dark:to-teal-400">
+                Developers
               </span>
-              <span className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-teal-100 to-blue-100 dark:from-teal-900 dark:to-blue-900 rounded-full opacity-75 -z-0"></span>
+              <span className="absolute bottom-0 left-0 w-full h-3 bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900 dark:to-teal-900 rounded-full opacity-80 -z-0"></span>
             </span>
           </h2>
           <motion.p 
-            className="text-xl text-gray-600 max-w-3xl mx-auto dark:text-gray-300 leading-relaxed"
+            className="text-xl text-gray-600 max-w-2xl mx-auto dark:text-gray-300 leading-relaxed"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
           >
-            The talented minds who brought this platform to life with innovation and expertise
+            Brilliance and creativity combined to bring this platform to life
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+        {/* Developer cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-20">
           {developers.map((developer, index) => (
             <motion.div
               key={index}
-              className="flex flex-col items-center text-center"
-              initial={{ opacity: 0, y: 30 }}
+              className="relative group"
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
+              transition={{ delay: index * 0.2, duration: 0.6 }}
             >
-              <div className="relative mb-8 group">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-400 via-blue-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-70 blur-xl transition-all duration-500"></div>
-                <div className="relative rounded-full p-1 bg-gradient-to-br from-teal-400 to-blue-500">
-                  <div className="relative rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-2xl transition-transform duration-500 group-hover:scale-105">
-                    <Image
-                      src={developer.image}
-                      alt={developer.name}
-                      width={180}
-                      height={180}
-                      className="w-44 h-44 object-cover"
-                    />
+              <div className="relative z-10 bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl dark:shadow-slate-700/30 transition duration-300 group-hover:shadow-2xl group-hover:-translate-y-2 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                  {/* Profile image */}
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                    <div className="relative rounded-full overflow-hidden border-4 border-white dark:border-slate-700 shadow-lg h-44 w-44 transition duration-300 group-hover:scale-105">
+                      <Image
+                        src={developer.image}
+                        alt={developer.name}
+                        width={176}
+                        height={176}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      {developer.name}
+                    </h3>
+                    <p className="text-lg text-blue-600 dark:text-blue-400 mb-4 font-medium">
+                      {developer.role}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-sm">
+                      {developer.bio}
+                    </p>
+                    
+                    {/* Social links */}
+                    <div className="flex items-center space-x-4">
+                      <motion.a 
+                        href={developer.social.github} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-gray-800 dark:text-white text-sm font-medium"
+                        aria-label={`${developer.name}'s GitHub`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                        </svg>
+                        GitHub
+                      </motion.a>
+                      <motion.a 
+                        href={developer.social.linkedin} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-blue-700 dark:text-blue-300 text-sm font-medium"
+                        aria-label={`${developer.name}'s LinkedIn`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                        LinkedIn
+                      </motion.a>
+                    </div>
                   </div>
                 </div>
-                <div className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-teal-400 to-blue-500 transition-opacity duration-300 -z-10"></div>
               </div>
               
-              <motion.h3 
-                className="text-2xl font-bold text-gray-900 dark:text-white mb-2"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                {developer.name}
-              </motion.h3>
-              <p className="text-lg text-teal-600 dark:text-teal-400 mb-6 font-medium">
-                {developer.role}
-              </p>
-              
-              <div className="flex space-x-6">
-                <motion.a 
-                  href={developer.social.github} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="relative p-2 rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
-                  aria-label={`${developer.name}'s GitHub`}
-                  whileHover={{ y: -3 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 opacity-0 hover:opacity-20 transition-opacity"></div>
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                  </svg>
-                </motion.a>
-                <motion.a 
-                  href={developer.social.linkedin} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="relative p-2 rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
-                  aria-label={`${developer.name}'s LinkedIn`}
-                  whileHover={{ y: -3 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 opacity-0 hover:opacity-20 transition-opacity"></div>
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                  </svg>
-                </motion.a>
-              </div>
+              {/* Card decorative elements */}
+              <div className="absolute top-10 left-10 w-20 h-20 border-2 border-blue-200 dark:border-blue-900/40 rounded-lg -z-10 opacity-70"></div>
+              <div className="absolute bottom-10 right-10 w-20 h-20 border-2 border-teal-200 dark:border-teal-900/40 rounded-lg -z-10 opacity-70"></div>
             </motion.div>
           ))}
         </div>

@@ -29,14 +29,14 @@ const Switch = () => {
           onChange={handleChange} // Handle change when toggling the checkbox
         />
         <div className="slider round">
-          <div className="sun-moon">
+          <div className="icon">
             {/* Sun/Moon icons */}
             {theme === "dark" ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
               </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="4" />
                 <path d="M12 2v2" />
                 <path d="M12 20v2" />
@@ -49,13 +49,19 @@ const Switch = () => {
               </svg>
             )}
           </div>
-          <div className="stars">
-            {/* Star icons for dark mode */}
-            <svg className="star star-1" xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 24 24" fill="white" stroke="none">
+          <div className="effects">
+            {/* Particle and glow effects for both modes */}
+            <svg className="particle particle-1" xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 24 24" fill={theme === "dark" ? "#E2E8F0" : "#FBBF24"} stroke="none">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
-            <svg className="star star-2" xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 24 24" fill="white" stroke="none">
+            <svg className="particle particle-2" xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 24 24" fill={theme === "dark" ? "#A5B4FC" : "#F87171"} stroke="none">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <svg className="particle particle-3" xmlns="http://www.w3.org/2000/svg" width="5" height="5" viewBox="0 0 24 24" fill={theme === "dark" ? "#FBCFE8" : "#34D399"} stroke="none">
+              <circle cx="12" cy="12" r="12" />
+            </svg>
+            <svg className="glow glow-1" xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill={theme === "dark" ? "rgba(165, 180, 252, 0.5)" : "rgba(251, 191, 36, 0.5)"} stroke="none">
+              <circle cx="12" cy="12" r="12" />
             </svg>
           </div>
         </div>
@@ -76,7 +82,11 @@ const StyledWrapper = styled.div`
     display: inline-block;
     width: 64px;
     height: 36px;
-    transform: scale(1.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .switch:hover {
+    transform: scale(1.05); /* Slight scale on hover for interactivity */
   }
   
   .switch #input {
@@ -92,110 +102,154 @@ const StyledWrapper = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    /* Update gradient to be more vibrant */
-    background: linear-gradient(to bottom, #FFDADA, #AEE2FF);
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    /* Glassmorphism with dynamic gradient for light mode */
+    background: ${({ theme }) => theme === "dark" 
+      ? "linear-gradient(135deg, rgba(55, 65, 81, 0.3), rgba(109, 40, 217, 0.2))"
+      : "linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(251, 191, 36, 0.2))"};
+    backdrop-filter: blur(12px);
+    transition: all 0.4s ease-in-out;
     z-index: 0;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    animation: gradient-shift 5s infinite ease-in-out;
   }
   
-  .sun-moon {
+  .icon {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
-    width: 28px;
-    left: 4px;
+    height: 30px;
+    width: 30px;
+    left: 3px;
     bottom: 3px;
-    color: #1e293b;
-    background-color: #FFD43B;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    background: ${({ theme }) => theme === "dark" 
+      ? "linear-gradient(135deg, rgba(55, 65, 81, 0.5), rgba(109, 40, 217, 0.4))"
+      : "linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(251, 191, 36, 0.4))"};
+    color: ${({ theme }) => theme === "dark" ? "#E2E8F0" : "#4B5563"};
+    transition: all 0.4s ease-in-out;
+    border-radius: 50%;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(6px);
+    animation: pulse-glow 2s infinite ease-in-out;
   }
   
   #input:checked + .slider {
-    /* Update dark mode background to be more defined */
-    background: linear-gradient(to bottom, #0f172a, #1e293b); /* slate-900 to slate-800 */
-    border: 1px solid rgba(30, 41, 59, 0.8);
+    /* Dark mode gradient */
+    background: linear-gradient(135deg, rgba(55, 65, 81, 0.3), rgba(109, 40, 217, 0.2));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   }
   
   #input:focus + .slider {
-    box-shadow: 0 0 4px #2196f3;
+    box-shadow: 0 0 12px ${({ theme }) => theme === "dark" ? "rgba(109, 40, 217, 0.5)" : "rgba(251, 191, 36, 0.5)"};
   }
   
-  #input:checked + .slider .sun-moon {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
-    background-color: #E2E8F0;
-    color: #0F172A;
-    -webkit-animation: rotate-center 0.6s ease-in-out both;
-    animation: rotate-center 0.6s ease-in-out both;
+  #input:checked + .slider .icon {
+    transform: translateX(28px) rotate(360deg);
+    background: linear-gradient(135deg, rgba(55, 65, 81, 0.5), rgba(109, 40, 217, 0.4));
+    color: #E2E8F0;
+    animation: slide-bounce 0.4s ease-in-out;
   }
   
   .slider.round {
-    border-radius: 34px;
+    border-radius: 36px;
   }
   
-  .slider.round .sun-moon {
+  .slider.round .icon {
     border-radius: 50%;
   }
   
-  @keyframes rotate-center {
+  @keyframes pulse-glow {
     0% {
-      transform: translateX(0) rotate(0);
+      box-shadow: 0 0 5px ${({ theme }) => theme === "dark" ? "rgba(109, 40, 217, 0.3)" : "rgba(251, 191, 36, 0.3)"};
+    }
+    50% {
+      box-shadow: 0 0 15px ${({ theme }) => theme === "dark" ? "rgba(109, 40, 217, 0.5)" : "rgba(251, 191, 36, 0.5)"};
     }
     100% {
-      transform: translateX(26px) rotate(360deg);
+      box-shadow: 0 0 5px ${({ theme }) => theme === "dark" ? "rgba(109, 40, 217, 0.3)" : "rgba(251, 191, 36, 0.3)"};
     }
   }
   
-  .stars {
+  @keyframes slide-bounce {
+    0% {
+      transform: translateX(0);
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+    50% {
+      transform: translateX(14px) scale(1.2);
+      box-shadow: 0 0 15px ${({ theme }) => theme === "dark" ? "rgba(109, 40, 217, 0.5)" : "rgba(251, 191, 36, 0.5)"};
+    }
+    100% {
+      transform: translateX(28px) rotate(360deg);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+  }
+  
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .effects {
     position: absolute;
     width: 100%;
     height: 100%;
-    opacity: 0;
-    transition: 0.4s;
+    opacity: 1; /* Always visible in both modes */
   }
   
-  #input:checked + .slider .stars {
-    opacity: 1;
-  }
-  
-  .star {
+  .particle, .glow {
     position: absolute;
-    animation: star-twinkle 2s infinite;
+    animation: particle-drift 3s infinite ease-in-out;
   }
   
-  .star-1 {
-    top: 10px;
-    right: 12px;
+  .particle-1 {
+    top: 8px;
+    right: 10px;
+    animation-delay: 0.2s;
+  }
+  
+  .particle-2 {
+    top: 14px;
+    right: 18px;
     animation-delay: 0.5s;
   }
   
-  .star-2 {
-    top: 16px;
-    right: 22px;
-    animation-delay: 1s;
+  .particle-3 {
+    top: 6px;
+    right: 14px;
+    animation-delay: 0.8s;
   }
   
-  @keyframes star-twinkle {
+  .glow-1 {
+    top: 12px;
+    right: 22px;
+    animation-delay: 1s;
+    filter: blur(3px);
+  }
+  
+  @keyframes particle-drift {
     0% {
       opacity: 0.3;
-      transform: scale(0.8);
+      transform: translate(0, 0) scale(0.8);
     }
     50% {
       opacity: 1;
-      transform: scale(1.2);
+      transform: translate(-5px, -5px) scale(1.2);
     }
     100% {
       opacity: 0.3;
-      transform: scale(0.8);
+      transform: translate(0, 0) scale(0.8);
     }
   }
 `;

@@ -16,7 +16,7 @@ import { UpdateCreditUsageContext } from '@/app/(context)/UpdateCreditUsageConte
     const {user}=useUser();
     const {totalUsage,setTotalUsage}=useContext(TotalUsageContext)
     const {userSubscription,setUserSubscription}=useContext(UserSubscriptionContext);
-    const [maxWords,setMaxWords]=useState(120000)
+    const [maxWords,setMaxWords]=useState(300000)
     const {updateCreditUsage,setUpdateCreditUsage}=useContext(UpdateCreditUsageContext);
     useEffect(()=>{
         user&&GetData();

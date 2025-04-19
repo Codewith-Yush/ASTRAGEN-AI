@@ -17,17 +17,22 @@ import {
   Maximize2,
   Minimize2,
   PenLine,
-  ChevronDown,
   FileText,
   Bold,
   Italic,
   List,
   Link,
+  Undo,
+  Redo,
+  Search,
+  Image,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import PropTypes from "prop-types";
 import { debounce } from "lodash";
+import html2canvas from "html2canvas";
 
 // Utility functions
 const sanitizeHTML = (html: string): string => {
@@ -119,28 +124,37 @@ interface ContentAreaProps {
   handleChange: (e: ContentEditableEvent) => void;
   toggleEditMode: () => void;
   editorRef: React.RefObject<HTMLElement>;
+  contentRef: React.RefObject<HTMLDivElement>;
   onSave?: (newContent: string) => void;
+  undo: () => void;
+  redo: () => void;
+  history: string[];
+  historyIndex: number;
+  showFindReplace: boolean;
+  toggleFindReplace: () => void;
+  handleFindReplace: (find: string, replace: string) => void;
+  autosaveStatus: "idle" | "saving" | "saved";
 }
 
 // Common styles
 const MARKDOWN_CLASSES = `
   prose max-w-none
   prose-headings:font-semibold
-  prose-h1:text-2xl prose-h1:font-bold prose-h1:mt-6 prose-h1:mb-4 prose-h1:pb-1 prose-h1:border-b
-  prose-h2:text-xl prose-h2:font-bold prose-h2:mt-5 prose-h2:mb-3
-  prose-h3:text-lg prose-h3:font-semibold prose-h3:mt-4 prose-h3:mb-2
-  prose-p:leading-relaxed prose-p:mb-4
-  prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-  prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:my-4
+  prose-h1:text-3xl prose-h1:font-bold prose-h1:mt-8 prose-h1:mb-4
+  prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-6 prose-h2:mb-3
+  prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-4 prose-h3:mb-2
+  prose-p:leading-relaxed prose-p:mb-4 prose-p:text-gray-700 dark:prose-p:text-gray-200
+  prose-a:text-teal-500 prose-a:no-underline hover:prose-a:underline
+  prose-blockquote:border-l-4 prose-blockquote:border-teal-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:my-4
   prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4 prose-ul:space-y-2
   prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4 prose-ol:space-y-2
   prose-li:mb-1
-  prose-table:min-w-full prose-table:my-6 prose-table:border prose-table:rounded-md
-  prose-thead:bg-gray-50
+  prose-table:min-w-full prose-table:my-6 prose-table:border prose-table:rounded-lg
+  prose-thead:bg-gray-100 dark:prose-thead:bg-gray-800
   prose-tbody:divide-y
-  prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:text-xs prose-th:font-medium prose-th:text-gray-500 prose-th:uppercase prose-th:tracking-wider
-  prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:text-gray-800
-  prose-tr:hover:bg-gray-50
+  prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:text-xs prose-th:font-medium prose-th:text-gray-500 dark:prose-th:text-gray-400 prose-th:uppercase
+  prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:text-gray-800 dark:prose-td:text-gray-200
+  prose-tr:hover:bg-gray-50 dark:prose-tr:hover:bg-gray-800/50
 `;
 
 // Memoized Header Component
@@ -149,26 +163,37 @@ const Header: React.FC<{
   showWordCount: boolean;
   wordCount: WordCount;
   theme: "light" | "dark";
-}> = memo(({ title, showWordCount, wordCount, theme }) => (
+  toggleWordCount: () => void;
+}> = memo(({ title, showWordCount, wordCount, theme, toggleWordCount }) => (
   <div
-    className={`flex justify-between items-center px-4 py-3 border-b transition-colors ${
-      theme === "dark" ? "bg-gray-800" : "bg-gray-50"
+    className={`flex justify-between items-center px-4 py-3 transition-colors ${
+      theme === "dark" ? "bg-gray-900" : "bg-white"
     }`}
   >
     <div className="flex items-center gap-2">
-      <FileText className="w-5 h-5 text-blue-500" />
-      <h2
-        className="text-lg font-semibold truncate"
-        style={{ maxWidth: "50vw" }}
-      >
+      <FileText className="w-5 h-5 text-teal-500" />
+      <h2 className="text-lg font-semibold truncate max-w-[50vw]">
         {title}
         {showWordCount && (
           <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
-            {wordCount.words} words • {wordCount.chars} characters
+            {wordCount.words} words • {wordCount.chars} chars
           </span>
         )}
       </h2>
     </div>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleWordCount}
+      title={showWordCount ? "Hide word count" : "Show word count"}
+      className={`${
+        theme === "dark"
+          ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+          : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+      } rounded-full`}
+    >
+      <FileText className="w-4 h-4" />
+    </Button>
   </div>
 ));
 
@@ -182,6 +207,9 @@ const ActionButtons: React.FC<{
   toggleEditMode: () => void;
   handleCopy: () => void;
   toggleFullscreen: () => void;
+  toggleTheme: () => void;
+  toggleFindReplace: () => void;
+  handleExportImage: () => void;
 }> = memo(
   ({
     isEditing,
@@ -192,53 +220,94 @@ const ActionButtons: React.FC<{
     toggleEditMode,
     handleCopy,
     toggleFullscreen,
+    toggleTheme,
+    toggleFindReplace,
+    handleExportImage,
   }) => (
-    <div className="flex gap-2 items-center">
+    <div className="flex gap-1 items-center">
       {!isEditing && !readOnly && (
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={toggleEditMode}
           title="Edit content"
-          aria-label="Edit content"
           className={`${
             theme === "dark"
-              ? "text-gray-400 hover:text-gray-100"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
+              ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+              : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+          } transition-colors rounded-full`}
         >
           <PenLine className="w-4 h-4" />
         </Button>
       )}
+      {isEditing && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleFindReplace}
+          title="Find and replace"
+          className={`${
+            theme === "dark"
+              ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+              : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+          } transition-colors rounded-full`}
+        >
+          <Search className="w-4 h-4" />
+        </Button>
+      )}
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={handleCopy}
         title="Copy content"
-        aria-label="Copy content"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-gray-100"
-            : "text-gray-600 hover:text-gray-900"
-          }`}
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } transition-colors rounded-full`}
       >
         {copied ? (
-          <CheckCircle className="w-4 h-4 text-green-500" />
+          <CheckCircle className="w-4 h-4 text-teal-500 animate-pulse" />
         ) : (
           <Copy className="w-4 h-4" />
         )}
       </Button>
       <Button
         variant="ghost"
-        size="sm"
-        onClick={toggleFullscreen}
-        title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-        aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        size="icon"
+        onClick={handleExportImage}
+        title="Export as image"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-gray-100"
-            : "text-gray-600 hover:text-gray-900"
-          }`}
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } transition-colors rounded-full`}
+      >
+        <Image className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleTheme}
+        title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } transition-colors rounded-full`}
+      >
+        <Palette className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleFullscreen}
+        title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } transition-colors rounded-full`}
       >
         {isFullscreen ? (
           <Minimize2 className="w-4 h-4" />
@@ -287,46 +356,44 @@ const DownloadMenu: React.FC<{
       <div className="relative" ref={downloadOptionsRef}>
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={toggleDownloadOptions}
           title="Download options"
-          aria-label="Download options"
           className={`flex items-center ${
             theme === "dark"
-              ? "text-gray-400 hover:text-gray-100"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
+              ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+              : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+          } transition-colors rounded-full`}
         >
           <Download className="w-4 h-4" />
-          <ChevronDown className="w-3 h-3 ml-1" />
         </Button>
         {showDownloadOptions && (
           <div
-            className={`absolute right-0 top-full mt-1 rounded-md shadow-lg z-50 border w-40 overflow-hidden ${
+            className={`absolute right-0 top-full mt-2 rounded-lg shadow-lg z-50 w-40 overflow-hidden transform transition-all duration-200 ease-in-out ${
               theme === "dark"
                 ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200"
-            }`}
+                : "bg-white border-gray-100"
+            } ${showDownloadOptions ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
           >
             <button
-              className={`flex items-center w-full px-3 py-2 text-sm text-left ${
+              className={`flex items-center w-full px-3 py-2 text-sm text-left transition-colors ${
                 theme === "dark"
                   ? "text-gray-300 hover:bg-gray-700"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
               onClick={handleDownloadMarkdown}
             >
-              {contentType === "html" ? "HTML (.html)" : "Markdown (.md)"}
+              {contentType === "html" ? "HTML" : "Markdown"}
             </button>
             <button
-              className={`flex items-center w-full px-3 py-2 text-sm text-left border-t ${
+              className={`flex items-center w-full px-3 py-2 text-sm text-left transition-colors ${
                 theme === "dark"
-                  ? "text-gray-300 hover:bg-gray-700 border-gray-700"
-                  : "text-gray-700 hover:bg-gray-100 border-gray-200"
+                  ? "text-gray-300 hover:bg-gray-700 border-t border-gray-700"
+                  : "text-gray-700 hover:bg-gray-100 border-t border-gray-100"
               }`}
               onClick={handleDownloadPDF}
             >
-              PDF (.pdf)
+              PDF
             </button>
           </div>
         )}
@@ -335,11 +402,81 @@ const DownloadMenu: React.FC<{
   }
 );
 
+// Find and Replace Component
+const FindReplace: React.FC<{
+  theme: "light" | "dark";
+  handleFindReplace: (find: string, replace: string) => void;
+  toggleFindReplace: () => void;
+}> = ({ theme, handleFindReplace, toggleFindReplace }) => {
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+
+  const handleSubmit = () => {
+    if (findText) {
+      handleFindReplace(findText, replaceText);
+      setFindText("");
+      setReplaceText("");
+    }
+  };
+
+  return (
+    <div
+      className={`flex gap-2 p-2 border-b ${
+        theme === "dark" ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
+      }`}
+    >
+      <input
+        type="text"
+        value={findText}
+        onChange={(e) => setFindText(e.target.value)}
+        placeholder="Find..."
+        className={`flex-1 p-2 text-sm rounded-lg outline-none ${
+          theme === "dark"
+            ? "bg-gray-800 text-gray-200 border-gray-600"
+            : "bg-gray-100 text-gray-800 border-gray-200"
+        } border focus:ring-2 focus:ring-teal-500`}
+      />
+      <input
+        type="text"
+        value={replaceText}
+        onChange={(e) => setReplaceText(e.target.value)}
+        placeholder="Replace with..."
+        className={`flex-1 p-2 text-sm rounded-lg outline-none ${
+          theme === "dark"
+            ? "bg-gray-800 text-gray-200 border-gray-600"
+            : "bg-gray-100 text-gray-800 border-gray-200"
+        } border focus:ring-2 focus:ring-teal-500`}
+      />
+      <Button
+        variant="default"
+        size="sm"
+        onClick={handleSubmit}
+        className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600"
+      >
+        Replace
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={toggleFindReplace}
+        className="text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800"
+      >
+        Close
+      </Button>
+    </div>
+  );
+};
+
 // Toolbar Component
 const EditorToolbar: React.FC<{
   editorRef: React.RefObject<HTMLElement>;
   theme: "light" | "dark";
-}> = ({ editorRef, theme }) => {
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  autosaveStatus: "idle" | "saving" | "saved";
+}> = ({ editorRef, theme, undo, redo, canUndo, canRedo, autosaveStatus }) => {
   const applyFormatting = (prefix: string, suffix: string) => {
     if (!editorRef.current) return;
     const selection = window.getSelection();
@@ -373,46 +510,107 @@ const EditorToolbar: React.FC<{
 
   return (
     <div
-      className={`flex gap-2 p-2 border-b sticky top-0 z-10 ${
-        theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+      className={`flex gap-1 p-2 sticky top-0 z-10 items-center ${
+        theme === "dark" ? "bg-gray-900" : "bg-white"
       }`}
     >
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
+        onClick={undo}
+        disabled={!canUndo}
+        title="Undo"
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } rounded-full ${!canUndo ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <Undo className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={redo}
+        disabled={!canRedo}
+        title="Redo"
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } rounded-full ${!canRedo ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <Redo className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => applyFormatting("**", "**")}
         title="Bold"
-        aria-label="Bold"
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } rounded-full`}
       >
         <Bold className="w-4 h-4" />
       </Button>
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={() => applyFormatting("*", "*")}
         title="Italic"
-        aria-label="Italic"
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } rounded-full`}
       >
         <Italic className="w-4 h-4" />
       </Button>
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={() => insertList("ul")}
         title="Bullet List"
-        aria-label="Bullet List"
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } rounded-full`}
       >
         <List className="w-4 h-4" />
       </Button>
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={insertLink}
         title="Insert Link"
-        aria-label="Insert Link"
+        className={`${
+          theme === "dark"
+            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
+        } rounded-full`}
       >
         <Link className="w-4 h-4" />
       </Button>
+      <span
+        className={`ml-auto text-xs ${
+          theme === "dark" ? "text-gray-400" : "text-gray-600"
+        } ${
+          autosaveStatus === "saving"
+            ? "text-yellow-500"
+            : autosaveStatus === "saved"
+            ? "text-teal-500"
+            : ""
+        }`}
+      >
+        {autosaveStatus === "saving"
+          ? "Saving..."
+          : autosaveStatus === "saved"
+          ? "Saved"
+          : ""}
+      </span>
     </div>
   );
 };
@@ -428,23 +626,27 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
     handleChange,
     toggleEditMode,
     editorRef,
+    contentRef,
     onSave,
+    undo,
+    redo,
+    history,
+    historyIndex,
+    showFindReplace,
+    toggleFindReplace,
+    handleFindReplace,
+    autosaveStatus,
   }) => {
-    // Debug logging for edit mode
-    useEffect(() => {
-      console.log("ContentArea: isEditing =", isEditing);
-    }, [isEditing]);
-
     const markdownComponents: Record<string, React.FC<MarkdownComponentProps>> = {
       code: ({ node, className, children, inline }) => {
         const match = /language-(\w+)/.exec(className || "");
         return !inline && match ? (
           <div className="relative group mb-6 mt-4">
             <div
-              className={`flex items-center justify-between px-4 py-1 text-xs rounded-t-md border-t border-r border-l ${
+              className={`flex items-center justify-between px-4 py-1 text-xs rounded-t-lg ${
                 theme === "dark"
-                  ? "bg-gray-800 text-gray-300 border-gray-700"
-                  : "bg-gray-100 text-gray-600 border-gray-200"
+                  ? "bg-gray-800 text-gray-300"
+                  : "bg-gray-100 text-gray-600"
               }`}
             >
               <span>{match[1]}</span>
@@ -464,7 +666,7 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
               style={theme === "dark" ? vscDarkPlus : prism}
               language={match[1]}
               PreTag="div"
-              className="rounded-t-none rounded-b-md mt-0 pt-4 pb-4 border-r border-b border-l border-gray-200 dark:border-gray-700"
+              className="rounded-b-lg mt-0 pt-4 pb-4"
               customStyle={{ margin: 0, fontSize: "0.9rem" }}
             >
               {String(children).replace(/\n$/, "")}
@@ -482,7 +684,7 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
       },
       blockquote: ({ children }) => (
         <blockquote
-          className={`border-l-4 border-blue-500 pl-4 italic my-4 ${
+          className={`border-l-4 border-teal-500 pl-4 italic my-4 ${
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
@@ -497,29 +699,23 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
       ),
       li: ({ children }) => <li className="mb-1">{children}</li>,
       h1: ({ children }) => (
-        <h1
-          className={`text-2xl font-bold mt-6 mb-4 pb-1 border-b ${
-            theme === "dark" ? "border-gray-700" : "border-gray-200"
-          }`}
-        >
-          {children}
-        </h1>
+        <h1 className="text-3xl font-bold mt-8 mb-4">{children}</h1>
       ),
       h2: ({ children }) => (
-        <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
+        <h2 className="text-2xl font-bold mt-6 mb-3">{children}</h2>
       ),
       h3: ({ children }) => (
-        <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>
+        <h3 className="text-xl font-semibold mt-4 mb-2">{children}</h3>
       ),
       table: ({ children }) => (
-        <div className="overflow-x-auto my-6 rounded-md border border-gray-200 dark:border-gray-700">
+        <div className="overflow-x-auto my-6 rounded-lg">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             {children}
           </table>
         </div>
       ),
       thead: ({ children }) => (
-        <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
+        <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>
       ),
       tbody: ({ children }) => (
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -544,37 +740,44 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
     };
 
     const handleSave = () => {
-      console.log("Saving content:", content);
       if (onSave) {
         onSave(content);
       }
       toggleEditMode();
     };
 
-    const handleCancel = () => {
-      console.log("Cancel editing");
-      toggleEditMode();
-    };
-
     return (
       <div
         className={`${
-          isFullscreen
-            ? "h-[calc(100vh-120px)]"
-            : "h-auto min-h-[400px]"
-        } transition-all duration-300 flex flex-col`}
+          isFullscreen ? "h-[calc(100vh-100px)]" : "h-auto min-h-[400px]"
+        } transition-all duration-300 flex flex-col font-sans`}
       >
         {isEditing ? (
           <>
-            <EditorToolbar editorRef={editorRef} theme={theme} />
+            {showFindReplace && (
+              <FindReplace
+                theme={theme}
+                handleFindReplace={handleFindReplace}
+                toggleFindReplace={toggleFindReplace}
+              />
+            )}
+            <EditorToolbar
+              editorRef={editorRef}
+              theme={theme}
+              undo={undo}
+              redo={redo}
+              canUndo={historyIndex > 0}
+              canRedo={historyIndex < history.length - 1}
+              autosaveStatus={autosaveStatus}
+            />
             <div className="flex-1 flex overflow-hidden">
-              <div className="w-1/2 p-4 overflow-auto border-r border-gray-200 dark:border-gray-700">
+              <div className="w-1/2 p-4 overflow-auto">
                 <ContentEditable
                   innerRef={editorRef}
                   html={content}
                   onChange={handleChange}
                   disabled={false}
-                  className={`w-full h-full p-4 font-mono text-sm outline-none focus:ring-1 focus:ring-blue-500 ${
+                  className={`w-full h-full p-4 font-mono text-sm outline-none focus:ring-2 focus:ring-teal-500 rounded-lg ${
                     theme === "dark"
                       ? "bg-gray-900 text-gray-100"
                       : "bg-white text-gray-800"
@@ -597,25 +800,21 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
               </div>
             </div>
             <div
-              className={`flex justify-end gap-4 p-4 border-t sticky bottom-0 z-20 ${
-                theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+              className={`flex justify-end gap-2 p-4 sticky bottom-0 z-20 ${
+                theme === "dark" ? "bg-gray-900" : "bg-white"
               }`}
             >
               <Button
-                size="lg"
                 variant="outline"
-                onClick={handleCancel}
-                aria-label="Cancel editing"
-                className="px-6 py-2 text-lg font-medium text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={toggleEditMode}
+                className="px-4 py-2 text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800"
               >
                 Cancel
               </Button>
               <Button
-                size="lg"
                 variant="default"
                 onClick={handleSave}
-                aria-label="Save changes"
-                className="px-6 py-2 text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600"
               >
                 Save
               </Button>
@@ -624,16 +823,11 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
         ) : (
           <div
             className={`flex-1 overflow-auto ${
-              theme === "dark" ? "bg-gray-950" : "bg-gray-50"
+              theme === "dark" ? "bg-gray-900" : "bg-white"
             } transition-colors`}
+            ref={contentRef}
           >
-            <div
-              className={`p-4 sm:p-6 m-2 rounded-lg shadow-sm border ${
-                theme === "dark"
-                  ? "bg-gray-900 border-gray-800"
-                  : "bg-white border-gray-100"
-              }`}
-            >
+            <div className={`p-6 m-2 rounded-lg ${theme === "dark" ? "bg-gray-900" : "bg-white"}`}>
               {contentType === "html" ? (
                 <div
                   className={`${MARKDOWN_CLASSES} ${
@@ -668,8 +862,8 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   title = "AI Output",
   onEdit,
   readOnly = false,
-  theme = "light",
-  showWordCount = false,
+  theme: initialTheme = "light",
+  showWordCount: initialShowWordCount = false,
   isHTML = false,
 }) => {
   const [content, setContent] = useState(aiOutput);
@@ -681,13 +875,15 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   const [contentType, setContentType] = useState<"html" | "markdown">(
     isHTML ? "html" : "markdown"
   );
+  const [history, setHistory] = useState<string[]>([aiOutput]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [autosaveStatus, setAutosaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
+  const [showWordCount, setShowWordCount] = useState(initialShowWordCount);
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLElement>(null);
-
-  // Debug logging for component mount and props
-  useEffect(() => {
-    console.log("OutputSection mounted with props:", { aiOutput, readOnly, isEditing });
-  }, []);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Determine content type
   const determineContentType = useCallback(
@@ -700,8 +896,6 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   // Calculate word count
   const calculateWordCount = useCallback(
     (content: string, type: "html" | "markdown") => {
-      if (!showWordCount) return { words: 0, chars: 0 };
-
       let cleanText = content;
       if (type === "html") {
         const tempDiv = document.createElement("div");
@@ -717,7 +911,7 @@ const OutputSection: React.FC<OutputSectionProps> = ({
       const chars = cleanText.replace(/\s/g, "").length || 0;
       return { words, chars };
     },
-    [showWordCount]
+    []
   );
 
   // Memoized file name
@@ -732,6 +926,8 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   // Initialize content
   useEffect(() => {
     setContent(aiOutput);
+    setHistory([aiOutput]);
+    setHistoryIndex(0);
     const type = determineContentType(aiOutput);
     setContentType(type);
     setWordCount(calculateWordCount(aiOutput, type));
@@ -752,6 +948,18 @@ const OutputSection: React.FC<OutputSectionProps> = ({
     }
   }, [isEditing]);
 
+  // Autosave effect
+  useEffect(() => {
+    if (isEditing && autosaveStatus === "saving" && onEdit) {
+      const timer = setTimeout(() => {
+        onEdit(content);
+        setAutosaveStatus("saved");
+        setTimeout(() => setAutosaveStatus("idle"), 2000);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [autosaveStatus, content, isEditing, onEdit]);
+
   // Event handlers
   const handleChange = useMemo(
     () =>
@@ -759,8 +967,45 @@ const OutputSection: React.FC<OutputSectionProps> = ({
         const newContent = e.target.value;
         setContent(newContent);
         setWordCount(calculateWordCount(newContent, contentType));
-      }, 300),
-    [calculateWordCount, contentType]
+        setHistory((prev) => {
+          const newHistory = prev.slice(0, historyIndex + 1);
+          return [...newHistory, newContent].slice(-50); // Limit history to 50 entries
+        });
+        setHistoryIndex((prev) => prev + 1);
+        setAutosaveStatus("saving");
+      }, 500),
+    [calculateWordCount, contentType, historyIndex]
+  );
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex((prev) => prev - 1);
+      setContent(history[historyIndex - 1]);
+      setWordCount(calculateWordCount(history[historyIndex - 1], contentType));
+    }
+  }, [history, historyIndex, contentType, calculateWordCount]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex((prev) => prev + 1);
+      setContent(history[historyIndex + 1]);
+      setWordCount(calculateWordCount(history[historyIndex + 1], contentType));
+    }
+  }, [history, historyIndex, contentType, calculateWordCount]);
+
+  const handleFindReplace = useCallback(
+    (find: string, replace: string) => {
+      const newContent = content.replace(new RegExp(find, "g"), replace);
+      setContent(newContent);
+      setHistory((prev) => {
+        const newHistory = prev.slice(0, historyIndex + 1);
+        return [...newHistory, newContent].slice(-50);
+      });
+      setHistoryIndex((prev) => prev + 1);
+      setWordCount(calculateWordCount(newContent, contentType));
+      setAutosaveStatus("saving");
+    },
+    [content, historyIndex, contentType, calculateWordCount]
   );
 
   const handleCopy = useCallback(async () => {
@@ -779,15 +1024,44 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   }, []);
 
   const toggleEditMode = useCallback(() => {
-    setIsEditing((prev) => {
-      console.log("Toggling edit mode:", !prev);
-      return !prev;
-    });
+    setIsEditing((prev) => !prev);
+    setShowFindReplace(false);
   }, []);
 
   const toggleDownloadOptions = useCallback(() => {
     setShowDownloadOptions((prev) => !prev);
   }, []);
+
+  const toggleFindReplace = useCallback(() => {
+    setShowFindReplace((prev) => !prev);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  }, []);
+
+  const toggleWordCount = useCallback(() => {
+    setShowWordCount((prev) => !prev);
+  }, []);
+
+  const handleExportImage = useCallback(async () => {
+    if (!contentRef.current) return;
+    try {
+      const canvas = await html2canvas(contentRef.current, {
+        backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+        scale: 2,
+      });
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = `${getFileName}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Failed to export image:", err);
+      alert("Failed to export image.");
+    }
+  }, [getFileName, theme]);
 
   const handleDownloadMarkdown = useCallback(() => {
     downloadFile(
@@ -821,17 +1095,16 @@ const OutputSection: React.FC<OutputSectionProps> = ({
           <meta charset="utf-8">
           <style>
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               line-height: 1.6;
               max-width: 800px;
               margin: 0 auto;
               padding: 20px;
               color: #333;
             }
-            h1, h2, h3 { margin-top: 1.5em; margin-bottom: 0.5em; }
-            h1 { font-size: 2em; }
-            h2 { font-size: 1.5em; }
-            h3 { font-size: 1.2em; }
+            h1 { font-size: 2em; margin: 1.5em 0 0.5em; }
+            h2 { font-size: 1.5em; margin: 1.2em 0 0.4em; }
+            h3 { font-size: 1.2em; margin: 1em 0 0.3em; }
             p { margin-bottom: 1em; }
             pre {
               background: #f5f5f5;
@@ -846,13 +1119,10 @@ const OutputSection: React.FC<OutputSectionProps> = ({
               border-radius: 3px;
               font-family: monospace;
             }
-            ul, ol { padding-left: 2em; }
+            ul, ol { padding-left: 2em; margin: 1em 0; }
             @media print {
               body { font-size: 12pt; }
               @page { margin: 1.5cm; }
-            }
-            @media screen and (max-width: 640px) {
-              body { padding: 10px; }
             }
           </style>
         </head>
@@ -881,19 +1151,19 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`bg-background border rounded-lg shadow-md overflow-visible transition-all duration-300 ${
-        isFullscreen ? "fixed inset-0 z-50 m-1 sm:m-2" : "w-full"
-      } ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+      className={`rounded-xl overflow-hidden transition-all duration-300 ${
+        isFullscreen ? "fixed inset-0 z-50 m-2" : "w-full"
+      } ${theme === "dark" ? "bg-gray-900" : "bg-white"} shadow-lg`}
     >
       <Header
         title={title}
         showWordCount={showWordCount}
         wordCount={wordCount}
         theme={theme}
+        toggleWordCount={toggleWordCount}
       />
-      <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-gray-800">
-        <div />
-        <div className="flex gap-2">
+      <div className="flex justify-end items-center px-4 py-2">
+        <div className="flex gap-1">
           <DownloadMenu
             showDownloadOptions={showDownloadOptions}
             contentType={contentType}
@@ -911,6 +1181,9 @@ const OutputSection: React.FC<OutputSectionProps> = ({
             toggleEditMode={toggleEditMode}
             handleCopy={handleCopy}
             toggleFullscreen={toggleFullscreen}
+            toggleTheme={toggleTheme}
+            toggleFindReplace={toggleFindReplace}
+            handleExportImage={handleExportImage}
           />
         </div>
       </div>
@@ -923,7 +1196,16 @@ const OutputSection: React.FC<OutputSectionProps> = ({
         handleChange={handleChange}
         toggleEditMode={toggleEditMode}
         editorRef={editorRef}
+        contentRef={contentRef}
         onSave={onEdit}
+        undo={undo}
+        redo={redo}
+        history={history}
+        historyIndex={historyIndex}
+        showFindReplace={showFindReplace}
+        toggleFindReplace={toggleFindReplace}
+        handleFindReplace={handleFindReplace}
+        autosaveStatus={autosaveStatus}
       />
     </div>
   );

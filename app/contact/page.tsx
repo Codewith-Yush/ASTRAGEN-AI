@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
+import Image from 'next/image';
 
 // Create a type for the form status
 type SubmitStatusType = 'success' | 'error' | null;
@@ -215,7 +216,7 @@ export default function ContactPage() {
         animate={inView ? "visible" : "hidden"}
         variants={staggerItems}
       >
-        {/* Header */}
+        {/* Header with GIF */}
         <motion.div
           className="text-center mb-12"
           variants={fadeInUp}
@@ -240,6 +241,25 @@ export default function ContactPage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
             We're here to help with any questions you might have.
           </p>
+          
+          {/* Contact GIF - centered before the grid */}
+          <motion.div 
+            className="max-w-md mx-auto mt-8 mb-12"
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+          >
+<div className="relative w-full h-64 sm:h-80 overflow-hidden rounded-xl shadow-lg">
+  <Image 
+    src="/c.svg" 
+    alt="Contact Us Animation" 
+    layout="fill"
+    objectFit="contain" // Changed from "cover" to "contain"
+    className="rounded-xl"
+    priority
+  />
+</div>
+          </motion.div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
