@@ -6,7 +6,7 @@ import ClerkProviderWrapper from "@/app/components/ClerkProviderWrapper";
 const inter = Outfit({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "CrafterAi",
+  title: "Astragen AI",
   description: "AI Content Generator",
   icons: {
     icon: "/favicon.ico",
