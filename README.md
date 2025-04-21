@@ -171,7 +171,7 @@ npm run dev
   <table>
     <tr>
       <td style="padding:5px">
-        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Home+Screen" alt="Home Screen" width="100%" style="border-radius:10px"/>
+        <img src="./public/screenshots/homepage.png" alt="Home Screen" width="100%" style="border-radius:10px"/>
         <p align="center">Home Screen</p>
       </td>
       <td style="padding:5px">
