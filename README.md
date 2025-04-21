@@ -40,7 +40,7 @@
 ## ✨ Demo
 
 <div align="center">
-  <img src="https://via.placeholder.com/1200x600/000000/FFFFFF?text=AI+Content+Generator+Demo" alt="Demo Screenshot" width="80%" />
+  <img src="./purple.gif" alt="Demo Screenshot" width="80%" />
   
   <p align="center">
     <a href="https://ai-content-generator.demo" target="_blank">
