@@ -175,11 +175,11 @@ npm run dev
         <p align="center">Home Screen</p>
       </td>
       <td style="padding:5px">
-        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Generator" alt="Generator Interface" width="100%" style="border-radius:10px"/>
+        <img src="./public/screenshots/generator.png"" alt="Generator Interface" width="100%" style="border-radius:10px"/>
         <p align="center">Generator Interface</p>
       </td>
       <td style="padding:5px">
-        <img src="https://via.placeholder.com/400x800/111111/FFFFFF?text=Content+Library" alt="Content Library" width="100%" style="border-radius:10px"/>
+        <img src="./public/screenshots/library.png"" alt="Content Library" width="100%" style="border-radius:10px"/>
         <p align="center">Content Library</p>
       </td>
     </tr>
