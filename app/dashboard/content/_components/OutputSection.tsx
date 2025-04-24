@@ -136,25 +136,26 @@ interface ContentAreaProps {
   autosaveStatus: "idle" | "saving" | "saved";
 }
 
-// Common styles
+// Updated styles with enhanced design
 const MARKDOWN_CLASSES = `
   prose max-w-none
-  prose-headings:font-semibold
-  prose-h1:text-3xl prose-h1:font-bold prose-h1:mt-8 prose-h1:mb-4
-  prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-6 prose-h2:mb-3
-  prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-4 prose-h3:mb-2
-  prose-p:leading-relaxed prose-p:mb-4 prose-p:text-gray-700 dark:prose-p:text-gray-200
-  prose-a:text-teal-500 prose-a:no-underline hover:prose-a:underline
-  prose-blockquote:border-l-4 prose-blockquote:border-teal-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:my-4
+  prose-headings:font-bold prose-headings:tracking-tight
+  prose-h1:text-4xl prose-h1:mt-10 prose-h1:mb-6 prose-h1:text-gray-900 dark:prose-h1:text-gray-100
+  prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-gray-800 dark:prose-h2:text-gray-200
+  prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-gray-700 dark:prose-h3:text-gray-300
+  prose-p:leading-relaxed prose-p:mb-4 prose-p:text-gray-600 dark:prose-p:text-gray-300
+  prose-a:text-indigo-500 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-indigo-600 dark:prose-a:text-indigo-400 dark:hover:prose-a:text-indigo-300
+  prose-blockquote:border-l-4 prose-blockquote:border-indigo-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:my-4 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-300
   prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4 prose-ul:space-y-2
   prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4 prose-ol:space-y-2
   prose-li:mb-1
-  prose-table:min-w-full prose-table:my-6 prose-table:border prose-table:rounded-lg
-  prose-thead:bg-gray-100 dark:prose-thead:bg-gray-800
-  prose-tbody:divide-y
+  prose-table:min-w-full prose-table:my-6 prose-table:border prose-table:rounded-xl prose-table:shadow-sm
+  prose-thead:bg-gray-50 dark:prose-thead:bg-gray-800
+  prose-tbody:divide-y prose-tbody:divide-gray-200 dark:prose-tbody:divide-gray-700
   prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:text-xs prose-th:font-medium prose-th:text-gray-500 dark:prose-th:text-gray-400 prose-th:uppercase
   prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:text-gray-800 dark:prose-td:text-gray-200
   prose-tr:hover:bg-gray-50 dark:prose-tr:hover:bg-gray-800/50
+  prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
 `;
 
 // Memoized Header Component
@@ -166,16 +167,16 @@ const Header: React.FC<{
   toggleWordCount: () => void;
 }> = memo(({ title, showWordCount, wordCount, theme, toggleWordCount }) => (
   <div
-    className={`flex justify-between items-center px-4 py-3 transition-colors ${
-      theme === "dark" ? "bg-gray-900" : "bg-white"
-    }`}
+    className={`flex justify-between items-center px-6 py-4 transition-all duration-300 ${
+      theme === "dark" ? "bg-gray-950" : "bg-white"
+    } border-b border-gray-200 dark:border-gray-800`}
   >
-    <div className="flex items-center gap-2">
-      <FileText className="w-5 h-5 text-teal-500" />
-      <h2 className="text-lg font-semibold truncate max-w-[50vw]">
+    <div className="flex items-center gap-3">
+      <FileText className="w-6 h-6 text-indigo-500" />
+      <h2 className="text-xl font-semibold truncate max-w-[50vw] text-gray-900 dark:text-gray-100">
         {title}
         {showWordCount && (
-          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
+          <span className="ml-3 text-sm font-normal text-gray-500 dark:text-gray-400">
             {wordCount.words} words • {wordCount.chars} chars
           </span>
         )}
@@ -188,11 +189,11 @@ const Header: React.FC<{
       title={showWordCount ? "Hide word count" : "Show word count"}
       className={`${
         theme === "dark"
-          ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-          : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-      } rounded-full`}
+          ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+          : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+      } rounded-full transition-colors duration-200`}
     >
-      <FileText className="w-4 h-4" />
+      <FileText className="w-5 h-5" />
     </Button>
   </div>
 ));
@@ -224,7 +225,7 @@ const ActionButtons: React.FC<{
     toggleFindReplace,
     handleExportImage,
   }) => (
-    <div className="flex gap-1 items-center">
+    <div className="flex gap-2 items-center">
       {!isEditing && !readOnly && (
         <Button
           variant="ghost"
@@ -233,11 +234,11 @@ const ActionButtons: React.FC<{
           title="Edit content"
           className={`${
             theme === "dark"
-              ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-              : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-          } transition-colors rounded-full`}
+              ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+              : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+          } rounded-full transition-all duration-200 transform hover:scale-105`}
         >
-          <PenLine className="w-4 h-4" />
+          <PenLine className="w-5 h-5" />
         </Button>
       )}
       {isEditing && (
@@ -248,11 +249,11 @@ const ActionButtons: React.FC<{
           title="Find and replace"
           className={`${
             theme === "dark"
-              ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-              : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-          } transition-colors rounded-full`}
+              ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+              : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+          } rounded-full transition-all duration-200 transform hover:scale-105`}
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-5 h-5" />
         </Button>
       )}
       <Button
@@ -262,14 +263,14 @@ const ActionButtons: React.FC<{
         title="Copy content"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } transition-colors rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
         {copied ? (
-          <CheckCircle className="w-4 h-4 text-teal-500 animate-pulse" />
+          <CheckCircle className="w-5 h-5 text-indigo-500 animate-pulse" />
         ) : (
-          <Copy className="w-4 h-4" />
+          <Copy className="w-5 h-5" />
         )}
       </Button>
       <Button
@@ -279,11 +280,11 @@ const ActionButtons: React.FC<{
         title="Export as image"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } transition-colors rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
-        <Image className="w-4 h-4" />
+        <Image className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -292,11 +293,11 @@ const ActionButtons: React.FC<{
         title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } transition-colors rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
-        <Palette className="w-4 h-4" />
+        <Palette className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -305,14 +306,14 @@ const ActionButtons: React.FC<{
         title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } transition-colors rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
         {isFullscreen ? (
-          <Minimize2 className="w-4 h-4" />
+          <Minimize2 className="w-5 h-5" />
         ) : (
-          <Maximize2 className="w-4 h-4" />
+          <Maximize2 className="w-5 h-5" />
         )}
       </Button>
     </div>
@@ -361,35 +362,35 @@ const DownloadMenu: React.FC<{
           title="Download options"
           className={`flex items-center ${
             theme === "dark"
-              ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-              : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-          } transition-colors rounded-full`}
+              ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+              : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+          } rounded-full transition-all duration-200 transform hover:scale-105`}
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-5 h-5" />
         </Button>
         {showDownloadOptions && (
           <div
-            className={`absolute right-0 top-full mt-2 rounded-lg shadow-lg z-50 w-40 overflow-hidden transform transition-all duration-200 ease-in-out ${
+            className={`absolute right-0 top-full mt-2 rounded-xl shadow-xl z-50 w-48 overflow-hidden transform transition-all duration-300 ease-in-out ${
               theme === "dark"
-                ? "bg-gray-800 border-gray-700"
+                ? "bg-gray-900 border-gray-800"
                 : "bg-white border-gray-100"
             } ${showDownloadOptions ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
           >
             <button
-              className={`flex items-center w-full px-3 py-2 text-sm text-left transition-colors ${
+              className={`flex items-center w-full px-4 py-3 text-sm text-left transition-colors duration-200 ${
                 theme === "dark"
-                  ? "text-gray-300 hover:bg-gray-700"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "text-gray-200 hover:bg-gray-800 hover:text-indigo-400"
+                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-500"
               }`}
               onClick={handleDownloadMarkdown}
             >
               {contentType === "html" ? "HTML" : "Markdown"}
             </button>
             <button
-              className={`flex items-center w-full px-3 py-2 text-sm text-left transition-colors ${
+              className={`flex items-center w-full px-4 py-3 text-sm text-left transition-colors duration-200 ${
                 theme === "dark"
-                  ? "text-gray-300 hover:bg-gray-700 border-t border-gray-700"
-                  : "text-gray-700 hover:bg-gray-100 border-t border-gray-100"
+                  ? "text-gray-200 hover:bg-gray-800 hover:text-indigo-400 border-t border-gray-800"
+                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-500 border-t border-gray-100"
               }`}
               onClick={handleDownloadPDF}
             >
@@ -421,37 +422,37 @@ const FindReplace: React.FC<{
 
   return (
     <div
-      className={`flex gap-2 p-2 border-b ${
-        theme === "dark" ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
-      }`}
+      className={`flex gap-3 p-4 border-b ${
+        theme === "dark" ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"
+      } shadow-sm`}
     >
       <input
         type="text"
         value={findText}
         onChange={(e) => setFindText(e.target.value)}
         placeholder="Find..."
-        className={`flex-1 p-2 text-sm rounded-lg outline-none ${
+        className={`flex-1 p-3 text-sm rounded-xl outline-none transition-all duration-200 ${
           theme === "dark"
-            ? "bg-gray-800 text-gray-200 border-gray-600"
-            : "bg-gray-100 text-gray-800 border-gray-200"
-        } border focus:ring-2 focus:ring-teal-500`}
+            ? "bg-gray-900 text-gray-200 border-gray-700 focus:ring-2 focus:ring-indigo-500"
+            : "bg-gray-50 text-gray-800 border-gray-200 focus:ring-2 focus:ring-indigo-500"
+        } border`}
       />
       <input
         type="text"
         value={replaceText}
         onChange={(e) => setReplaceText(e.target.value)}
         placeholder="Replace with..."
-        className={`flex-1 p-2 text-sm rounded-lg outline-none ${
+        className={`flex-1 p-3 text-sm rounded-xl outline-none transition-all duration-200 ${
           theme === "dark"
-            ? "bg-gray-800 text-gray-200 border-gray-600"
-            : "bg-gray-100 text-gray-800 border-gray-200"
-        } border focus:ring-2 focus:ring-teal-500`}
+            ? "bg-gray-900 text-gray-200 border-gray-700 focus:ring-2 focus:ring-indigo-500"
+            : "bg-gray-50 text-gray-800 border-gray-200 focus:ring-2 focus:ring-indigo-500"
+        } border`}
       />
       <Button
         variant="default"
         size="sm"
         onClick={handleSubmit}
-        className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600"
+        className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 rounded-xl px-4 transition-all duration-200 transform hover:scale-105"
       >
         Replace
       </Button>
@@ -459,7 +460,7 @@ const FindReplace: React.FC<{
         variant="outline"
         size="sm"
         onClick={toggleFindReplace}
-        className="text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800"
+        className="text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-800 rounded-xl px-4 transition-all duration-200"
       >
         Close
       </Button>
@@ -501,7 +502,7 @@ const EditorToolbar: React.FC<{
   };
 
   const insertLink = () => {
-    const url = prompt("Enter the URL:");
+    const url = prompt("Enter Geoff's URL:");
     if (url) {
       const linkText = prompt("Enter the link text:") || "Link";
       document.execCommand("insertText", false, `[${linkText}](${url})`);
@@ -510,9 +511,9 @@ const EditorToolbar: React.FC<{
 
   return (
     <div
-      className={`flex gap-1 p-2 sticky top-0 z-10 items-center ${
-        theme === "dark" ? "bg-gray-900" : "bg-white"
-      }`}
+      className={`flex gap-2 p-4 sticky top-0 z-10 items-center ${
+        theme === "dark" ? "bg-gray-950" : "bg-white"
+      } border-b border-gray-200 dark:border-gray-800 shadow-sm`}
     >
       <Button
         variant="ghost"
@@ -522,11 +523,13 @@ const EditorToolbar: React.FC<{
         title="Undo"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } rounded-full ${!canUndo ? "opacity-50 cursor-not-allowed" : ""}`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105 ${
+          !canUndo ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
-        <Undo className="w-4 h-4" />
+        <Undo className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -536,11 +539,13 @@ const EditorToolbar: React.FC<{
         title="Redo"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } rounded-full ${!canRedo ? "opacity-50 cursor-not-allowed" : ""}`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105 ${
+          !canRedo ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
-        <Redo className="w-4 h-4" />
+        <Redo className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -549,11 +554,11 @@ const EditorToolbar: React.FC<{
         title="Bold"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
-        <Bold className="w-4 h-4" />
+        <Bold className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -562,11 +567,11 @@ const EditorToolbar: React.FC<{
         title="Italic"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
-        <Italic className="w-4 h-4" />
+        <Italic className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -575,11 +580,11 @@ const EditorToolbar: React.FC<{
         title="Bullet List"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
-        <List className="w-4 h-4" />
+        <List className="w-5 h-5" />
       </Button>
       <Button
         variant="ghost"
@@ -588,22 +593,22 @@ const EditorToolbar: React.FC<{
         title="Insert Link"
         className={`${
           theme === "dark"
-            ? "text-gray-400 hover:text-teal-400 hover:bg-gray-800"
-            : "text-gray-600 hover:text-teal-500 hover:bg-gray-100"
-        } rounded-full`}
+            ? "text-gray-400 hover:text-indigo-400 hover:bg-gray-800"
+            : "text-gray-600 hover:text-indigo-500 hover:bg-gray-100"
+        } rounded-full transition-all duration-200 transform hover:scale-105`}
       >
-        <Link className="w-4 h-4" />
+        <Link className="w-5 h-5" />
       </Button>
       <span
-        className={`ml-auto text-xs ${
+        className={`ml-auto text-sm font-medium ${
           theme === "dark" ? "text-gray-400" : "text-gray-600"
         } ${
           autosaveStatus === "saving"
-            ? "text-yellow-500"
+            ? "text-yellow-400"
             : autosaveStatus === "saved"
-            ? "text-teal-500"
+            ? "text-indigo-500"
             : ""
-        }`}
+        } transition-colors duration-200`}
       >
         {autosaveStatus === "saving"
           ? "Saving..."
@@ -641,9 +646,9 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
       code: ({ node, className, children, inline }) => {
         const match = /language-(\w+)/.exec(className || "");
         return !inline && match ? (
-          <div className="relative group mb-6 mt-4">
+          <div className="relative group mb-6 mt-4 rounded-xl overflow-hidden shadow-sm">
             <div
-              className={`flex items-center justify-between px-4 py-1 text-xs rounded-t-lg ${
+              className={`flex items-center justify-between px-4 py-2 text-sm font-medium ${
                 theme === "dark"
                   ? "bg-gray-800 text-gray-300"
                   : "bg-gray-100 text-gray-600"
@@ -651,31 +656,33 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
             >
               <span>{match[1]}</span>
               <button
-                className={`p-1 rounded transition-colors ${
+                className={`p-1 rounded transition-colors duration-200 ${
                   theme === "dark"
-                    ? "hover:bg-gray-700"
-                    : "hover:bg-gray-200"
+                    ? "hover:bg-gray-700 hover:text-indigo-400"
+                    : "hover:bg-gray-200 hover:text-indigo-500"
                 }`}
                 onClick={() => navigator.clipboard.writeText(String(children))}
                 aria-label="Copy code"
               >
-                <Copy className="w-3 h-3" />
+                <Copy className="w-4 h-4" />
               </button>
             </div>
             <SyntaxHighlighter
               style={theme === "dark" ? vscDarkPlus : prism}
               language={match[1]}
               PreTag="div"
-              className="rounded-b-lg mt-0 pt-4 pb-4"
-              customStyle={{ margin: 0, fontSize: "0.9rem" }}
+              className="rounded-b-xl mt-0 pt-4 pb-4"
+              customStyle={{ margin: 0, fontSize: "0.95rem" }}
             >
               {String(children).replace(/\n$/, "")}
             </SyntaxHighlighter>
           </div>
         ) : (
           <code
-            className={`px-1 py-0.5 rounded text-sm ${
-              theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+            className={`px-1.5 py-0.5 rounded-md text-sm font-mono ${
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200"
+                : "bg-gray-100 text-gray-800"
             }`}
           >
             {children}
@@ -684,9 +691,9 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
       },
       blockquote: ({ children }) => (
         <blockquote
-          className={`border-l-4 border-teal-500 pl-4 italic my-4 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          }`}
+          className={`border-l-4 border-indigo-500 pl-4 italic my-4 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-600"
+          } bg-gray-50 dark:bg-gray-800/50 rounded-r-lg py-2`}
         >
           {children}
         </blockquote>
@@ -699,23 +706,29 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
       ),
       li: ({ children }) => <li className="mb-1">{children}</li>,
       h1: ({ children }) => (
-        <h1 className="text-3xl font-bold mt-8 mb-4">{children}</h1>
+        <h1 className="text-4xl font-bold mt-10 mb-6 text-gray-900 dark:text-gray-100">
+          {children}
+        </h1>
       ),
       h2: ({ children }) => (
-        <h2 className="text-2xl font-bold mt-6 mb-3">{children}</h2>
+        <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-800 dark:text-gray-200">
+          {children}
+        </h2>
       ),
       h3: ({ children }) => (
-        <h3 className="text-xl font-semibold mt-4 mb-2">{children}</h3>
+        <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-700 dark:text-gray-300">
+          {children}
+        </h3>
       ),
       table: ({ children }) => (
-        <div className="overflow-x-auto my-6 rounded-lg">
+        <div className="overflow-x-auto my-6 rounded-xl shadow-sm">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             {children}
           </table>
         </div>
       ),
       thead: ({ children }) => (
-        <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>
+        <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
       ),
       tbody: ({ children }) => (
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -723,7 +736,7 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
         </tbody>
       ),
       tr: ({ children }) => (
-        <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+        <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
           {children}
         </tr>
       ),
@@ -749,8 +762,8 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
     return (
       <div
         className={`${
-          isFullscreen ? "h-[calc(100vh-100px)]" : "h-auto min-h-[400px]"
-        } transition-all duration-300 flex flex-col font-sans`}
+          isFullscreen ? "h-[calc(100vh-120px)]" : "h-auto min-h-[500px]"
+        } transition-all duration-500 ease-in-out flex flex-col font-sans`}
       >
         {isEditing ? (
           <>
@@ -770,21 +783,21 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
               canRedo={historyIndex < history.length - 1}
               autosaveStatus={autosaveStatus}
             />
-            <div className="flex-1 flex overflow-hidden">
-              <div className="w-1/2 p-4 overflow-auto">
+            <div className="flex-1 flex overflow-hidden bg-gray-50 dark:bg-gray-950">
+              <div className="w-1/2 p-6 overflow-auto">
                 <ContentEditable
                   innerRef={editorRef}
                   html={content}
                   onChange={handleChange}
                   disabled={false}
-                  className={`w-full h-full p-4 font-mono text-sm outline-none focus:ring-2 focus:ring-teal-500 rounded-lg ${
+                  className={`w-full h-full p-4 font-mono text-sm outline-none focus:ring-2 focus:ring-indigo-500 rounded-xl transition-all duration-200 ${
                     theme === "dark"
                       ? "bg-gray-900 text-gray-100"
                       : "bg-white text-gray-800"
-                  }`}
+                  } shadow-sm`}
                 />
               </div>
-              <div className="w-1/2 p-4 overflow-auto">
+              <div className="w-1/2 p-6 overflow-auto bg-white dark:bg-gray-900 rounded-xl m-6 shadow-sm">
                 <div
                   className={`${MARKDOWN_CLASSES} ${
                     theme === "dark" ? "prose-invert" : ""
@@ -800,21 +813,21 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
               </div>
             </div>
             <div
-              className={`flex justify-end gap-2 p-4 sticky bottom-0 z-20 ${
-                theme === "dark" ? "bg-gray-900" : "bg-white"
-              }`}
+              className={`flex justify-end gap-3 p-4 sticky bottom-0 z-20 ${
+                theme === "dark" ? "bg-gray-950" : "bg-white"
+              } border-t border-gray-200 dark:border-gray-800 shadow-sm`}
             >
               <Button
                 variant="outline"
                 onClick={toggleEditMode}
-                className="px-4 py-2 text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800"
+                className="px-5 py-2 text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
               >
                 Cancel
               </Button>
               <Button
                 variant="default"
                 onClick={handleSave}
-                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600"
+                className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 rounded-xl transition-all duration-200 transform hover:scale-105"
               >
                 Save
               </Button>
@@ -823,11 +836,11 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
         ) : (
           <div
             className={`flex-1 overflow-auto ${
-              theme === "dark" ? "bg-gray-900" : "bg-white"
-            } transition-colors`}
+              theme === "dark" ? "bg-gray-950" : "bg-gray-50"
+            } transition-colors duration-300`}
             ref={contentRef}
           >
-            <div className={`p-6 m-2 rounded-lg ${theme === "dark" ? "bg-gray-900" : "bg-white"}`}>
+            <div className={`p-8 m-6 rounded-xl ${theme === "dark" ? "bg-gray-900" : "bg-white"} shadow-sm`}>
               {contentType === "html" ? (
                 <div
                   className={`${MARKDOWN_CLASSES} ${
@@ -1048,7 +1061,7 @@ const OutputSection: React.FC<OutputSectionProps> = ({
     if (!contentRef.current) return;
     try {
       const canvas = await html2canvas(contentRef.current, {
-        backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+        backgroundColor: theme === "dark" ? "#111827" : "#F9FAFB",
         scale: 2,
       });
       const link = document.createElement("a");
@@ -1099,30 +1112,35 @@ const OutputSection: React.FC<OutputSectionProps> = ({
               line-height: 1.6;
               max-width: 800px;
               margin: 0 auto;
-              padding: 20px;
-              color: #333;
+              padding: 40px;
+              color: #111827;
             }
-            h1 { font-size: 2em; margin: 1.5em 0 0.5em; }
-            h2 { font-size: 1.5em; margin: 1.2em 0 0.4em; }
-            h3 { font-size: 1.2em; margin: 1em 0 0.3em; }
-            p { margin-bottom: 1em; }
+            h1 { font-size: 2.5em; margin: 1.5em 0 0.5em; font-weight: bold; }
+            h2 { font-size: 1.75em; margin: 1.2em 0 0.4em; font-weight: bold; }
+            h3 { font-size: 1.25em; margin: 1em 0 0.3em; font-weight: 600; }
+            p { margin-bottom: 1em; color: #374151; }
             pre {
-              background: #f5f5f5;
-              padding: 1em;
-              border-radius: 4px;
+              background: #F3F4F6;
+              padding: 1.5em;
+              border-radius: 8px;
               overflow-x: auto;
               font-family: monospace;
+              font-size: 0.9em;
             }
             code {
-              background: #f5f5f5;
-              padding: 0.2em 0.4em;
-              border-radius: 3px;
+              background: #F3F4F6;
+              padding: 0.3em 0.5em;
+              border-radius: 4px;
               font-family: monospace;
+              font-size: 0.9em;
             }
             ul, ol { padding-left: 2em; margin: 1em 0; }
+            a { color: #4F46E5; text-decoration: none; }
+            a:hover { text-decoration: underline; }
             @media print {
-              body { font-size: 12pt; }
-              @page { margin: 1.5cm; }
+              body { font-size: 11pt; color: #000; }
+              @page { margin: 2cm; }
+              a { text-decoration: underline; color: #000; }
             }
           </style>
         </head>
@@ -1151,9 +1169,9 @@ const OutputSection: React.FC<OutputSectionProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`rounded-xl overflow-hidden transition-all duration-300 ${
-        isFullscreen ? "fixed inset-0 z-50 m-2" : "w-full"
-      } ${theme === "dark" ? "bg-gray-900" : "bg-white"} shadow-lg`}
+      className={`rounded-2xl overflow-hidden transition-all duration-500 ease-in-out ${
+        isFullscreen ? "fixed inset-0 z-50 m-4" : "w-full"
+      } ${theme === "dark" ? "bg-gray-950" : "bg-white"} shadow-2xl`}
     >
       <Header
         title={title}
@@ -1162,8 +1180,8 @@ const OutputSection: React.FC<OutputSectionProps> = ({
         theme={theme}
         toggleWordCount={toggleWordCount}
       />
-      <div className="flex justify-end items-center px-4 py-2">
-        <div className="flex gap-1">
+      <div className="flex justify-end items-center px-6 py-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex gap-2">
           <DownloadMenu
             showDownloadOptions={showDownloadOptions}
             contentType={contentType}
