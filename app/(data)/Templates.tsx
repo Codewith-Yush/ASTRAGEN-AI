@@ -345,56 +345,104 @@ The Industrial Revolution (1760–1840) transformed economies through mechanizat
     ],
   },
   {
-    "name": "Quiz Generator",
-    "desc": "Create customized quizzes with multiple-choice, true/false, or open-ended questions, complete with answers and explanations, in a structured and formatted layout.",
+    "name": "Comprehensive Quiz Generator",
+    "desc": "Create professionally structured quizzes with diverse question types, difficulty levels, and high educational value on any topic.",
     "category": "Education",
     "icon": "https://cdn-icons-png.flaticon.com/128/2921/2921222.png",
-    "slug": "quiz-generator",
-    "aiPrompt": "## 🧠 AI Prompt: Quiz Generator\n**Purpose**: Generate a **quiz** from the **provided content or topic** with multiple types of questions and a rich text format.\n\n---\n\n### ✅ Quiz Requirements\n- Number of questions: **5 to 15**\n- Types: \n  - Multiple Choice Questions (MCQs)\n  - True/False\n  - Open-Ended\n- Each question must include:\n  - **Question Number**\n  - **Question Text**\n  - **Answer Options** (if applicable)\n  - **Correct Answer** (bolded)\n  - **Explanation** (in italics or quotes)\n\n---\n\n### 🖍️ Formatting Instructions (Rich Text Editor Style)\n- Use **bold headings** for sections\n- Use **numbered questions** (e.g., Q1, Q2, etc.)\n- Use **bullet points (A–D)** for MCQ options\n- Highlight **correct answers** clearly\n- Add brief **explanations** for each answer\n\n---\n\n### 🧾 Example Output\n**🔹 Topic**: *Photosynthesis*\n\n**Q1. What is the main pigment involved in photosynthesis?**  \n- A. Hemoglobin  \n- B. Melanin  \n- C. Carotene  \n- D. **Chlorophyll**  \n*Explanation*: *Chlorophyll is responsible for absorbing light energy for photosynthesis.*\n\n**Q2. True or False: Photosynthesis occurs in the mitochondria.**  \n✅ **Correct Answer**: False  \n*Explanation*: *Photosynthesis happens in chloroplasts, not mitochondria.*",
+    "slug": "comprehensive-quiz-generator",
+    "aiPrompt": "## 🧠 AI Prompt: Comprehensive Quiz Generator\n\n**Purpose**: Create a professionally structured **quiz** from any **provided content or topic** with diverse question types, difficulty levels, and educational value.\n\n---\n\n### ✅ Quiz Structure Requirements\n- **Title**: Create an engaging title for the quiz\n- **Introduction**: Brief context about the quiz topic (2-3 sentences)\n- **Number of questions**: Flexible range of **5 to 15** questions\n- **Question variety**: \n  - Multiple Choice Questions (MCQs) with 4 options\n  - True/False statements\n  - Open-Ended questions requiring short explanations\n  - Fill-in-the-blank questions (optional)\n  - Matching items (optional)\n- **Difficulty distribution**: Include a mix of easy (30%), medium (50%), and challenging (20%) questions\n- **Learning objectives**: Align with cognitive skills (recall, application, analysis, evaluation)\n\n---\n\n### 📝 Question Format Requirements\nEach question must include:\n- **Question number and points** (e.g., \"Q1. [2 points]\")\n- **Clear question text** (concise but complete)\n- **Answer options** (logically ordered, equally plausible for MCQs)\n- **Correct answer** (clearly **bolded**)\n- **Detailed explanation** (in *italics*) that teaches the concept, not just stating correctness\n- **Knowledge domain** indicator (optional, e.g., \"[Biology: Cell Functions]\")\n\n---\n\n### 🖍️ Formatting Instructions\n- Use **bold headings** for all sections and question numbers\n- Format questions with proper numbering (Q1, Q2, etc.)\n- For MCQs: Use alphabetized bullet points (A–D) with equal-length options\n- Highlight **correct answers** in bold\n- Present *explanations* in italics with specific educational details\n- Use horizontal lines (---) to separate major sections\n- Include a final \"Answer Key\" section at the end\n\n---\n\n### 📊 Educational Value Enhancement\n- Ensure questions build on previous knowledge\n- Include at least one question that requires critical thinking\n- Add real-world application examples in explanations\n- Provide a difficulty rating for each question (★ Easy, ★★ Medium, ★★★ Hard)\n- For educational topics, align with standard curriculum benchmarks when possible\n\n---\n\n### 🧾 Example Output\n\n**🔹 Quiz Topic: Photosynthesis in Plants**\n\n**Introduction**: *Photosynthesis is the process by which plants convert light energy into chemical energy. This quiz will test your understanding of the key components, stages, and importance of photosynthesis in the natural world.*\n\n**Q1. [★] What is the main pigment responsible for capturing light energy during photosynthesis?**  \n- A. Hemoglobin  \n- B. Melanin  \n- C. Carotene  \n- D. **Chlorophyll**  \n\n*Explanation: Chlorophyll is the primary green pigment found in the chloroplasts of plants that absorbs light energy, particularly from blue and red wavelengths, to initiate the photosynthetic process. Other pigments like carotene are accessory pigments that capture additional wavelengths.*\n\n**Q2. [★★] True or False: Photosynthesis occurs in the mitochondria of plant cells.**  \n✅ **Correct Answer: False**  \n\n*Explanation: Photosynthesis takes place exclusively in the chloroplasts of plant cells, not in mitochondria. Mitochondria are instead responsible for cellular respiration, which is essentially the opposite process where glucose is broken down to release energy.*\n\n**Q3. [★★★] Explain how the products of the light-dependent reactions are utilized in the Calvin cycle.**  \n**Correct Answer: The light-dependent reactions produce ATP and NADPH, which power the Calvin cycle.**\n\n*Explanation: The light-dependent reactions convert light energy into chemical energy stored in ATP and NADPH. These energy-carrying molecules then travel to the Calvin cycle (light-independent reactions) where they provide the energy needed to fix carbon dioxide into glucose, demonstrating the interconnected nature of the two stages of photosynthesis.*",
     "form": [
       {
         "label": "Source material or quiz topic",
         "field": "textarea",
         "name": "sourceMaterial",
+        "placeholder": "Enter your quiz topic or paste source material here",
         "required": true
       },
       {
-        "label": "Question type",
+        "label": "Question types to include",
         "field": "select",
-        "name": "questionType",
-        "options": ["Multiple-choice", "True/False", "Open-ended", "Mixed"],
+        "name": "questionTypes",
+        "options": [
+          "Multiple-choice only", 
+          "True/False only", 
+          "Open-ended only", 
+          "Mixed (recommended)",
+          "Include fill-in-the-blank",
+          "Include matching items"
+        ],
+        "default": "Mixed (recommended)",
         "required": true
       },
       {
-        "label": "Number of questions (5–15)",
+        "label": "Number of questions",
         "field": "range",
         "name": "questionCount",
         "min": 5,
         "max": 15,
+        "default": 10,
         "required": true
       },
       {
-        "label": "Academic level (optional)",
-        "field": "input",
+        "label": "Academic level",
+        "field": "select",
         "name": "academicLevel",
+        "options": [
+          "Elementary School",
+          "Middle School",
+          "High School",
+          "Undergraduate",
+          "Graduate",
+          "Professional"
+        ],
+        "default": "High School",
+        "required": true
+      },
+      {
+        "label": "Difficulty distribution",
+        "field": "select",
+        "name": "difficultyDistribution",
+        "options": [
+          "Balanced (30% Easy, 50% Medium, 20% Hard)",
+          "Beginner-friendly (50% Easy, 40% Medium, 10% Hard)",
+          "Advanced (10% Easy, 40% Medium, 50% Hard)",
+          "Progressive (starts easy, gradually increases)",
+          "Uniform (all questions same difficulty)"
+        ],
+        "default": "Balanced (30% Easy, 50% Medium, 20% Hard)",
         "required": false
       },
       {
-        "label": "Include explanations?",
+        "label": "Include detailed explanations",
         "field": "checkbox",
         "name": "includeExplanations",
+        "default": true,
         "required": false
       },
       {
-        "label": "Formatting style (Rich text, Plain text, Markdown)",
+        "label": "Include difficulty ratings (★)",
+        "field": "checkbox",
+        "name": "includeDifficultyRatings",
+        "default": true,
+        "required": false
+      },
+      {
+        "label": "Output format",
         "field": "select",
         "name": "formatStyle",
         "options": ["Rich text", "Plain text", "Markdown"],
+        "default": "Rich text",
+        "required": false
+      },
+      {
+        "label": "Additional instructions (optional)",
+        "field": "textarea",
+        "name": "additionalInstructions",
+        "placeholder": "Any specific requirements for your quiz (e.g., focus areas, specific concepts to include/exclude)",
         "required": false
       }
     ]
-  },
-  
+  },  
   // YouTube Tools
   {
     name: "YouTube Description Generator",
