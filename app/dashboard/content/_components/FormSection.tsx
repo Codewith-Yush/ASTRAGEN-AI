@@ -110,35 +110,34 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
     };
 
     return (
-        <div className="max-w-lg mx-auto p-8 bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 transform transition-all duration-500 hover:shadow-3xl">
+        <div className="max-w-lg mx-auto p-8 bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 transition-all duration-300">
             {selectedTemplate && (
-                <div className="mb-10 text-center space-y-5">
+                <div className="mb-8 text-center space-y-4">
                     {selectedTemplate.icon && (
                         <div className="flex justify-center">
-                            <div className="relative bg-gradient-to-r from-teal-400 to-cyan-500 p-5 rounded-2xl shadow-lg animate-pulse-slow">
-                                <SparklesIcon className="text-white w-12 h-12" />
-                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-400 to-cyan-500 opacity-50 blur-md"></div>
+                            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-xl shadow-lg">
+                                <SparklesIcon className="text-white w-10 h-10" />
                             </div>
                         </div>
                     )}
-                    <h2 className="text-4xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-teal-500 to-cyan-600">
+                    <h2 className="text-3xl font-extrabold text-gray-900">
                         {selectedTemplate.name}
                     </h2>
-                    <p className="text-base text-gray-500 max-w-md mx-auto leading-relaxed">
+                    <p className="text-sm text-gray-600 max-w-md mx-auto">
                         {selectedTemplate.desc}
                     </p>
                 </div>
             )}
 
-            <div className="space-y-8">
+            <div className="space-y-6">
                 {selectedTemplate?.form?.map((item, index) => (
-                    <div key={index} className="relative group transition-all duration-300">
+                    <div key={index} className="relative group">
                         <label 
                             htmlFor={item.name}
-                            className="block text-sm font-semibold text-gray-700 mb-3 tracking-wide"
+                            className="block text-sm font-medium text-gray-700 mb-2"
                         >
                             {item.label}
-                            {item.required && <span className="text-rose-500 ml-1">*</span>}
+                            {item.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
 
                         {item.field === 'input' && (
@@ -150,10 +149,9 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                                 onChange={handleChange}
                                 onFocus={() => setFocused({ ...focused, [item.name]: true })}
                                 onBlur={() => setFocused({ ...focused, [item.name]: false })}
-                                className={`w-full px-5 py-3 rounded-xl bg-white/80 border-2 transition-all duration-300
-                                    ${focused[item.name] ? 'border-teal-400 ring-4 ring-teal-200' : 'border-gray-200'}
-                                    ${errors[item.name] ? 'border-rose-400 ring-4 ring-rose-200' : ''}
-                                    focus:outline-none focus:ring-4 focus:ring-teal-200 hover:border-teal-300`}
+                                className={`w-full px-4 py-3 rounded-lg bg-gray-50 transition-all duration-200
+                                    ${focused[item.name] ? 'ring-2 ring-indigo-500 border-indigo-500' : 'border-gray-200'}
+                                    ${errors[item.name] ? 'border-red-500' : ''}`}
                                 placeholder={item.placeholder || `Enter ${item.label.toLowerCase()}`}
                                 aria-describedby={`${item.name}-error`}
                                 required={item.required}
@@ -169,16 +167,15 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                                     onChange={handleChange}
                                     onFocus={() => setFocused({ ...focused, [item.name]: true })}
                                     onBlur={() => setFocused({ ...focused, [item.name]: false })}
-                                    className={`w-full px-5 py-3 min-h-40 rounded-xl bg-white/80 border-2 transition-all duration-300 resize-none
-                                        ${focused[item.name] ? 'border-teal-400 ring-4 ring-teal-200' : 'border-gray-200'}
-                                        ${errors[item.name] ? 'border-rose-400 ring-4 ring-rose-200' : ''}
-                                        focus:outline-none focus:ring-4 focus:ring-teal-200 hover:border-teal-300`}
+                                    className={`w-full px-4 py-3 min-h-36 rounded-lg bg-gray-50 transition-all duration-200 resize-none
+                                        ${focused[item.name] ? 'ring-2 ring-indigo-500 border-indigo-500' : 'border-gray-200'}
+                                        ${errors[item.name] ? 'border-red-500' : ''}`}
                                     placeholder={item.placeholder || `Enter ${item.label.toLowerCase()}`}
                                     aria-describedby={`${item.name}-error`}
                                     required={item.required}
                                 />
-                                <div className="flex justify-between mt-3">
-                                    <span className="text-xs text-gray-400">
+                                <div className="flex justify-between mt-2">
+                                    <span className="text-xs text-gray-500">
                                         {formData[item.name]?.length || 0}/2000 characters
                                     </span>
                                 </div>
@@ -193,10 +190,9 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                                 onChange={handleChange}
                                 onFocus={() => setFocused({ ...focused, [item.name]: true })}
                                 onBlur={() => setFocused({ ...focused, [item.name]: false })}
-                                className={`w-full px-5 py-3 rounded-xl bg-white/80 border-2 transition-all duration-300
-                                    ${focused[item.name] ? 'border-teal-400 ring-4 ring-teal-200' : 'border-gray-200'}
-                                    ${errors[item.name] ? 'border-rose-400 ring-4 ring-rose-200' : ''}
-                                    focus:outline-none focus:ring-4 focus:ring-teal-200 hover:border-teal-300 appearance-none cursor-pointer bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJ0ZXh0LWdyYXktNDAwIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')] bg-no-repeat bg-[right_1rem_center] bg-[length:1rem]`}
+                                className={`w-full px-4 py-3 rounded-lg bg-gray-50 border transition-all duration-200
+                                    ${focused[item.name] ? 'ring-2 ring-indigo-500 border-indigo-500' : 'border-gray-200'}
+                                    ${errors[item.name] ? 'border-red-500' : ''}`}
                                 aria-describedby={`${item.name}-error`}
                                 required={item.required}
                             >
@@ -212,18 +208,18 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                         )}
 
                         {item.field === 'checkbox' && (
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
                                 <input
                                     type="checkbox"
                                     id={item.name}
                                     name={item.name}
                                     checked={formData[item.name] || false}
                                     onChange={(e) => handleChange(e, true)}
-                                    className="h-6 w-6 rounded-md border-2 border-gray-200 text-teal-500 focus:ring-teal-300 transition-all duration-200"
+                                    className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 <label 
                                     htmlFor={item.name}
-                                    className="text-sm text-gray-600 font-medium"
+                                    className="text-sm text-gray-600"
                                 >
                                     {item.placeholder || 'Yes'}
                                 </label>
@@ -241,14 +237,9 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                                     step={1}
                                     value={formData[item.name] || item.min || 0}
                                     onChange={handleRangeChange}
-                                    className="w-full h-2 bg-gray-200 rounded-full cursor-pointer appearance-none
-                                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                                        [&::-webkit-slider-thumb]:bg-teal-500 [&::-webkit-slider-thumb]:rounded-full
-                                        [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-all
-                                        [&::-webkit-slider-thumb]:duration-200 hover:[&::-webkit-slider-thumb]:bg-teal-600
-                                        focus:outline-none focus:ring-4 focus:ring-teal-200"
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                                 />
-                                <div className="flex justify-between text-xs text-gray-400">
+                                <div className="flex justify-between text-xs text-gray-500">
                                     <span>{item.min || 0}</span>
                                     <span>Current: {formData[item.name]}</span>
                                     <span>{item.max || 100}</span>
@@ -259,7 +250,7 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                         {errors[item.name] && (
                             <p 
                                 id={`${item.name}-error`} 
-                                className="mt-2 text-xs text-rose-500 font-medium animate-fade-in"
+                                className="mt-1 text-xs text-red-500"
                             >
                                 {errors[item.name]}
                             </p>
@@ -270,24 +261,22 @@ function FormSection({ selectedTemplate, userFormInput, loading }: PROPS) {
                 <Button
                     type="button"
                     onClick={onSubmit}
-                    className="w-full py-4 mt-10 flex items-center justify-center gap-3 
-                        bg-gradient-to-r from-teal-500 to-cyan-600 
-                        hover:from-teal-600 hover:to-cyan-700
-                        text-white font-bold text-lg
-                        rounded-xl
-                        transition-all duration-500 
-                        shadow-xl hover:shadow-2xl
-                        disabled:opacity-50 disabled:cursor-not-allowed
-                        relative overflow-hidden group"
+                    className="w-full py-3 mt-8 flex items-center justify-center gap-3 
+                        bg-gradient-to-r from-indigo-500 to-purple-600 
+                        hover:from-indigo-600 hover:to-purple-700
+                        text-white font-semibold text-lg
+                        rounded-lg
+                        transition-all duration-300 
+                        shadow-lg hover:shadow-xl
+                        disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={loading || !isFormValid}
                 >
-                    <span className="absolute inset-0 bg-gradient-to-r from-teal-400 to-cyan-500 opacity-0 group-hover:opacity-30 transition-opacity duration-500"></span>
                     {loading ? (
                         <Loader2Icon className="animate-spin w-6 h-6" />
                     ) : (
-                        <SparklesIcon className="w-6 h-6 animate-pulse" />
+                        <SparklesIcon className="w-6 h-6" />
                     )}
-                    <span className="relative z-10">{loading ? 'Generating...' : 'Generate Content'}</span>
+                    <span>{loading ? 'Generating...' : 'Generate Content'}</span>
                 </Button>
             </div>
         </div>
