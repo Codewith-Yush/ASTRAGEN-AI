@@ -872,7 +872,7 @@ const ContentArea: React.FC<ContentAreaProps> = memo(
 
 const OutputSection: React.FC<OutputSectionProps> = ({
   aiOutput,
-  title = "AI Output",
+  title = "Astragen AI",
   onEdit,
   readOnly = false,
   theme: initialTheme = "light",
