@@ -12,10 +12,10 @@ import CopyButton from './_components/CopyButton'
 export interface HISTORY {
     id: number;
     formData: string;
-    aiResponse: string | null; // Made nullable if it can be null
+    aiResponse: string | null;
     templateSlug: string;
     createdBy: string;
-    createdAt: string | Date; // Made flexible for Date object or string
+    createdAt: string | Date;
 }
 
 async function History() {
@@ -23,13 +23,17 @@ async function History() {
     const email = user?.primaryEmailAddress?.emailAddress;
 
     if (!email) {
-        return <div>Please sign in to view history</div>;
+        return (
+            <div className="flex items-center justify-center min-h-[50vh] bg-gray-50 rounded-lg">
+                <p className="text-lg text-gray-600">Please sign in to view your history</p>
+            </div>
+        );
     }
 
-    const historyList = await db.select()
+    const historyList = (await db.select()
         .from(AIOutput)
         .where(eq(AIOutput.createdBy, email))
-        .orderBy(desc(AIOutput.id)) as HISTORY[]; // Added type assertion
+        .orderBy(desc(AIOutput.id))) as HISTORY[];
 
     const getTemplate = (slug: string): TEMPLATE | undefined => {
         return Templates?.find((item) => item.slug === slug);
@@ -41,59 +45,78 @@ async function History() {
     }
 
     return (
-        <div className='m-5 p-5 border rounded-lg bg-white'>
-            <h2 className='font-bold text-3xl'>History</h2>
-            <p className='text-gray-500'>Search your previously generated AI content</p>
-            
-            <div className='grid grid-cols-7 font-bold bg-secondary mt-5 py-3 px-3'>
-                <h2 className='col-span-2'>TEMPLATE</h2>
-                <h2 className='col-span-2'>AI RESPONSE</h2>
-                <h2>DATE</h2>
-                <h2>WORDS</h2>
-                <h2>COPY</h2>
+        <div className="m-6 p-6 bg-white shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl">
+            <div className="mb-6">
+                <h2 className="text-3xl font-bold text-gray-800 tracking-tight">History</h2>
+                <p className="text-gray-500 mt-1">Explore your previously generated AI content</p>
             </div>
 
+            {/* Table Header */}
+            <div className="grid grid-cols-7 gap-4 font-semibold bg-gray-100 text-gray-700 rounded-lg py-4 px-6 mb-4">
+                <h3 className="col-span-2">Template</h3>
+                <h3 className="col-span-2">AI Response</h3>
+                <h3>Date</h3>
+                <h3>Words</h3>
+                <h3>Actions</h3>
+            </div>
+
+            {/* Table Body */}
             {historyList.length > 0 ? (
                 historyList.map((item) => {
                     const template = getTemplate(item.templateSlug);
-                    const date = typeof item.createdAt === 'string' 
-                        ? new Date(item.createdAt) 
+                    const date = typeof item.createdAt === 'string'
+                        ? new Date(item.createdAt)
                         : item.createdAt;
-                        
+
                     return (
                         <React.Fragment key={item.id}>
-                            <div className='grid grid-cols-7 my-5 py-3 px-3'>
-                                <h2 className='col-span-2 flex gap-2 items-center'>
+                            <div className="grid grid-cols-7 gap-4 items-center py-4 px-6 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                                <div className="col-span-2 flex items-center gap-3">
                                     {template?.icon && (
-                                        <Image 
-                                            src={template.icon} 
-                                            width={25} 
-                                            height={25} 
+                                        <Image
+                                            src={template.icon}
+                                            width={28}
+                                            height={28}
                                             alt={`${template.name || 'template'} icon`}
+                                            className="rounded-md"
                                         />
                                     )}
-                                    {template?.name || 'Unknown Template'}
-                                </h2>
-                                <h2 className='col-span-2 line-clamp-3 mr-3'>
+                                    <span className="text-gray-800 font-medium">
+                                        {template?.name || 'Unknown Template'}
+                                    </span>
+                                </div>
+                                <div className="col-span-2 text-gray-600 line-clamp-2">
                                     {item.aiResponse || 'No response'}
-                                </h2>
-                                <h2>{date.toLocaleDateString()}</h2>
-                                <h2>{countWords(item.aiResponse)}</h2>
-                                <h2>
-                                    <CopyButton aiResponse={item.aiResponse || ''} />
-                                </h2>
+                                </div>
+                                <div className="text-gray-500">
+                                    {date.toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                    })}
+                                </div>
+                                <div className="text-gray-500">
+                                    {countWords(item.aiResponse)}
+                                </div>
+                                <div>
+                                    <CopyButton
+                                        aiResponse={item.aiResponse || ''}
+                                        className="hover:scale-105 transition-transform duration-200"
+                                    />
+                                </div>
                             </div>
-                            <hr />
+                            <hr className="border-gray-200 my-2" />
                         </React.Fragment>
                     );
                 })
             ) : (
-                <div className='py-5 text-center text-gray-500'>
-                    No history items found
+                <div className="py-12 text-center bg-gray-50 rounded-lg">
+                    <p className="text-gray-500 text-lg">No history items found</p>
+                    <p className="text-gray-400 mt-2">Start generating AI content to see it here!</p>
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default History;
