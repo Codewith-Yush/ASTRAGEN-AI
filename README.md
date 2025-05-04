@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1534270804882-6b5048b1c1fc?auto=format&fit=crop&w=1200&q=80" alt="AI Content Generator Banner" width="100%" />
+  <img src="https://wallpapers-clan.com/wp-content/uploads/2025/04/anime-boy-daydreaming-desktop-wallpaper-preview.jpg" alt="AI Content Generator Banner" width="100%" />
 </div>
 
 <h1 align="center">
