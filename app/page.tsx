@@ -1,20 +1,9 @@
 "use client";
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { useState } from 'react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { TextPlugin } from 'gsap/TextPlugin';
-import { motion,useTransform, useScroll,AnimatePresence} from "framer-motion";
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useTransform, useScroll } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import Lenis from "@studio-freight/lenis";
-
-
-gsap.registerPlugin(ScrollTrigger);
-// Register GSAP plugins
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger, TextPlugin);
-}
+import LandingNavbar from "@/components/LandingNavbar";
 
 // Define the type for feature items
 interface FeatureItem {
@@ -97,28 +86,25 @@ const AboutSection = () => {
   };
 
   useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInView(entry.isIntersecting);
       },
       { threshold: 0.1 }
     );
-    
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-    
+    observer.observe(el);
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
+      observer.unobserve(el);
     };
   }, []);
 
   return (
     <section 
+      id="about"
       ref={sectionRef}
-      className="relative py-28 overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800"
+      className="relative py-28 overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 scroll-mt-16"
     >
       {/* Animated gradient background */}
       <motion.div 
@@ -130,30 +116,10 @@ const AboutSection = () => {
         }}
       />
       
-      {/* Floating particles */}
+      {/* Subtle Ambient Glow Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-teal-400 dark:bg-teal-600 opacity-10"
-            initial={{
-              x: Math.random() * 100 + '%',
-              y: Math.random() * 100 + '%',
-              width: Math.random() * 10 + 5 + 'px',
-              height: Math.random() * 10 + 5 + 'px',
-            }}
-            animate={{
-              y: [0, Math.random() * 100 - 50],
-              x: [0, Math.random() * 100 - 50],
-              transition: {
-                duration: Math.random() * 20 + 10,
-                repeat: Infinity,
-                repeatType: 'reverse',
-                ease: 'easeInOut'
-              }
-            }}
-          />
-        ))}
+        <div className="absolute top-1/4 left-10 w-72 h-72 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
       </div>
       
       {/* Decorative border */}
@@ -304,18 +270,13 @@ const AboutSection = () => {
 </div>
               </div>
               
-              <AnimatePresence>
-                {hoveredCard === 1 && (
-                  <motion.div 
-                    className="absolute inset-0 pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div 
+                className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
+                  hoveredCard === 1 ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
+              </div>
             </motion.div>
             
             {/* Second Feature Card */}
@@ -364,18 +325,13 @@ const AboutSection = () => {
 </div>
               </div>
               
-              <AnimatePresence>
-                {hoveredCard === 2 && (
-                  <motion.div 
-                    className="absolute inset-0 pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div 
+                className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
+                  hoveredCard === 2 ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
+              </div>
             </motion.div>
           </motion.div>
           
@@ -469,7 +425,7 @@ const UseCasesSection = () => {
   };
 
   return (
-    <section className="py-16 bg-white dark:bg-slate-900">
+    <section id="use-cases" className="py-16 bg-white dark:bg-slate-900 scroll-mt-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -544,7 +500,7 @@ const HowItWorksSection = () => {
   ];
   
   return (
-    <section className="py-16 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
+    <section id="how-it-works" className="py-16 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden scroll-mt-16">
       {/* Abstract Background Elements */}
       <div className="absolute inset-0 overflow-hidden opacity-10">
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-teal-300 dark:bg-teal-600 blur-3xl"></div>
@@ -667,7 +623,7 @@ const TestimonialsSection = () => {
   ];
   
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-slate-900 dark:to-slate-800">
+    <section id="testimonials" className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 scroll-mt-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -716,9 +672,11 @@ const TestimonialsSection = () => {
               <div className="flex items-center relative z-10">
                 <div className="relative">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                  <img 
+                  <Image 
                     src={testimonial.image} 
                     alt={testimonial.author}
+                    width={56}
+                    height={56}
                     className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-md relative z-10 group-hover:border-teal-100 dark:group-hover:border-teal-900 transition-all duration-300"
                   />
                 </div>
@@ -787,7 +745,7 @@ const PricingSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-gray-100 dark:bg-slate-800">
+    <section id="pricing" className="py-16 bg-gray-100 dark:bg-slate-800 scroll-mt-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -879,7 +837,7 @@ const DevelopersSection = () => {
   ];
 
   return (
-    <section className="py-19 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 overflow-hidden">
+    <section id="developers" className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 overflow-hidden scroll-mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Background elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -1008,106 +966,15 @@ const DevelopersSection = () => {
   );
 };
 
-export default function Home(): JSX.Element {
-  useEffect(() => {
-    // Initialize Lenis
-    const lenis = new Lenis({
-      duration: 1.5, // Smoothness duration
-      easing: (t) => 1 - Math.pow(1 - t, 3), // Smooth easing
-    });
-
-    // Sync Lenis with GSAP ScrollTrigger
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    // Update GSAP ScrollTrigger on Lenis scroll
-    lenis.on("scroll", ScrollTrigger.update);
-
-    return () => {
-      lenis.destroy(); // Cleanup
-    };
-  }, []);
-  useEffect(() => {
-    gsap.from(".content", {
-      opacity: 0,
-      y: 50,
-      duration: 1,
-      scrollTrigger: {
-        trigger: ".content",
-        start: "top 80%",
-        end: "top 50%",
-        scrub: true,
-      },
-    });
-  }, []);
-  // Create refs for the elements we want to animate
-  const headerRef = useRef(null);
-  const headingRef = useRef(null);
-  const descriptionRef = useRef(null);
-  const buttonsRef = useRef<HTMLDivElement>(null);
-
-  
-  useEffect(() => {
-    // GSAP animation code goes here
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    
-    // Heading animation
-    tl.from(headingRef.current, {
-      duration: 1.2,
-      opacity: 0,
-      y: 50,
-      skewY: 5
-    });
-    
-    // Description animation
-    tl.from(descriptionRef.current, {
-      duration: 1,
-      opacity: 0,
-      y: 30,
-      delay: 0.2
-    });
-    
-    if (buttonsRef.current) {
-      const childrenArray = Array.from(buttonsRef.current.children);
-    
-      tl.from(childrenArray, {
-        duration: 0.8,
-        opacity: 0,
-        y: 20,
-        stagger: 0.15,
-        ease: "back.out(1.7)",
-      });
-    }
-    
-    
-    // Floating animation
-    gsap.to(headerRef.current, {
-      y: 15,
-      duration: 2,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut"
-    });
-    
-    // Clean up on unmount
-    return () => {
-      tl.kill();
-      gsap.killTweensOf(headerRef.current);
-    };
-  }, []);
-
-  // Rest of your component...
+export default function Home() {
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
       },
     },
   };
@@ -1117,18 +984,17 @@ export default function Home(): JSX.Element {
     visible: {
       y: 0,
       opacity: 1,
-      transition: { type: "spring", stiffness: 300, damping: 24 },
+      transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
   const buttonVariants = {
     idle: { scale: 1 },
     hover: {
-      scale: 1.05,
-      boxShadow: "0 10px 25px -5px rgba(20, 184, 166, 0.4)",
-      transition: { duration: 0.7 },
+      scale: 1.03,
+      transition: { duration: 0.15 },
     },
-    tap: { scale: 0.95 },
+    tap: { scale: 0.96 },
   };
 
   const featureItems: FeatureItem[] = [
@@ -1150,7 +1016,8 @@ export default function Home(): JSX.Element {
   ];
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <LandingNavbar />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#FFDADA] to-[#AEE2FF] dark:from-slate-900 dark:to-slate-800 min-h-screen flex items-center flex-col justify-center text-center">
 
@@ -1247,7 +1114,7 @@ export default function Home(): JSX.Element {
       </section>
 
       {/* Features section */}
-      <section className="py-16 bg-white dark:bg-slate-900">
+      <section id="features" className="py-16 bg-white dark:bg-slate-900 scroll-mt-16">
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -1349,205 +1216,36 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-{/* Ultra Dynamic Floating Button with Enhanced Visual Effects - Fixed Tooltip */}
-<motion.div
-  className="fixed bottom-8 right-8 z-50 cursor-pointer group"
-  initial={{ opacity: 0, scale: 0.5 }}
-  animate={{ 
-    opacity: 1, 
-    scale: 1,
-    y: [0, -15, 0], // Enhanced floating amplitude
-    transition: { 
-      delay: 0.8, 
-      duration: 0.8,
-      y: { 
-        repeat: Infinity, 
-        duration: 3, 
-        ease: "easeInOut" 
-      } 
-    }
-  }}
-  whileHover={{ 
-    scale: 1.25,
-    rotate: [0, 8, -8, 0], // More dynamic hover effect
-    transition: { 
-      rotate: { 
-        repeat: 1, 
-        duration: 0.5,
-        ease: "easeOut"
-      } 
-    }
-  }}
-  whileTap={{ 
-    scale: 0.85,
-    rotate: [0, 15, -15, 0] // More pronounced click feedback
-  }}
->
-  <Link href="/contact" className="relative block">
-    {/* Main Button with Enhanced Glow & Multi-layered Effects */}
-    <motion.button
-      className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white p-5 rounded-full shadow-2xl relative overflow-hidden backdrop-blur-sm"
-      animate={{
-        boxShadow: [
-          "0 0 0 0 rgba(129, 140, 248, 0.7)",
-          "0 0 25px 15px rgba(129, 140, 248, 0.3)",
-          "0 0 0 0 rgba(129, 140, 248, 0.7)"
-        ],
-        background: [
-          "linear-gradient(to bottom right, #6366f1, #8b5cf6, #ec4899)",
-          "linear-gradient(to bottom right, #818cf8, #a78bfa, #f472b6)",
-          "linear-gradient(to bottom right, #6366f1, #8b5cf6, #ec4899)"
-        ]
-      }}
-      transition={{
-        duration: 5,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-      aria-label="Contact us"
-    >
-      {/* Multiple Glow Rings */}
-      {[...Array(3)].map((_, i) => (
-        <motion.span
-          key={i}
-          className="absolute inset-0 rounded-full border-2 border-white/30"
-          animate={{
-            scale: [1, 1.5 + i * 0.2, 1],
-            opacity: [0.5, 0, 0.5]
-          }}
-          transition={{
-            duration: 2 + i * 0.5,
-            repeat: Infinity,
-            delay: i * 0.3
-          }}
-        />
-      ))}
-
-      {/* Spinning Highlight Effect */}
-      <motion.span
-        className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent"
-        animate={{
-          rotate: [0, 360],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-      />
-
-      {/* Chat Icon with Enhanced Animation */}
-      <motion.div
-        animate={{ 
-          scale: [1, 1.15, 1],
-          rotate: [0, 0, 5, -5, 0, 0]
-        }}
-        transition={{ 
-          duration: 3, 
-          repeat: Infinity,
-          ease: "easeInOut",
-          times: [0, 0.4, 0.5, 0.6, 0.7, 1]
-        }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-7 w-7"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {/* Floating Quick Contact Button */}
+      <div className="fixed bottom-6 right-6 z-40 group">
+        <Link
+          href="/contact"
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 transition-all duration-150"
+          aria-label="Contact support"
         >
-          <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z" />
-          <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
-          <circle cx="12" cy="8" r="1" fill="white" />
-          <circle cx="8" cy="8" r="1" fill="white" />
-        </svg>
-      </motion.div>
+          <span className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-20 pointer-events-none" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 relative z-10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z" />
+            <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
+            <circle cx="12" cy="8" r="1" fill="white" />
+            <circle cx="8" cy="8" r="1" fill="white" />
+          </svg>
 
-      {/* Enhanced Floating Particles with Varied Sizes & Colors */}
-      {[...Array(12)].map((_, i) => {
-        const isLargeParticle = i < 3;
-        const size = isLargeParticle ? Math.random() * 5 + 3 : Math.random() * 3 + 1;
-        const colors = ['bg-blue-200', 'bg-purple-200', 'bg-pink-200', 'bg-white'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        
-        return (
-          <motion.span
-            key={i}
-            className={`absolute ${color} rounded-full`}
-            style={{
-              width: `${size}px`,
-              height: `${size}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              opacity: 0
-            }}
-            animate={{
-              y: [0, (Math.random() - 0.5) * 60],
-              x: [0, (Math.random() - 0.5) * 60],
-              opacity: [0, isLargeParticle ? 0.9 : 0.7, 0],
-              scale: [1, 1.8, 0.4]
-            }}
-            transition={{
-              delay: Math.random() * 2,
-              duration: Math.random() * 4 + 2,
-              repeat: Infinity,
-              repeatDelay: Math.random() * 3
-            }}
-          />
-        );
-      })}
-    </motion.button>
-
-    {/* Fixed Tooltip with Explicit Transition for Group Hover */}
-    <div 
-      className="absolute right-16 bottom-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-x-8 group-hover:translate-x-0 transition-all duration-300 ease-in-out"
-      style={{
-        transitionProperty: "opacity, visibility, transform",
-        willChange: "opacity, visibility, transform"
-      }}
-    >
-      <div className="bg-black/80 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
-        <span>NEED HELP? CLICK ME!</span>
-        
-        {/* Animated arrow inside tooltip */}
-        <motion.div 
-          className="ml-1 inline-block"
-          animate={{ 
-            x: [0, 3, 0],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          👋
-        </motion.div>
-        
-        {/* Tooltip pointer */}
-        <div className="absolute right-0 top-1/2 transform translate-x-1 -translate-y-1/2 w-3 h-3 bg-black/80 border-t border-r border-white/20 rotate-45"></div>
+          {/* Tooltip */}
+          <span className="absolute right-16 bottom-2 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap bg-slate-900/90 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-lg">
+            Need Help? Chat with us 👋
+          </span>
+        </Link>
       </div>
-    </div>
-    
-    {/* Ripple effect when the button appears */}
-    <motion.div
-      className="absolute inset-0 rounded-full border-4 border-white/40"
-      initial={{ scale: 0.2, opacity: 1 }}
-      animate={{
-        scale: 2.5,
-        opacity: 0
-      }}
-      transition={{
-        duration: 1.5,
-        delay: 1,
-        ease: "easeOut"
-      }}
-    />
-  </Link>
-</motion.div>
     </div>
   );
 }

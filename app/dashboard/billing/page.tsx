@@ -1,16 +1,19 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import React, { useContext, useState } from "react";
 import axios from "axios";
-import { Loader2Icon, CheckCircleIcon, ShieldCheck, Clock, Download, Globe } from "lucide-react";
-import { db } from "@/utils/db";
-import { UserSubscription } from "@/utils/schema";
+import {
+  Loader2,
+  Check,
+  Sparkles,
+  Zap,
+  Lock,
+  ChevronDown,
+  HelpCircle,
+} from "lucide-react";
 import { useUser } from "@clerk/nextjs";
-import moment from "moment";
 import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext";
 
-// Define Razorpay interface to fix the TypeScript error
 interface RazorpayOptions {
   key: string | undefined;
   subscription_id: string;
@@ -26,7 +29,6 @@ interface RazorpayOptions {
   handler: (response: any) => void;
 }
 
-// Add Razorpay to Window interface
 declare global {
   interface Window {
     Razorpay: new (options: RazorpayOptions) => {
@@ -35,19 +37,43 @@ declare global {
   }
 }
 
+const FAQS = [
+  {
+    question: "Can I cancel my subscription anytime?",
+    answer:
+      "Yes, you can cancel your subscription at any time without questions or cancellation fees. You will retain full Pro benefits until your current billing cycle finishes.",
+  },
+  {
+    question: "What AI models power Astragen?",
+    answer:
+      "Astragen uses cutting-edge Google Gemini models engineered for real-time streaming, high token throughput, structured markdown formatting, and fast response times.",
+  },
+  {
+    question: "How does the monthly quota work?",
+    answer:
+      "The free tier includes 300,000 words per month, resetting monthly. Astragen Pro unlocks unlimited generations with high-priority streaming.",
+  },
+  {
+    question: "Is my payment safe and secure?",
+    answer:
+      "Yes. All payment transactions are encrypted with 256-bit SSL encryption and processed through Razorpay, a PCI-DSS Level 1 compliant gateway.",
+  },
+];
+
 function Billing() {
   const [loading, setLoading] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { user } = useUser();
-  const { userSubscription, setUserSubscription } = useContext(UserSubscriptionContext);
+  const { userSubscription } = useContext(UserSubscriptionContext);
 
   const CreateSubscription = async () => {
     try {
       setLoading(true);
       const response = await axios.post("/api/create-subscription", {});
-      console.log(response.data);
       OnPayment(response.data.id);
     } catch (error) {
       console.error("Subscription creation failed:", error);
+      alert("Unable to initiate subscription. Please verify Razorpay credentials.");
       setLoading(false);
     }
   };
@@ -67,7 +93,7 @@ function Billing() {
     const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
 
     if (!res) {
-      alert("Razorpay failed to load!");
+      alert("Payment gateway failed to load. Please check your internet connection.");
       setLoading(false);
       return;
     }
@@ -75,21 +101,36 @@ function Billing() {
     const options: RazorpayOptions = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       subscription_id: subId,
-      name: "Tubeguruji AI Apps",
-      description: "Monthly Subscription",
+      name: "Astragen AI",
+      description: "Pro Monthly Subscription",
       prefill: {
-        name: user?.fullName || "User",
-        email: user?.primaryEmailAddress?.emailAddress || "email@example.com",
+        name: user?.fullName || "Astragen Creator",
+        email: user?.primaryEmailAddress?.emailAddress || "user@astragen.ai",
       },
       theme: {
-        color: "#6366F1",
+        color: "#4F46E5",
       },
       handler: async (resp: any) => {
-        console.log(resp);
-        if (resp) {
-          SaveSubscription(resp?.razorpay_payment_id);
+        try {
+          if (resp?.razorpay_payment_id) {
+            const verifyRes = await axios.post("/api/razorpay/verify", {
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_subscription_id: resp.razorpay_subscription_id,
+              razorpay_signature: resp.razorpay_signature,
+            });
+
+            if (verifyRes.data?.success) {
+              window.location.reload();
+            } else {
+              alert("Payment verification failed. Please contact support.");
+            }
+          }
+        } catch (error) {
+          console.error("Verification error:", error);
+          alert("Payment verification failed. Please contact support.");
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       },
     };
 
@@ -102,174 +143,200 @@ function Billing() {
     }
   };
 
-  const SaveSubscription = async (paymentId: string) => {
-    try {
-      const joinDate = new Date();
-      console.log("Raw joinDate:", joinDate);
-      console.log("Type of joinDate:", typeof joinDate);
-
-      if (!(joinDate instanceof Date)) {
-        throw new Error("joinDate is not a Date object!");
-      }
-
-      console.log("ISO joinDate:", joinDate.toISOString());
-
-      const result = await db.insert(UserSubscription).values({
-        email: user?.primaryEmailAddress?.emailAddress ?? "",
-        userName: user?.fullName ?? "Unknown User",
-        active: true,
-        paymentId: paymentId,
-        joinDate: joinDate,
-      });
-
-      console.log("Subscription saved:", result);
-      if (result) {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Subscription save failed:", error);
-    }
-  };
-
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-3">
-            Upgrade Your <span className="text-indigo-600 dark:text-indigo-400">AI Experience</span>
+    <div className="max-w-4xl mx-auto py-6 sm:py-10 space-y-12">
+      {/* Header */}
+      <div className="text-center space-y-3 px-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Simple, Transparent Pricing</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          Choose the plan that fits your ambition
+        </h1>
+        <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+          Start for free, or unlock high-speed unlimited generation with Astragen Pro.
+        </p>
+      </div>
+
+      {/* Pricing Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+        {/* Free Plan */}
+        <div className="bg-white dark:bg-[#0E131F] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-sm space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                  Starter Plan
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Essential tools for individuals
+                </p>
+              </div>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                Default
+              </span>
+            </div>
+
+            <div className="pt-2 flex items-baseline gap-1">
+              <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+                ₹0
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                / forever
+              </span>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/70 space-y-3">
+              {[
+                "300,000 Words per month",
+                "Access to all 50+ AI templates",
+                "Markdown and code syntax export",
+                "History archive with search & view",
+                "Voice Text-to-Speech playback",
+                "Standard generation speed",
+              ].map((feature, idx) => (
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={true}
+            className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+          >
+            {userSubscription ? "Basic Tier" : "Current Plan"}
+          </button>
+        </div>
+
+        {/* Pro Plan */}
+        <div className="relative bg-white dark:bg-[#0E131F] border-2 border-indigo-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl shadow-indigo-500/10 space-y-6">
+          {/* Popular Tag */}
+          <div className="absolute -top-3.5 right-6">
+            <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-[11px] font-bold tracking-wide uppercase shadow-md shadow-indigo-500/30">
+              Most Popular
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>Astragen Pro</span>
+                  <Zap className="w-4 h-4 text-indigo-500 fill-indigo-500" />
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Full speed, maximum quota, zero limits
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-baseline gap-1">
+              <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+                ₹99
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                / month (billed monthly)
+              </span>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/70 space-y-3">
+              {[
+                "Unlimited words & content quota",
+                "High-speed priority Gemini streaming",
+                "Full access to 50+ templates & future additions",
+                "Unlimited content history with search & preview",
+                "Instant Copy, Rich HTML & PDF export",
+                "One-Click AI Polish & Refine tools",
+                "Priority email & technical support",
+              ].map((feature, idx) => (
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-200 font-medium">
+                  <div className="w-4 h-4 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3" />
+                  </div>
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={loading || Boolean(userSubscription)}
+            onClick={CreateSubscription}
+            className={`
+              w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-md active:scale-[0.99]
+              ${
+                userSubscription
+                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/25 hover:shadow-indigo-500/40"
+              }
+            `}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Processing with Razorpay...</span>
+              </>
+            ) : userSubscription ? (
+              <span>✓ Pro Plan Active</span>
+            ) : (
+              <span>Upgrade to Pro Now</span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Security Reassurance */}
+      <div className="flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-slate-500 pt-2 text-center">
+        <Lock className="w-3.5 h-3.5 flex-shrink-0" />
+        <span>End-to-end encrypted 256-bit checkout powered by Razorpay. Cancel anytime.</span>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800/80 space-y-5">
+        <div className="text-center space-y-1">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center justify-center gap-2">
+            <HelpCircle className="w-5 h-5 text-indigo-500" />
+            <span>Frequently Asked Questions</span>
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
-            Choose the plan that works best for your content creation needs
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Everything you need to know about Astragen subscriptions.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:items-center md:gap-10">
-          {/* Free Plan Card */}
-          <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 shadow-sm sm:px-8 lg:p-12 relative overflow-hidden hover:shadow-xl hover:scale-102 transition-all duration-300">
-            {/* Subtle background pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <pattern id="free-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="1" height="1" fill="currentColor" />
-                </pattern>
-                <rect x="0" y="0" width="100%" height="100%" fill="url(#free-pattern)" />
-              </svg>
-            </div>
-            
-            <div className="relative z-10">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Free Plan</h2>
-                <div className="h-1 w-12 bg-gray-200 dark:bg-gray-700 mx-auto mb-4 rounded-full"></div>
-                <p className="mt-2 sm:mt-4 flex items-center justify-center">
-                  <strong className="text-4xl font-bold text-gray-900 dark:text-white sm:text-5xl">$0</strong>
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 ml-2">/month</span>
-                </p>
-              </div>
-
-              <ul className="mt-8 space-y-4">
-                <li className="flex items-center gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">10,000 Words/Month</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">50+ Content Templates</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">Unlimited Download & Copy</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">1 Month of History</span>
-                </li>
-              </ul>
-
-              <div className="mt-8">
-                <Button
-                  disabled={true}
-                  className="w-full rounded-xl py-2.5 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-300"
+        <div className="space-y-2.5 max-w-2xl mx-auto">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div
+                key={idx}
+                className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0E131F] overflow-hidden transition-colors"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  className="w-full px-5 py-4 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400"
                 >
-                  Current Plan
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Premium Plan Card */}
-          <div className="rounded-2xl bg-white dark:bg-gray-800 border-2 border-indigo-500 p-6 shadow-lg sm:px-8 lg:p-12 relative overflow-hidden hover:shadow-xl hover:scale-102 transition-all duration-300">
-            {/* Premium badge */}
-            <div className="absolute top-0 right-0">
-              <div className="bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                PREMIUM
-              </div>
-            </div>
-
-            {/* Subtle background pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <pattern id="premium-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="4" height="4" fill="currentColor" />
-                </pattern>
-                <rect x="0" y="0" width="100%" height="100%" fill="url(#premium-pattern)" />
-              </svg>
-            </div>
-            
-            <div className="relative z-10">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Premium Plan</h2>
-                <div className="h-1 w-12 bg-indigo-500 mx-auto mb-4 rounded-full"></div>
-                <p className="mt-2 sm:mt-4 flex items-center justify-center">
-                  <strong className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 sm:text-5xl">$9.99</strong>
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 ml-2">/month</span>
-                </p>
-              </div>
-
-              <ul className="mt-8 space-y-4">
-                <li className="flex items-center gap-3">
-                  <div className="flex-shrink-0 rounded-full p-1 bg-indigo-100 dark:bg-indigo-900">
-                    <ShieldCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>{faq.question}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 pt-3">
+                    {faq.answer}
                   </div>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>100,000</strong> Words/Month</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="flex-shrink-0 rounded-full p-1 bg-indigo-100 dark:bg-indigo-900">
-                    <Globe className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>All</strong> Template Access</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="flex-shrink-0 rounded-full p-1 bg-indigo-100 dark:bg-indigo-900">
-                    <Download className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>Unlimited</strong> Download & Copy</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="flex-shrink-0 rounded-full p-1 bg-indigo-100 dark:bg-indigo-900">
-                    <Clock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>1 Year</strong> of History</span>
-                </li>
-              </ul>
-
-              <div className="mt-8">
-                <Button
-                  disabled={loading || !!userSubscription}
-                  onClick={CreateSubscription}
-                  className="w-full rounded-xl py-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300 flex items-center justify-center"
-                >
-                  {loading && <Loader2Icon className="animate-spin mr-2" />}
-                  {userSubscription ? "Active Plan" : "Upgrade Now"}
-                </Button>
+                )}
               </div>
-              
-              {!userSubscription && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-                  Secure payment processing by Razorpay
-                </p>
-              )}
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

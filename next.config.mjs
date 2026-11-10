@@ -1,15 +1,51 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-      formats: ["image/webp"], // Optimized image format
-      domains: ["cdn-icons-png.flaticon.com"], // Add external image domains if needed
-    },
-    compress: true, // Enable Gzip compression
-    experimental: {
-      optimizeCss: true, // Optimize Tailwind CSS
-    },
-    reactStrictMode: true, // Helps in debugging  // Minify JS for performance
-    output: "standalone", // Optimized for deployment
-  };
-  
-  export default nextConfig;
-  
+  images: {
+    formats: ["image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn-icons-png.flaticon.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "img.shields.io",
+      },
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+      },
+    ],
+  },
+  compress: true,
+  reactStrictMode: true,
+  output: "standalone",
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;

@@ -270,18 +270,49 @@ npm run dev
 </div>
 
 ```bash
-# API Keys
+# Database (Neon PostgreSQL - Server Only)
+DATABASE_URL=postgresql://user:password@ep-example.neon.tech/neondb?sslmode=require
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+# Google Gemini API (Server Only)
 GEMINI_API_KEY=your_gemini_api_key
 
-# Authentication
-CLERK_PUBLISHABLE_KEY=your_clerk_key
-CLERK_SECRET_KEY=your_clerk_secret
+# Razorpay Payments & Subscriptions
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...
+RAZORPAY_SECRET_KEY=your_razorpay_secret
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
+SUBSCRIPTION_PLAN_ID=plan_...
 
-# Database
-DATABASE_URL=your_postgresql_url
+# Email Configuration (Nodemailer SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+CONTACT_RECEIVER_EMAIL=support@aicontentgen.com
+```
 
-# Optional
-ANALYTICS_ID=your_analytics_id
+### 🛠️ Useful Commands
+
+```bash
+# Type check TypeScript codebase
+npm run typecheck
+
+# Run unit tests
+npm run test
+
+# Run ESLint linter
+npm run lint
+
+# Next.js production build
+npm run build
 ```
 
 <div align="center">

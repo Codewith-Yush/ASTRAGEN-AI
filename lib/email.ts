@@ -23,8 +23,8 @@ export async function sendEmail({
   });
 
   const mailOptions = {
-    from: process.env.EMAIL_USER as string,
-    to: 'ayushbro2005@gmail.com', // Hardcoded recipient
+    from: (process.env.EMAIL_FROM || process.env.EMAIL_USER) as string,
+    to: (process.env.CONTACT_RECEIVER_EMAIL || process.env.EMAIL_USER || 'support@aicontentgen.com') as string,
     replyTo: email, // Allow replying directly to the sender
     subject: `Contact Form: ${subject}`,
     html: `

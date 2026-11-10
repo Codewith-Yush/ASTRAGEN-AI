@@ -1,88 +1,108 @@
-import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+"use client";
 
-function SearchSection({ onSearchInput }: { onSearchInput: (value: string) => void }) {
-  const [searchText, setSearchText] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+import React, { useState, useEffect, useRef } from "react";
+import { Search, X, Sparkles } from "lucide-react";
+
+interface SearchSectionProps {
+  onSearchInput: (value: string) => void;
+}
+
+const QUICK_TAGS = [
+  "Blog",
+  "YouTube",
+  "Instagram",
+  "Coding",
+  "Email",
+  "SEO",
+];
+
+function SearchSection({ onSearchInput }: SearchSectionProps) {
+  const [searchText, setSearchText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearchChange = (value: string) => {
     setSearchText(value);
     onSearchInput(value);
   };
 
+  const handleClear = () => {
+    setSearchText("");
+    onSearchInput("");
+    inputRef.current?.focus();
+  };
+
+  // Keyboard shortcut: Cmd+K / Ctrl+K to focus search input
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
-    <div className="p-8 max-w-xl mx-auto relative">
-      {/* Subtle radial gradient background */}
-      <div
-        className={`
-          absolute inset-0 -z-10 bg-gradient-to-br from-gray-100 to-gray-200 
-          dark:from-gray-800 dark:to-gray-900 opacity-50 transition-all duration-500
-          ${isFocused ? 'scale-105' : 'scale-100'}
-        `}
-      />
-
-      {/* Search container */}
-      <div
-        className={`
-          relative flex items-center bg-white dark:bg-gray-800 
-          border-2 rounded-xl transition-all duration-300 ease-in-out
-          ${isFocused 
-            ? 'border-teal-500 shadow-[0_0_15px_rgba(45,212,191,0.4)] scale-102' 
-            : 'border-gray-200 dark:border-gray-600 hover:scale-101 hover:shadow-[0_0_10px_rgba(45,212,191,0.2)]'
-          }
-        `}
-      >
-        <Search
-          className={`
-            w-5 h-5 ml-4 text-gray-400 transition-transform duration-200
-            ${isFocused ? 'text-teal-500 scale-110 rotate-6' : 'dark:text-gray-300 hover:scale-105'}
-          `}
-        />
-
-        <input
-          type="text"
-          value={searchText}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          placeholder="Search..."
-          className="
-            flex-1 p-3.5 bg-transparent border-0 
-            text-gray-900 dark:text-gray-100 
-            placeholder-teal-400/70 dark:placeholder-teal-400/50 
-            focus:outline-none text-base font-medium tracking-tight
-          "
-        />
-
-        {searchText.length > 0 && (
-          <button
-            onClick={() => handleSearchChange('')}
-            className="
-              mr-4 p-1.5 rounded-full relative overflow-hidden
-              text-gray-400 hover:text-teal-500 dark:text-gray-300 dark:hover:text-teal-400
-              transition-all duration-200 hover:scale-110
-            "
-          >
-            <span
-              className="
-                absolute inset-0 bg-teal-500/20 scale-0 rounded-full
-                group-hover:scale-100 transition-transform duration-300 origin-center
-              "
-            />
-            <X size={16} className="relative" />
-          </button>
-        )}
+    <div className="py-6 sm:py-8 md:py-10 max-w-3xl mx-auto text-center space-y-4 px-2">
+      {/* Badge & Title */}
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+        <Sparkles className="w-3.5 h-3.5" />
+        <span>50+ AI Content Engines</span>
       </div>
 
-      {/* Pulse effect on focus */}
-      {isFocused && (
-        <div
-          className="
-            absolute inset-0 rounded-xl border border-teal-500/30 
-            pulse-effect opacity-0 pointer-events-none
-          "
-        />
-      )}
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          What would you like to create today?
+        </h1>
+        <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
+          Select a template below or type keywords to generate high-converting blog posts, social captions, code, and copy.
+        </p>
+      </div>
+
+      {/* Modern Minimalist Search Input */}
+      <div className="pt-2 max-w-xl mx-auto w-full">
+        <div className="relative flex items-center bg-white dark:bg-[#0E131F] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-sm hover:border-slate-300 dark:hover:border-slate-700 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-200">
+          <Search className="w-4 h-4 ml-4 text-slate-400 dark:text-slate-500 flex-shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchText}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search templates (e.g. blog, youtube, instagram, code)..."
+            className="w-full py-3 sm:py-3.5 px-3 bg-transparent text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+          />
+          {searchText ? (
+            <button
+              type="button"
+              onClick={handleClear}
+              aria-label="Clear search"
+              className="mr-3 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          ) : (
+            <div className="mr-4 hidden sm:flex items-center gap-1 text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/60 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60">
+              <span>⌘K</span>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Suggestion Pills */}
+        <div className="flex items-center justify-center gap-1.5 flex-wrap pt-3 text-[11px]">
+          <span className="text-slate-400 hidden sm:inline">Try:</span>
+          {QUICK_TAGS.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => handleSearchChange(tag)}
+              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border border-slate-200/60 dark:border-slate-700/60 transition-colors"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

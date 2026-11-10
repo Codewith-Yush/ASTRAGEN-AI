@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function SupportForm(): JSX.Element {
+export default function SupportForm() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",

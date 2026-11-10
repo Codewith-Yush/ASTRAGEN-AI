@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback } from "react";
 import SideNav from "./_components/SideNav";
 import Header from "./_components/Header";
 import { TotalUsageContext } from "../(context)/TotalUsageContext";
@@ -7,40 +8,33 @@ import { UserSubscriptionContext } from "../(context)/UserSubscriptionContext";
 import { UpdateCreditUsageContext } from "../(context)/UpdateCreditUsageContext";
 
 function Layout({ children }: { children: React.ReactNode }) {
-  const [totalUsage, setTotalUsage] = useState<Number>(0);
+  const [totalUsage, setTotalUsage] = useState<number>(0);
   const [userSubscription, setUserSubscription] = useState<boolean>(false);
   const [updateCreditUsage, setUpdateCreditUsage] = useState<any>();
+  const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
+
+  const handleCloseMobile = useCallback(() => setMobileNavOpen(false), []);
+  const handleOpenMobile = useCallback(() => setMobileNavOpen(true), []);
 
   return (
     <TotalUsageContext.Provider value={{ totalUsage, setTotalUsage }}>
       <UserSubscriptionContext.Provider value={{ userSubscription, setUserSubscription }}>
         <UpdateCreditUsageContext.Provider value={{ updateCreditUsage, setUpdateCreditUsage }}>
-          <div className="bg-slate-100 min-h-screen flex">
-            {/* Sidebar (Hidden on Mobile) */}
-            <div className="w-64 hidden md:block fixed h-full">
-              <SideNav />
-            </div>
+          <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
+            {/* Desktop Navigation & Mobile Drawer */}
+            <SideNav
+              mobileOpen={mobileNavOpen}
+              onClose={handleCloseMobile}
+            />
 
-            {/* Main Content Area */}
-            <div className="flex-1 md:ml-64 w-full">
-              <Header />
-              <div className="p-4">{children}</div>
+            {/* Main Application Area */}
+            <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full transition-all">
+              <Header onOpenMobileMenu={handleOpenMobile} />
+              <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
+                {children}
+              </main>
             </div>
           </div>
-
-          {/* Buy Me a Coffee Widget */}
-          <script
-            data-name="BMC-Widget"
-            data-cfasync="false"
-            src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
-            data-id="ayushsingho"
-            data-description="Support me on Buy me a coffee!"
-            data-message="You can buy me coffee, If you like this app"
-            data-color="#BD5FFF"
-            data-position="Right"
-            data-x_margin="18"
-            data-y_margin="18"
-          ></script>
         </UpdateCreditUsageContext.Provider>
       </UserSubscriptionContext.Provider>
     </TotalUsageContext.Provider>

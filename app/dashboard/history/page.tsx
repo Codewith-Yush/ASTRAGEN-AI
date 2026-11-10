@@ -1,122 +1,78 @@
-import Templates from '@/app/(data)/Templates'
-import { Button } from '@/components/ui/button'
-import { db } from '@/utils/db'
-import { AIOutput } from '@/utils/schema'
-import { currentUser } from '@clerk/nextjs/server'
-import { desc, eq } from 'drizzle-orm'
-import Image from 'next/image'
-import React from 'react'
-import { TEMPLATE } from '../_components/TemplateListSection'
-import CopyButton from './_components/CopyButton'
+import { db } from "@/utils/db";
+import { AIOutput } from "@/utils/schema";
+import { currentUser } from "@clerk/nextjs/server";
+import { desc, eq } from "drizzle-orm";
+import Link from "next/link";
+import React from "react";
+import { Clock3, Sparkles } from "lucide-react";
+import HistoryClient from "./_components/HistoryClient";
+
+export const dynamic = "force-dynamic";
 
 export interface HISTORY {
-    id: number;
-    formData: string;
-    aiResponse: string | null;
-    templateSlug: string;
-    createdBy: string;
-    createdAt: string | Date;
+  id: number;
+  formData: string;
+  aiResponse: string | null;
+  templateSlug: string;
+  createdBy: string;
+  createdAt: string | Date;
 }
 
 async function History() {
-    const user = await currentUser();
-    const email = user?.primaryEmailAddress?.emailAddress;
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
 
-    if (!email) {
-        return (
-            <div className="flex items-center justify-center min-h-[50vh] bg-gray-50 rounded-lg">
-                <p className="text-lg text-gray-600">Please sign in to view your history</p>
-            </div>
-        );
-    }
-
-    const historyList = (await db.select()
-        .from(AIOutput)
-        .where(eq(AIOutput.createdBy, email))
-        .orderBy(desc(AIOutput.id))) as HISTORY[];
-
-    const getTemplate = (slug: string): TEMPLATE | undefined => {
-        return Templates?.find((item) => item.slug === slug);
-    }
-
-    const countWords = (text: string | null): number => {
-        if (!text) return 0;
-        return text.trim().split(/\s+/).length;
-    }
-
+  if (!email) {
     return (
-        <div className="m-6 p-6 bg-white shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl">
-            <div className="mb-6">
-                <h2 className="text-3xl font-bold text-gray-800 tracking-tight">History</h2>
-                <p className="text-gray-500 mt-1">Explore your previously generated AI content</p>
-            </div>
-
-            {/* Table Header */}
-            <div className="grid grid-cols-7 gap-4 font-semibold bg-gray-100 text-gray-700 rounded-lg py-4 px-6 mb-4">
-                <h3 className="col-span-2">Template</h3>
-                <h3 className="col-span-2">AI Response</h3>
-                <h3>Date</h3>
-                <h3>Words</h3>
-                <h3>Actions</h3>
-            </div>
-
-            {/* Table Body */}
-            {historyList.length > 0 ? (
-                historyList.map((item) => {
-                    const template = getTemplate(item.templateSlug);
-                    const date = typeof item.createdAt === 'string'
-                        ? new Date(item.createdAt)
-                        : item.createdAt;
-
-                    return (
-                        <React.Fragment key={item.id}>
-                            <div className="grid grid-cols-7 gap-4 items-center py-4 px-6 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200">
-                                <div className="col-span-2 flex items-center gap-3">
-                                    {template?.icon && (
-                                        <Image
-                                            src={template.icon}
-                                            width={28}
-                                            height={28}
-                                            alt={`${template.name || 'template'} icon`}
-                                            className="rounded-md"
-                                        />
-                                    )}
-                                    <span className="text-gray-800 font-medium">
-                                        {template?.name || 'Unknown Template'}
-                                    </span>
-                                </div>
-                                <div className="col-span-2 text-gray-600 line-clamp-2">
-                                    {item.aiResponse || 'No response'}
-                                </div>
-                                <div className="text-gray-500">
-                                    {date.toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                    })}
-                                </div>
-                                <div className="text-gray-500">
-                                    {countWords(item.aiResponse)}
-                                </div>
-                                <div>
-                                    <CopyButton
-                                        aiResponse={item.aiResponse || ''}
-                                        className="hover:scale-105 transition-transform duration-200"
-                                    />
-                                </div>
-                            </div>
-                            <hr className="border-gray-200 my-2" />
-                        </React.Fragment>
-                    );
-                })
-            ) : (
-                <div className="py-12 text-center bg-gray-50 rounded-lg">
-                    <p className="text-gray-500 text-lg">No history items found</p>
-                    <p className="text-gray-400 mt-2">Start generating AI content to see it here!</p>
-                </div>
-            )}
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center bg-white dark:bg-[#0E131F] rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+        <Clock3 className="w-10 h-10 text-slate-400 mb-3" />
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+          Sign in required
+        </h2>
+        <p className="text-sm text-slate-500 mt-1">
+          Please sign in to view your saved AI generation history.
+        </p>
+      </div>
     );
+  }
+
+  const historyList = (await db
+    .select()
+    .from(AIOutput)
+    .where(eq(AIOutput.createdBy, email))
+    .orderBy(desc(AIOutput.id))) as HISTORY[];
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              Content History
+            </h1>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              {historyList.length} items
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Access, view, search, and copy your previously generated AI drafts.
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-sm self-start sm:self-auto"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>New Generation</span>
+        </Link>
+      </div>
+
+      {/* Interactive History Component with Search & Modal Preview */}
+      <HistoryClient historyList={historyList} />
+    </div>
+  );
 }
 
 export default History;

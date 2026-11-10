@@ -54,9 +54,48 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden; /* Prevents horizontal scrolling */
+  }
+
+  /* Eliminate mobile 300ms tap delay and ensure instant touch responsiveness */
+  a, button, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Sleek modern selection color */
+  ::selection {
+    background-color: rgba(99, 102, 241, 0.25);
+    color: inherit;
+  }
+
+  /* Custom Minimalist Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 9999px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.6);
   }
 
   /* Fixes black screen issue */

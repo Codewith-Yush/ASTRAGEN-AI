@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import SearchSection from "./_components/SearchSection";
 import TemplateListSection from "./_components/TemplateListSection";
@@ -7,11 +8,11 @@ function Dashboard() {
   const [userSearchInput, setUserSearchInput] = useState<string>("");
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-      {/* Search Section */}
+    <div className="w-full space-y-4">
+      {/* Search & Hero Banner */}
       <SearchSection onSearchInput={(value: string) => setUserSearchInput(value)} />
 
-      {/* Template List Section */}
+      {/* Templates Category & Bento Grid */}
       <TemplateListSection userSearchInput={userSearchInput} />
     </div>
   );

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // Store templates outside the handler function to avoid recreating on each request
 const templates = [
   { 

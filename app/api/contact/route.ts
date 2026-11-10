@@ -1,27 +1,52 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { z } from 'zod';
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
+  email: z.string().trim().email('Invalid email address').max(200),
+  subject: z.string().trim().max(200).optional().default('New Contact Form Submission'),
+  message: z.string().trim().min(5, 'Message must be at least 5 characters').max(5000, 'Message is too long'),
+});
+
+// Helper to escape HTML characters
+function escapeHTML(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, subject, message, recipient } = body;
-    
-    // Validate the required fields
-    if (!name || !email || !message || !recipient) {
+    const result = contactSchema.safeParse(body);
+
+    if (!result.success) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: 'Validation failed', errors: result.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
 
-    // Log environment variables (for debugging - remove in production)
-    console.log('Email config:', {
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: process.env.EMAIL_SECURE,
-      user: process.env.EMAIL_USER ? 'Set' : 'Not set',
-      pass: process.env.EMAIL_PASSWORD ? 'Set' : 'Not set',
-    });
+    const { name, email, subject, message } = result.data;
+
+    // Hardcoded destination to prevent open mail relay abuse
+    const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL || process.env.EMAIL_USER;
+
+    if (!receiverEmail) {
+      console.warn('CONTACT_RECEIVER_EMAIL is not configured.');
+      return NextResponse.json(
+        { message: 'Contact service is temporarily unconfigured. Please try again later.' },
+        { status: 503 }
+      );
+    }
+
+    // Sanitize headers to prevent header injection
+    const sanitizedSubject = subject.replace(/[\r\n]+/g, ' ');
+    const sanitizedEmail = email.replace(/[\r\n]+/g, '');
 
     // Configure email transporter
     const transporter = nodemailer.createTransport({
@@ -34,64 +59,42 @@ export async function POST(request: Request) {
       },
     });
 
-    // Verify connection configuration
-    try {
-      await transporter.verify();
-      console.log('SMTP connection verified successfully');
-    } catch (verifyError) {
-      console.error('SMTP verification failed:', verifyError);
-      return NextResponse.json(
-        { message: 'Failed to connect to email server. Please check your configuration.' },
-        { status: 500 }
-      );
-    }
+    const safeName = escapeHTML(name);
+    const safeEmail = escapeHTML(sanitizedEmail);
+    const safeSubject = escapeHTML(sanitizedSubject);
+    const safeMessage = escapeHTML(message);
 
-    // Email content
     const mailOptions = {
-      from: process.env.EMAIL_FROM || 'website-contact@example.com',
-      to: recipient,
-      replyTo: email,
-      subject: subject ? `Contact Form: ${subject}` : 'New Contact Form Submission',
-      text: `
-        Name: ${name}
-        Email: ${email}
-        ${subject ? `Subject: ${subject}` : ''}
-        
-        Message:
-        ${message}
-      `,
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@astragen.ai',
+      to: receiverEmail,
+      replyTo: sanitizedEmail,
+      subject: `[Contact Form] ${sanitizedSubject}`,
+      text: `Name: ${name}\nEmail: ${sanitizedEmail}\nSubject: ${sanitizedSubject}\n\nMessage:\n${message}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #0d9488;">New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ''}
-          <div style="margin-top: 20px;">
-            <strong>Message:</strong>
-            <p style="white-space: pre-wrap;">${message}</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #4f46e5; margin-bottom: 16px;">New Contact Message</h2>
+          <p><strong>Name:</strong> ${safeName}</p>
+          <p><strong>Email:</strong> ${safeEmail}</p>
+          <p><strong>Subject:</strong> ${safeSubject}</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 16px 0;">
+          <div style="margin-top: 16px;">
+            <strong style="color: #334155;">Message:</strong>
+            <p style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 6px; color: #1e293b;">${safeMessage}</p>
           </div>
         </div>
       `,
     };
 
-    // Send email
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', info.messageId);
+    await transporter.sendMail(mailOptions);
 
     return NextResponse.json(
-      { message: 'Email sent successfully' },
+      { message: 'Message sent successfully' },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Error sending email:', error);
-    
-    // Return a more specific error message if possible
-    const errorMessage = error instanceof Error 
-      ? `Error: ${error.message}` 
-      : 'Unknown error sending message';
-    
+  } catch (error: any) {
+    console.error('Error sending contact email:', error?.message || error);
     return NextResponse.json(
-      { message: errorMessage },
+      { message: 'Failed to send message. Please try again later.' },
       { status: 500 }
     );
   }

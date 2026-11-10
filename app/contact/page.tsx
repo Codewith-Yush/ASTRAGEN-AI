@@ -14,7 +14,6 @@ export default function ContactPage() {
     email: '',
     subject: '',
     message: '',
-    recipient: 'support@aicontentgen.com'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,90 +39,6 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSubmitMessage('');
     setSubmitStatus(null);
-    
-    // Create email template HTML
-    const emailTemplate = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${formData.subject || 'Contact Form Submission'}</title>
-        <style>
-          body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-          }
-          .email-container {
-            max-width: 600px;
-            margin: 20px auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-          }
-          .email-header {
-            background: linear-gradient(to right, #14b8a6, #0d9488);
-            color: white;
-            padding: 20px;
-            text-align: center;
-          }
-          .email-body {
-            padding: 30px;
-          }
-          .footer {
-            background-color: #f1f5f9;
-            padding: 15px;
-            text-align: center;
-            font-size: 14px;
-            color: #64748b;
-          }
-          .message-box {
-            background-color: #f8fafc;
-            border-left: 4px solid #14b8a6;
-            padding: 15px;
-            margin: 20px 0;
-          }
-          .contact-info {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="email-container">
-          <div class="email-header">
-            <h1>New Contact Form Submission</h1>
-          </div>
-          <div class="email-body">
-            <p>You've received a new message from your website contact form.</p>
-            
-            <h2>Contact Details:</h2>
-            <p><strong>Name:</strong> ${formData.name}</p>
-            <p><strong>Email:</strong> ${formData.email}</p>
-            <p><strong>Subject:</strong> ${formData.subject || 'No subject provided'}</p>
-            
-            <h2>Message:</h2>
-            <div class="message-box">
-              ${formData.message.replace(/\n/g, '<br>')}
-            </div>
-            
-            <div class="contact-info">
-              <p>This email was sent from the contact form on your website. Please respond directly to the sender's email address if needed.</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>© ${new Date().getFullYear()} AI Content Gen. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
 
     try {
       const response = await fetch('/api/contact', {
@@ -131,24 +46,19 @@ export default function ContactPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          emailTemplate
-        }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setSubmitMessage('Message sent successfully');
-        // Fixed: Using the type assertion to make TypeScript happy
+        setSubmitMessage('Message sent successfully!');
         setSubmitStatus('success' as SubmitStatusType);
         setFormData({
           name: '',
           email: '',
           subject: '',
           message: '',
-          recipient: 'support@aicontentgen.com'
         });
       } else {
         throw new Error(data.message || 'Failed to send message');
@@ -156,7 +66,6 @@ export default function ContactPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error sending message. Please try again.';
       setSubmitMessage(errorMessage);
-      // Fixed: Using the type assertion to make TypeScript happy
       setSubmitStatus('error' as SubmitStatusType);
       console.error('Contact form error:', error);
     } finally {

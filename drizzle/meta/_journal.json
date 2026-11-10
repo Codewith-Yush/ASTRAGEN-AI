@@ -15,6 +15,13 @@
       "when": 1740627736972,
       "tag": "0001_brown_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741200000000,
+      "tag": "0002_modernization",
+      "breakpoints": true
     }
   ]
 }

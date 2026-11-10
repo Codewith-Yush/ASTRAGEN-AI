@@ -15,9 +15,9 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-background text-foreground`} suppressHydrationWarning> {/* ✅ Added here */}
-        <ClerkProviderWrapper> {/* ✅ ClerkProvider wrapped inside client component */}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} bg-background text-foreground`} suppressHydrationWarning>
+        <ClerkProviderWrapper>
           <ClientLayout>{children}</ClientLayout>
         </ClerkProviderWrapper>
       </body>
