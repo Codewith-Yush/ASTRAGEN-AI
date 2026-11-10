@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
     const isSubscribed = subs.length > 0 && subs[0].active === true;
 
     // Check usage limits if not subscribed
+    let reservedId: number | null = null;
     if (!isSubscribed) {
       const usageResult = await db
         .select({
@@ -71,12 +72,26 @@ export async function POST(req: NextRequest) {
           { status: 402 }
         );
       }
+
+      // Concurrency safety: provisionally reserve quota before initiating generation
+      const [reserved] = await db
+        .insert(AIOutput)
+        .values({
+          formData: JSON.stringify(formData),
+          templateSlug,
+          aiResponse: "",
+          createdBy: email,
+          wordCount: 150, // Provisional reservation
+          createdAt: new Date(),
+        })
+        .returning({ id: AIOutput.id });
+      reservedId = reserved?.id ?? null;
     }
 
     // Build the final prompt securely on the server
     const prompt = `${JSON.stringify(formData)}, ${template.aiPrompt}`;
 
-    // Initiate streaming with Gemini
+    // Initiate streaming with Gemini (with automatic fallback and timeout)
     const streamResult = await streamContent(prompt);
 
     const encoder = new TextEncoder();
@@ -91,20 +106,34 @@ export async function POST(req: NextRequest) {
             controller.enqueue(encoder.encode(chunkText));
           }
 
-          // Stream completed; persist record to database
+          // Stream completed; update or persist record to database
           const wordCount = accumulatedText.trim().split(/\s+/).filter(Boolean).length;
-          await db.insert(AIOutput).values({
-            formData: JSON.stringify(formData),
-            templateSlug,
-            aiResponse: accumulatedText,
-            createdBy: email,
-            wordCount,
-            createdAt: new Date(),
-          });
+          if (reservedId) {
+            await db
+              .update(AIOutput)
+              .set({
+                aiResponse: accumulatedText,
+                wordCount,
+              })
+              .where(eq(AIOutput.id, reservedId));
+          } else {
+            await db.insert(AIOutput).values({
+              formData: JSON.stringify(formData),
+              templateSlug,
+              aiResponse: accumulatedText,
+              createdBy: email,
+              wordCount,
+              createdAt: new Date(),
+            });
+          }
 
           controller.close();
         } catch (streamError) {
           console.error("Stream processing error:", streamError);
+          // If aborted or failed before generation, cleanup reservation
+          if (reservedId && !accumulatedText) {
+            await db.delete(AIOutput).where(eq(AIOutput.id, reservedId)).catch(() => {});
+          }
           controller.error(streamError);
         }
       },

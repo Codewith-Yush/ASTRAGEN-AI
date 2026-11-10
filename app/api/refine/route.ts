@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { streamContent } from "@/utils/AiModal";
+import { db } from "@/utils/db";
+import { AIOutput, UserSubscription } from "@/utils/schema";
+import { eq, sql } from "drizzle-orm";
 
 const refineSchema = z.object({
   content: z.string().min(1, "Content is required to refine"),
@@ -42,6 +45,48 @@ export async function POST(req: NextRequest) {
     }
 
     const { content, action, customPrompt } = parsed.data;
+
+    // Check subscription status
+    const subs = await db
+      .select()
+      .from(UserSubscription)
+      .where(eq(UserSubscription.email, email))
+      .limit(1);
+
+    const isSubscribed = subs.length > 0 && subs[0].active === true;
+
+    // Check usage limits if not subscribed
+    let reservedId: number | null = null;
+    if (!isSubscribed) {
+      const usageResult = await db
+        .select({
+          total: sql<number>`coalesce(sum(case when "wordCount" > 0 then "wordCount" else length("aiResponse") end), 0)::int`,
+        })
+        .from(AIOutput)
+        .where(eq(AIOutput.createdBy, email));
+
+      const currentUsage = usageResult[0]?.total ?? 0;
+      if (currentUsage >= 300000) {
+        return NextResponse.json(
+          { error: "Free credit quota exceeded. Please upgrade your subscription to continue." },
+          { status: 402 }
+        );
+      }
+
+      // Concurrency safety: provisionally reserve quota before initiating refinement
+      const [reserved] = await db
+        .insert(AIOutput)
+        .values({
+          formData: JSON.stringify({ action, originalChars: content.length }),
+          templateSlug: `refine-${action}`,
+          aiResponse: "",
+          createdBy: email,
+          wordCount: 150, // Provisional reservation
+          createdAt: new Date(),
+        })
+        .returning({ id: AIOutput.id });
+      reservedId = reserved?.id ?? null;
+    }
 
     let instruction = "";
     switch (action) {
@@ -92,17 +137,44 @@ Strict Instructions:
 
     const streamResult = await streamContent(fullPrompt);
     const encoder = new TextEncoder();
+    let accumulatedText = "";
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of streamResult.stream) {
             const chunkText = chunk.text();
+            accumulatedText += chunkText;
             controller.enqueue(encoder.encode(chunkText));
           }
+
+          // Stream completed; update or persist record to database
+          const wordCount = accumulatedText.trim().split(/\s+/).filter(Boolean).length;
+          if (reservedId) {
+            await db
+              .update(AIOutput)
+              .set({
+                aiResponse: accumulatedText,
+                wordCount,
+              })
+              .where(eq(AIOutput.id, reservedId));
+          } else {
+            await db.insert(AIOutput).values({
+              formData: JSON.stringify({ action, originalChars: content.length }),
+              templateSlug: `refine-${action}`,
+              aiResponse: accumulatedText,
+              createdBy: email,
+              wordCount,
+              createdAt: new Date(),
+            });
+          }
+
           controller.close();
         } catch (streamError) {
           console.error("Refine stream error:", streamError);
+          if (reservedId && !accumulatedText) {
+            await db.delete(AIOutput).where(eq(AIOutput.id, reservedId)).catch(() => {});
+          }
           controller.error(streamError);
         }
       },

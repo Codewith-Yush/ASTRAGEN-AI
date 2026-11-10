@@ -8,16 +8,33 @@ if (!apiKey && process.env.NODE_ENV === "production") {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// Default to Google Gemini 3.1 Flash Lite (ultra-fast, active model on v1beta)
-export const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+// Default Gemini model with fallback chain
+export const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
-// Fallback models in priority order if a model is throttled or deprecated
+// Fallback models in priority order: prefers current model, then production-stable models
 const FALLBACK_MODELS = [
   DEFAULT_GEMINI_MODEL,
-  "gemini-3-flash-preview",
-  "gemini-3.5-flash-lite",
+  "gemini-1.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-pro",
+  "gemini-3.1-flash-lite",
   "gemini-flash-latest",
 ];
+
+/**
+ * Timeout wrapper for promise-based AI calls
+ */
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 30000,
+  errorMessage: string = "AI request timed out"
+): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+}
 
 export const getGeminiModel = (modelName: string = DEFAULT_GEMINI_MODEL) => {
   return genAI.getGenerativeModel({
@@ -33,11 +50,12 @@ export const getGeminiModel = (modelName: string = DEFAULT_GEMINI_MODEL) => {
 };
 
 /**
- * Server-side helper to generate content with Gemini (with automatic model fallback)
+ * Server-side helper to generate content with Gemini (with automatic model fallback and timeout)
  */
 export async function generateContent(
   prompt: string,
-  preferredModel: string = DEFAULT_GEMINI_MODEL
+  preferredModel: string = DEFAULT_GEMINI_MODEL,
+  timeoutMs: number = 30000
 ): Promise<string> {
   const modelsToTry = Array.from(new Set([preferredModel, ...FALLBACK_MODELS]));
   let lastError: any = null;
@@ -45,7 +63,11 @@ export async function generateContent(
   for (const modelName of modelsToTry) {
     try {
       const model = getGeminiModel(modelName);
-      const result = await model.generateContent(prompt);
+      const result = await withTimeout(
+        model.generateContent(prompt),
+        timeoutMs,
+        `Gemini model ${modelName} timed out after ${timeoutMs}ms`
+      );
       const response = await result.response;
       return response.text();
     } catch (err: any) {
@@ -58,11 +80,12 @@ export async function generateContent(
 }
 
 /**
- * Server-side helper to stream content with Gemini (with automatic model fallback)
+ * Server-side helper to stream content with Gemini (with automatic model fallback and timeout)
  */
 export async function streamContent(
   prompt: string,
-  preferredModel: string = DEFAULT_GEMINI_MODEL
+  preferredModel: string = DEFAULT_GEMINI_MODEL,
+  timeoutMs: number = 30000
 ) {
   const modelsToTry = Array.from(new Set([preferredModel, ...FALLBACK_MODELS]));
   let lastError: any = null;
@@ -70,7 +93,11 @@ export async function streamContent(
   for (const modelName of modelsToTry) {
     try {
       const model = getGeminiModel(modelName);
-      return await model.generateContentStream(prompt);
+      return await withTimeout(
+        model.generateContentStream(prompt),
+        timeoutMs,
+        `Gemini stream initialization on ${modelName} timed out after ${timeoutMs}ms`
+      );
     } catch (err: any) {
       console.warn(`Model ${modelName} stream failed: ${err.message}. Trying fallback...`);
       lastError = err;

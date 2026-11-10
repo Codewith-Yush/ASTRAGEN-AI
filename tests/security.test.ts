@@ -97,5 +97,16 @@ describe("Security & Quota Verification", () => {
     expect(blockedRes.allowed).toBe(false);
     expect(blockedRes.retryAfterSeconds).toBeGreaterThan(0);
   });
+
+  it("handles AI call timeouts gracefully with withTimeout", async () => {
+    const { withTimeout } = await import("../utils/AiModal");
+
+    const fastOperation = new Promise<string>((resolve) => setTimeout(() => resolve("success"), 10));
+    const result = await withTimeout(fastOperation, 100);
+    expect(result).toBe("success");
+
+    const hangingOperation = new Promise<string>((resolve) => setTimeout(() => resolve("too late"), 500));
+    await expect(withTimeout(hangingOperation, 20, "Timeout exceeded")).rejects.toThrow("Timeout exceeded");
+  });
 });
 
