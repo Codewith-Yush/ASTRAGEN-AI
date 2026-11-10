@@ -13,6 +13,8 @@ import {
   Sparkles,
   ArrowRight,
   Clock3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -27,6 +29,8 @@ export default function HistoryClient({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItem, setSelectedItem] = useState<HISTORY | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const getTemplate = (slug: string) => {
     return Templates?.find((item) => item.slug === slug);
@@ -43,6 +47,19 @@ export default function HistoryClient({
       return nameMatch || slugMatch || contentMatch;
     });
   }, [historyList, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredHistory.length / pageSize));
+
+  // Reset page when search term changes
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
+    setCurrentPage(1);
+  };
+
+  const paginatedHistory = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredHistory.slice(startIndex, startIndex + pageSize);
+  }, [filteredHistory, currentPage, pageSize]);
 
   const countWords = (text: string | null): number => {
     if (!text) return 0;
@@ -63,7 +80,7 @@ export default function HistoryClient({
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Filter drafts by template or keywords..."
               className="w-full pl-10 pr-9 py-2.5 rounded-xl text-xs sm:text-sm bg-white dark:bg-[#0E131F] border border-slate-200/80 dark:border-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
             />
@@ -99,7 +116,7 @@ export default function HistoryClient({
 
             {/* List Rows */}
             <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
-              {filteredHistory.map((item) => {
+              {paginatedHistory.map((item) => {
                 const template = getTemplate(item.templateSlug);
                 const date =
                   typeof item.createdAt === "string"
@@ -186,6 +203,38 @@ export default function HistoryClient({
                 );
               })}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="px-6 py-3.5 bg-slate-50/70 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                <span className="text-slate-500 dark:text-slate-400">
+                  Page <strong className="text-slate-900 dark:text-white">{currentPage}</strong> of{" "}
+                  <strong className="text-slate-900 dark:text-white">{totalPages}</strong>
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0E131F] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium shadow-xs"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Previous</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0E131F] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium shadow-xs"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div className="p-12 text-center space-y-3">
