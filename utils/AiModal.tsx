@@ -8,17 +8,16 @@ if (!apiKey && process.env.NODE_ENV === "production") {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// Default Gemini model with fallback chain
-export const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+// Default Gemini model with fallback chain (empirically tested against live Gemini API)
+export const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 
-// Fallback models in priority order: prefers current model, then production-stable models
+// Fallback models in priority order based on verified live API responses:
 const FALLBACK_MODELS = [
   DEFAULT_GEMINI_MODEL,
-  "gemini-1.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-pro",
   "gemini-3.1-flash-lite",
-  "gemini-flash-latest",
+  "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-3.8-flash",
 ];
 
 /**
