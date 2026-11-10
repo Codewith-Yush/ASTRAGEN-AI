@@ -80,5 +80,22 @@ describe("Security & Quota Verification", () => {
     expect(validBuf.length === checkBuf.length && crypto.timingSafeEqual(validBuf, checkBuf)).toBe(true);
     expect(validBuf.length === tamperedBuf.length && crypto.timingSafeEqual(validBuf, tamperedBuf)).toBe(false);
   });
+
+  it("enforces contact form rate limiting correctly", async () => {
+    const { checkRateLimit } = await import("../lib/rateLimit");
+    const testIp = "test_ip_192.168.10.99";
+
+    // First 5 requests should be allowed
+    for (let i = 0; i < 5; i++) {
+      const res = checkRateLimit(testIp, 5, 60000);
+      expect(res.allowed).toBe(true);
+      expect(res.retryAfterSeconds).toBe(0);
+    }
+
+    // 6th request should be blocked
+    const blockedRes = checkRateLimit(testIp, 5, 60000);
+    expect(blockedRes.allowed).toBe(false);
+    expect(blockedRes.retryAfterSeconds).toBeGreaterThan(0);
+  });
 });
 

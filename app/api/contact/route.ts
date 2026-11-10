@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
@@ -21,6 +22,22 @@ function escapeHTML(str: string): string {
 
 export async function POST(request: Request) {
   try {
+    // Rate limit check by client IP
+    const forwarded = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const clientIp = forwarded ? forwarded.split(',')[0].trim() : realIp || '127.0.0.1';
+
+    const rateLimit = checkRateLimit(`contact_${clientIp}`);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { message: 'Too many contact submissions. Please wait before trying again.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': rateLimit.retryAfterSeconds.toString() },
+        }
+      );
+    }
+
     const body = await request.json();
     const result = contactSchema.safeParse(body);
 

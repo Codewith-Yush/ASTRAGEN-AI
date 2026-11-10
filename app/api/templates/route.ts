@@ -1,40 +1,31 @@
 import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
+import Templates from "@/app/(data)/Templates";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400; // Static ISR cache for 24 hours
 
-// Store templates outside the handler function to avoid recreating on each request
-const templates = [
-  { 
-    id: 1, 
-    slug: "generate-blog-title", 
-    aiPrompt: "Generate a blog title based on the given topic.",
-    category: "content",
-    exampleInput: "artificial intelligence trends"
-  },
-  { 
-    id: 2, 
-    slug: "seo-meta-description", 
-    aiPrompt: "Generate an SEO-friendly meta description.",
-    category: "seo",
-    exampleInput: "Our guide to modern web development practices"
-  },
-];
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Return cached template data with proper headers
+    // Return sanitized public metadata for all templates without leaking internal prompts
+    const sanitizedTemplates = Templates.map((t) => ({
+      slug: t.slug,
+      name: t.name,
+      desc: t.desc,
+      category: t.category,
+      icon: t.icon,
+      fieldsCount: t.form.length,
+    }));
+
     return NextResponse.json(
-      { 
-        success: true, 
-        data: templates,
-        count: templates.length
+      {
+        success: true,
+        data: sanitizedTemplates,
+        count: sanitizedTemplates.length,
       },
-      { 
+      {
         status: 200,
         headers: {
-          'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-        }
+          "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=43200",
+        },
       }
     );
   } catch (error) {
