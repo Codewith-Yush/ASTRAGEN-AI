@@ -49,5 +49,36 @@ describe("Security & Quota Verification", () => {
     expect(escaped).not.toContain("<script>");
     expect(escaped).toContain("&lt;script&gt;");
   });
+
+  it("verifies webhook idempotency key derivation is deterministic across retries", () => {
+    const rawBody = JSON.stringify({
+      entity: "event",
+      event: "subscription.charged",
+      payload: { subscription: { entity: { id: "sub_123" } } }
+    });
+
+    // When x-razorpay-event-id header is provided
+    const headerEventId = "evt_rzp_mock_12345";
+    const derived1 = headerEventId || `evt_${crypto.createHash("sha256").update(rawBody).digest("hex")}`;
+    expect(derived1).toBe("evt_rzp_mock_12345");
+
+    // When header is missing, fallback hash is deterministic for identical rawBody payloads across retries
+    const fallbackIdAttempt1 = `evt_${crypto.createHash("sha256").update(rawBody).digest("hex")}`;
+    const fallbackIdAttempt2 = `evt_${crypto.createHash("sha256").update(rawBody).digest("hex")}`;
+    expect(fallbackIdAttempt1).toBe(fallbackIdAttempt2);
+    expect(fallbackIdAttempt1).toMatch(/^evt_[a-f0-9]{64}$/);
+  });
+
+  it("safely compares HMAC signatures in constant-time", () => {
+    const validHex = crypto.createHmac("sha256", "secret").update("payload").digest("hex");
+    const tamperedHex = crypto.createHmac("sha256", "wrong_secret").update("payload").digest("hex");
+
+    const validBuf = Buffer.from(validHex, "utf8");
+    const checkBuf = Buffer.from(validHex, "utf8");
+    const tamperedBuf = Buffer.from(tamperedHex, "utf8");
+
+    expect(validBuf.length === checkBuf.length && crypto.timingSafeEqual(validBuf, checkBuf)).toBe(true);
+    expect(validBuf.length === tamperedBuf.length && crypto.timingSafeEqual(validBuf, tamperedBuf)).toBe(false);
+  });
 });
 

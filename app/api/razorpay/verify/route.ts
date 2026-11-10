@@ -36,13 +36,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Payment verification service misconfigured" }, { status: 500 });
     }
 
-    // Verify cryptographic signature: payment_id + "|" + subscription_id
+    // Verify cryptographic signature with constant-time equality: payment_id + "|" + subscription_id
     const generatedSignature = crypto
       .createHmac("sha256", secret)
       .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
       .digest("hex");
 
-    if (generatedSignature !== razorpay_signature) {
+    const genBuf = Buffer.from(generatedSignature, "utf8");
+    const sigBuf = Buffer.from(razorpay_signature, "utf8");
+
+    if (
+      genBuf.length !== sigBuf.length ||
+      !crypto.timingSafeEqual(genBuf, sigBuf)
+    ) {
       console.warn("Invalid Razorpay signature attempt for email:", email);
       return NextResponse.json({ error: "Invalid payment signature" }, { status: 400 });
     }

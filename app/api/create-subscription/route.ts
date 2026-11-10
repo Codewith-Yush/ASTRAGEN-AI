@@ -11,7 +11,10 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_SECRET_KEY) {
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const razorpaySecret = process.env.RAZORPAY_SECRET_KEY;
+
+    if (!razorpayKeyId || !razorpaySecret) {
       throw new Error("Razorpay API credentials missing in environment variables.");
     }
 
@@ -21,8 +24,8 @@ export async function POST() {
     }
 
     const instance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_SECRET_KEY,
+      key_id: razorpayKeyId,
+      key_secret: razorpaySecret,
     });
 
     const result = await instance.subscriptions.create({

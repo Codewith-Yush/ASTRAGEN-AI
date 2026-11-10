@@ -16,19 +16,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing signature or secret" }, { status: 400 });
     }
 
-    // Verify HMAC SHA-256 signature
+    // Verify HMAC SHA-256 signature with constant-time equality check
     const expectedSignature = crypto
       .createHmac("sha256", webhookSecret)
       .update(rawBody)
       .digest("hex");
 
-    if (expectedSignature !== signature) {
+    const expectedBuffer = Buffer.from(expectedSignature, "utf8");
+    const signatureBuffer = Buffer.from(signature, "utf8");
+
+    if (
+      expectedBuffer.length !== signatureBuffer.length ||
+      !crypto.timingSafeEqual(expectedBuffer, signatureBuffer)
+    ) {
       console.warn("Invalid Razorpay webhook signature");
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     const event = JSON.parse(rawBody);
-    const eventId = event?.event_id || `${event.event}_${Date.now()}`;
+    // Idempotency: prioritize standard x-razorpay-event-id header, payload event id, or deterministic hash of rawBody
+    const headerEventId = req.headers.get("x-razorpay-event-id");
+    const eventId =
+      headerEventId ||
+      event?.id ||
+      event?.event_id ||
+      `evt_${crypto.createHash("sha256").update(rawBody).digest("hex")}`;
 
     // Idempotency check: has this event already been processed?
     const existingEvent = await db

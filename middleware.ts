@@ -5,6 +5,7 @@ const isProtectedRoute = createRouteMatcher([
   '/api/generate(.*)',
   '/api/refine(.*)',
   '/api/user(.*)',
+  '/api/create-subscription(.*)',
   '/api/razorpay/verify(.*)',
 ]);
 
