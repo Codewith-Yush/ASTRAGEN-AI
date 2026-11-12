@@ -15,24 +15,23 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check active subscription
-    const subscription = await db
-      .select()
-      .from(UserSubscription)
-      .where(eq(UserSubscription.email, email))
-      .limit(1);
+    // Fetch subscription and usage aggregation in parallel
+    const [subscription, usageResult] = await Promise.all([
+      db
+        .select({ active: UserSubscription.active })
+        .from(UserSubscription)
+        .where(eq(UserSubscription.email, email))
+        .limit(1),
+      db
+        .select({
+          totalWords: sql<number>`coalesce(sum(case when "wordCount" > 0 then "wordCount" else length("aiResponse") end), 0)::int`,
+        })
+        .from(AIOutput)
+        .where(eq(AIOutput.createdBy, email)),
+    ]);
 
     const isSubscribed = subscription.length > 0 && subscription[0].active === true;
     const maxWords = isSubscribed ? 1000000 : 300000;
-
-    // Aggregate word count / character count from database
-    const usageResult = await db
-      .select({
-        totalWords: sql<number>`coalesce(sum(case when "wordCount" > 0 then "wordCount" else length("aiResponse") end), 0)::int`,
-      })
-      .from(AIOutput)
-      .where(eq(AIOutput.createdBy, email));
-
     const totalUsage = usageResult[0]?.totalWords ?? 0;
 
     return NextResponse.json({

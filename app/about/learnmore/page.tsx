@@ -1,111 +1,113 @@
 "use client";
-import { motion } from 'framer-motion';
-import Link from 'next/link';
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
-};
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Lightbulb, Cpu, ShieldCheck, Sparkles } from "lucide-react";
 
-const staggerContainer = {
-  visible: {
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-};
+const APPROACH_ITEMS = [
+  {
+    title: "Human-Amplified Creativity",
+    description: "We build intuitive, high-velocity tools that enhance rather than replace human creative judgment, style, and domain expertise.",
+    icon: Lightbulb,
+    tag: "PHILOSOPHY",
+  },
+  {
+    title: "Production-Grade AI Architecture",
+    description: "Engineered on Google Gemini transformer models with carefully curated prompting structures to eliminate hallucination and maximize content clarity.",
+    icon: Cpu,
+    tag: "ENGINEERING",
+  },
+  {
+    title: "Ethical & Responsible Framework",
+    description: "Built-in safety protocols, transparent usage tracking, data privacy standards, and copyright awareness at every step of content generation.",
+    icon: ShieldCheck,
+    tag: "TRUST & SAFETY",
+  },
+];
 
 export default function LearnMorePage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <motion.main
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-        className="max-w-4xl mx-auto px-6 py-16"
-      >
+    <div className="min-h-screen bg-neutral-50/60 dark:bg-[#090A0C] text-neutral-900 dark:text-neutral-100 py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-12">
+        {/* Navigation Breadcrumb */}
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+
         {/* Header Section */}
-        <motion.section variants={fadeInUp} className="text-center mb-12">
-          <span className="inline-block px-3 py-1 text-xs font-medium tracking-wider text-teal-700 uppercase bg-teal-100 rounded-full dark:bg-teal-900 dark:text-teal-200 mb-4">
-            Deep Dive
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-300 dark:to-blue-400">
-              Learn More About Our Platform
-            </span>
+        <header className="text-center space-y-3 max-w-xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+            <Sparkles className="w-3 h-3 text-neutral-500" />
+            <span>Our Mission</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+            Empowering creators through intelligent AI
           </h1>
-          <motion.div 
-            className="h-1 w-20 bg-gradient-to-r from-teal-500 to-blue-500 mx-auto my-6"
-            variants={fadeInUp}
-          />
-        </motion.section>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            Astragen bridges advanced foundational models and real-world creator workflows to deliver fast, structured, publication-grade results.
+          </p>
+        </header>
 
         {/* Content Sections */}
-        <motion.section variants={staggerContainer} className="space-y-12 mb-16">
-          {[
-            {
-              title: "Our Approach",
-              description: "We combine cutting-edge AI with human-centered design principles to create tools that enhance rather than replace human creativity.",
-              icon: "💡"
-            },
-            {
-              title: "Technology Stack",
-              description: "Built on transformer architectures with proprietary fine-tuning for content generation tasks.",
-              icon: "⚙️"
-            },
-            {
-              title: "Ethical Considerations",
-              description: "We prioritize responsible AI development with built-in safeguards against misuse.",
-              icon: "🛡️"
-            }
-          ].map((item, index) => (
-            <motion.div 
-              key={index}
-              variants={fadeInUp}
-              className="p-8 rounded-xl bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="flex items-start">
-                <span className="text-3xl mr-4">{item.icon}</span>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h2>
-                  <p className="text-gray-600 dark:text-gray-300">{item.description}</p>
+        <div className="space-y-4">
+          {APPROACH_ITEMS.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={index}
+                className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#121418] border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors flex flex-col sm:flex-row items-start gap-4 sm:gap-5"
+              >
+                <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold text-neutral-900 dark:text-white">
+                      {item.title}
+                    </h2>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 px-2 py-0.2 rounded-md bg-neutral-100 dark:bg-neutral-800">
+                      {item.tag}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </motion.section>
+            );
+          })}
+        </div>
 
         {/* CTA Section */}
-        <motion.section variants={fadeInUp} className="text-center">
-          <div className="bg-gradient-to-r from-teal-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ready to get started?</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-              Join thousands of creators already using our platform to enhance their content workflow.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link 
-                href="/about" 
-                className="px-6 py-3 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Back to About
-              </Link>
-              <Link 
-                href="/about/technology" 
-                className="px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                Explore Technology
-              </Link>
-            </div>
+        <div className="p-8 sm:p-10 rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] text-center space-y-4 shadow-xs">
+          <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white">
+            Ready to accelerate your workflow?
+          </h2>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
+            Join thousands of writers, founders, and engineers using Astragen to produce original content in seconds.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-all shadow-xs inline-flex items-center justify-center gap-2"
+            >
+              <span>Get Started Free</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/about/technology"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors inline-flex items-center justify-center"
+            >
+              <span>Explore Tech Stack</span>
+            </Link>
           </div>
-        </motion.section>
-      </motion.main>
+        </div>
+      </div>
     </div>
   );
 }

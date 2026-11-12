@@ -2,52 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Typography & Preserved Legacy Landing Tokens
+   ============================================================ */
+
+.font-display {
+  font-family: var(--font-archivo-black), "Archivo Black", "Arial Black", Impact, sans-serif;
+  letter-spacing: -0.03em;
+}
+.font-body {
+  font-family: var(--font-space-grotesk), "Space Grotesk", system-ui, sans-serif;
+}
+.font-mono-nb {
+  font-family: var(--font-space-mono), "Space Mono", ui-monospace, monospace;
+}
+
+/* Landing background textures (Preserved for page.tsx) */
+.nb-dots {
+  background-image: radial-gradient(#000 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+.dark .nb-dots {
+  background-image: radial-gradient(#fff 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+.nb-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #000 0 10px,
+    transparent 10px 20px
+  );
+}
+
+/* Selection */
+::selection {
+  background: #3b3bff20 !important;
+  color: inherit !important;
+}
+
+/* Premium Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.5);
+}
+
 @layer base {
   :root {
-    /* Light Mode Variables */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 217 91% 60%; /* #2563eb - Blue */
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 276 75% 55%; /* #9333ea - Purple */
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    /* Dark Mode Variables */
-    --background: 0 0% 3.9%;
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --radius: 0.75rem;
   }
 
   * {
@@ -55,81 +109,30 @@
   }
 
   html {
-    scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    @apply bg-background text-foreground;
-    overflow-x: hidden; /* Prevents horizontal scrolling */
+    @apply font-body bg-background text-foreground;
+    overflow-x: hidden;
   }
 
-  /* Eliminate mobile 300ms tap delay and ensure instant touch responsiveness */
+  /* Eliminate mobile 300ms tap delay */
   a, button, [role="button"], input, select, textarea {
     touch-action: manipulation;
   }
 
-  /* Sleek modern selection color */
-  ::selection {
-    background-color: rgba(99, 102, 241, 0.25);
-    color: inherit;
-  }
-
-  /* Custom Minimalist Scrollbars */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.35);
-    border-radius: 9999px;
-  }
-
-  .dark ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.2);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.6);
-  }
-
-  /* Fixes black screen issue */
   html, body {
     height: auto;
     min-height: 100vh;
-    background: var(--background); /* Ensures correct background */
   }
 }
 
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(5px, -5px); }
-  50% { transform: translate(-5px, 3px); }
-  75% { transform: translate(3px, 5px); }
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-
-
-@keyframes pulse {
-  0% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.3;
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.1);
-  }
-}
-
-.pulse-effect {
-  animation: pulse 2s infinite ease-in-out;
+.animate-spin-slow {
+  animation: spinSlow 18s linear infinite;
 }

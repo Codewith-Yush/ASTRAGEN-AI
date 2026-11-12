@@ -1,205 +1,176 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
-import Image from 'next/image';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import Link from 'next/link';
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Send,
+  Star,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  ArrowLeft,
+  Sparkles,
+} from 'lucide-react';
 
-// Create a type for the form status
-type SubmitStatusType = 'success' | 'error' | null;
+/* ------------------------------------------------------------------ */
+/* TYPES & DATA                                                       */
+/* ------------------------------------------------------------------ */
+interface FormState {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  website: string; // Honeypot
+}
+
+type Status = { type: 'success' | 'error'; message: string } | null;
+
+const EMPTY_FORM: FormState = { name: '', email: '', subject: '', message: '', website: '' };
+const MESSAGE_MAX = 2000;
+
+const CONTACT_ITEMS = [
+  {
+    icon: Phone,
+    tag: 'PHONE',
+    label: '+91 867608296',
+    sub: 'Mon-Fri, 9am-6pm IST',
+    href: 'tel:+91867608296',
+  },
+  {
+    icon: Mail,
+    tag: 'DIRECT EMAIL',
+    label: 'astragen07@gmail.com',
+    sub: 'Reply within 24 hours',
+    href: 'mailto:astragen07@gmail.com',
+  },
+  {
+    icon: MapPin,
+    tag: 'LOCATION',
+    label: 'Kalyan (E) 421-306',
+    sub: 'Maharashtra, India',
+    href: undefined,
+  },
+] as const;
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  });
-
+  const [formData, setFormData] = useState<FormState>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
-  const [submitStatus, setSubmitStatus] = useState<SubmitStatusType>(null);
-  const [inView, setInView] = useState(false);
+  const [status, setStatus] = useState<Status>(null);
 
-  // Trigger animation on mount
-  useEffect(() => {
-    setInView(true);
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (formData.website.trim().length > 0) {
+      setStatus({ type: 'success', message: 'Message sent successfully.' });
+      setFormData(EMPTY_FORM);
+      return;
+    }
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setStatus({ type: 'error', message: 'Please complete all required fields.' });
+      return;
+    }
+
     setIsSubmitting(true);
-    setSubmitMessage('');
-    setSubmitStatus(null);
+    setStatus(null);
 
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+        }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (response.ok) {
-        setSubmitMessage('Message sent successfully!');
-        setSubmitStatus('success' as SubmitStatusType);
-        setFormData({
-          name: '',
-          email: '',
-          subject: '',
-          message: '',
-        });
-      } else {
-        throw new Error(data.message || 'Failed to send message');
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to deliver message. Please try again.');
       }
+
+      setStatus({ type: 'success', message: 'Message sent successfully! We will get back to you shortly.' });
+      setFormData(EMPTY_FORM);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error sending message. Please try again.';
-      setSubmitMessage(errorMessage);
-      setSubmitStatus('error' as SubmitStatusType);
+      setStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Error sending message. Please try again.',
+      });
       console.error('Contact form error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Enhanced animation variants
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  const staggerItems = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const floatAnimation = {
-    initial: { y: 0 },
-    animate: { 
-      y: [-5, 5, -5],
-      transition: {
-        duration: 5,
-        ease: "easeInOut",
-        repeat: Infinity,
-      }
-    }
-  };
-
-  const shimmer = {
-    initial: { backgroundPosition: '200% 0' },
-    animate: {
-      backgroundPosition: ['-200%', '200%'],
-      transition: {
-        repeat: Infinity,
-        duration: 8,
-        ease: "linear"
-      }
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-teal-50 to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4 sm:py-16 sm:px-6 lg:px-8 overflow-hidden">
-      <motion.div 
-        className="max-w-4xl mx-auto"
-        initial="hidden"
-        animate={inView ? "visible" : "hidden"}
-        variants={staggerItems}
-      >
-        {/* Header with GIF */}
-        <motion.div
-          className="text-center mb-12"
-          variants={fadeInUp}
-        >
-          <motion.h1 
-            className="text-4xl md:text-5xl font-bold mb-3 relative"
-            initial="initial"
-            animate="animate"
-            variants={shimmer}
-            style={{
-              backgroundImage: 'linear-gradient(90deg, #14b8a6, #0ea5e9, #14b8a6)',
-              backgroundSize: '200% auto',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-              display: 'inline-block'
-            }}
+    <main className="min-h-screen bg-neutral-50/60 dark:bg-[#090A0C] text-neutral-900 dark:text-neutral-100 py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto space-y-12">
+        {/* Navigation Breadcrumb */}
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
           >
-            Get in Touch
-          </motion.h1>
-          <div className="w-20 h-1 bg-gradient-to-r from-teal-400 to-teal-600 mx-auto rounded-full my-4"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
-            We're here to help with any questions you might have.
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+
+        {/* Page Header */}
+        <header className="text-center space-y-3 max-w-xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+            <Sparkles className="w-3 h-3 text-neutral-500" />
+            <span>Help &amp; Support</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+            Let&apos;s start a conversation
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            Have questions about templates, custom integrations, or pro subscriptions? Our team typically responds within 24 hours.
           </p>
-          
-          {/* Contact GIF - centered before the grid */}
-          <motion.div 
-            className="max-w-md mx-auto mt-8 mb-12"
-            variants={fadeInUp}
-            initial="hidden"
-            animate="visible"
-          >
-<div className="relative w-full h-64 sm:h-80 overflow-hidden rounded-xl shadow-lg">
-  <Image 
-    src="/c.svg" 
-    alt="Contact Us Animation" 
-    layout="fill"
-    objectFit="contain" // Changed from "cover" to "contain"
-    className="rounded-xl"
-    priority
-  />
-</div>
-          </motion.div>
-        </motion.div>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Contact Form */}
-          <motion.div
-            className="lg:col-span-7 order-2 lg:order-1 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-100 dark:border-slate-700"
-            variants={fadeInUp}
-            whileHover={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
-          >
-            <AnimatePresence>
-              {submitMessage && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className={`mb-6 p-4 rounded-lg ${
-                    submitStatus === 'success'
-                      ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                      : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                  }`}
-                >
-                  {submitMessage}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <section className="lg:col-span-7 bg-white dark:bg-[#121418] border border-neutral-200/90 dark:border-neutral-800/90 rounded-2xl p-6 sm:p-8 shadow-xs">
+            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-6">
+              Send us a message
+            </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <motion.div whileHover={{ y: -2 }}>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Name
+            {status && (
+              <div
+                role={status.type === 'error' ? 'alert' : 'status'}
+                className={`mb-6 p-4 rounded-xl flex items-start gap-3 text-xs leading-relaxed border ${
+                  status.type === 'success'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                }`}
+              >
+                {status.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-600 dark:text-rose-400" />
+                )}
+                <span>{status.message}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="name" className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    Your Name <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -208,14 +179,15 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 dark:text-white transition-all"
-                    placeholder="Your name"
+                    maxLength={100}
+                    placeholder="Ayush Singh"
+                    className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-neutral-50/50 dark:bg-neutral-900/50 text-neutral-900 dark:text-white border border-neutral-200/90 dark:border-neutral-800/90 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 focus:ring-2 focus:ring-neutral-400/15 transition-all"
                   />
-                </motion.div>
+                </div>
 
-                <motion.div whileHover={{ y: -2 }}>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email
+                <div className="space-y-1.5">
+                  <label htmlFor="email" className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    Email Address <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -224,14 +196,15 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 dark:text-white transition-all"
-                    placeholder="your.email@example.com"
+                    maxLength={254}
+                    placeholder="you@domain.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-neutral-50/50 dark:bg-neutral-900/50 text-neutral-900 dark:text-white border border-neutral-200/90 dark:border-neutral-800/90 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 focus:ring-2 focus:ring-neutral-400/15 transition-all"
                   />
-                </motion.div>
+                </div>
               </div>
 
-              <motion.div whileHover={{ y: -2 }}>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div className="space-y-1.5">
+                <label htmlFor="subject" className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                   Subject
                 </label>
                 <input
@@ -240,146 +213,125 @@ export default function ContactPage() {
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 dark:text-white transition-all"
-                  placeholder="How can we help?"
+                  maxLength={150}
+                  placeholder="How can we assist you?"
+                  className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-neutral-50/50 dark:bg-neutral-900/50 text-neutral-900 dark:text-white border border-neutral-200/90 dark:border-neutral-800/90 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 focus:ring-2 focus:ring-neutral-400/15 transition-all"
                 />
-              </motion.div>
+              </div>
 
-              <motion.div whileHover={{ y: -2 }}>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Message
-                </label>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="message" className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    Message <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[10px] text-neutral-400">
+                    {formData.message.length}/{MESSAGE_MAX}
+                  </span>
+                </div>
                 <textarea
                   id="message"
                   name="message"
-                  rows={4}
+                  rows={5}
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 dark:text-white transition-all resize-none"
-                  placeholder="Tell us what you need..."
-                ></textarea>
-              </motion.div>
+                  minLength={10}
+                  maxLength={MESSAGE_MAX}
+                  placeholder="Tell us about your project, feedback, or inquiry..."
+                  className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-neutral-50/50 dark:bg-neutral-900/50 text-neutral-900 dark:text-white border border-neutral-200/90 dark:border-neutral-800/90 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 focus:ring-2 focus:ring-neutral-400/15 transition-all resize-y min-h-[120px]"
+                />
+              </div>
 
-              <motion.button
+              {/* Honeypot field */}
+              <div className="hidden" aria-hidden="true">
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
+
+              <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`mt-4 flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-medium py-3 px-8 rounded-lg transition-all ${
-                  isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
-                whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
-                whileTap={{ scale: 0.98 }}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending message...</span>
                   </>
                 ) : (
                   <>
-                    <FaPaperPlane />
-                    Send Message
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Send Message</span>
                   </>
                 )}
-              </motion.button>
+              </button>
             </form>
-          </motion.div>
+          </section>
 
-          {/* Contact Information */}
-          <motion.div
-            className="lg:col-span-5 order-1 lg:order-2 space-y-6"
-            variants={staggerItems}
-          >
-            <motion.div variants={fadeInUp} className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-                <span className="w-8 h-1 bg-teal-500 mr-2 rounded-full"></span>
-                Contact Info
-              </h2>
-            </motion.div>
+          {/* Contact Details & Testimonial */}
+          <aside className="lg:col-span-5 space-y-4">
+            {CONTACT_ITEMS.map(({ icon: Icon, tag, label, sub, href }) => {
+              const content = (
+                <div className="flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 block mb-0.5">
+                      {tag}
+                    </span>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                      {label}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {sub}
+                    </p>
+                  </div>
+                </div>
+              );
 
-            <motion.div 
-              className="flex items-center space-x-5 p-5 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-100 dark:border-slate-700"
-              variants={{...fadeInUp, ...floatAnimation}}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              initial="initial"
-              animate="animate"
-            >
-              <div className="bg-gradient-to-br from-teal-400 to-blue-500 p-3 rounded-full shadow-md">
-                <FaPhone className="text-white text-lg" />
-              </div>
-              <div>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">+91867608296</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Mon-Fri, 9am-6pm</p>
-              </div>
-            </motion.div>
+              return href ? (
+                <a
+                  key={tag}
+                  href={href}
+                  className="block p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors shadow-xs"
+                >
+                  {content}
+                </a>
+              ) : (
+                <div
+                  key={tag}
+                  className="p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] shadow-xs"
+                >
+                  {content}
+                </div>
+              );
+            })}
 
-            <motion.div 
-              className="flex items-center space-x-5 p-5 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-100 dark:border-slate-700"
-              variants={{...fadeInUp, ...floatAnimation}}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              initial="initial"
-              animate="animate"
-              style={{ animationDelay: "0.5s" }}
-            >
-              <div className="bg-gradient-to-br from-teal-400 to-blue-500 p-3 rounded-full shadow-md">
-                <FaEnvelope className="text-white text-lg" />
+            {/* Testimonial Card */}
+            <div className="p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] shadow-xs space-y-3">
+              <div className="flex items-center gap-1 text-amber-400">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                ))}
               </div>
-              <div>
-                <p className="text-gray-800 dark:text-gray-200 font-medium">astragen07@gmail.com</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Reply within 24 hours</p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="flex items-center space-x-5 p-5 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-100 dark:border-slate-700"
-              variants={{...fadeInUp, ...floatAnimation}}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              initial="initial"
-              animate="animate"
-              style={{ animationDelay: "1s" }}
-            >
-              <div className="bg-gradient-to-br from-teal-400 to-blue-500 p-3 rounded-full shadow-md">
-                <FaMapMarkerAlt className="text-white text-lg" />
-              </div>
-              <div>
-                <p className="text-gray-600 dark:text-gray-400">Kalyan (E) 421-306</p>
-                <p className="text-gray-800 dark:text-gray-200 font-medium"></p>
-                <p className="text-gray-600 dark:text-gray-400"></p>
-              </div>
-            </motion.div>
-
-            {/* Social proof */}
-            <motion.div
-              className="mt-8 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-100 dark:border-slate-700"
-              variants={fadeInUp}
-              whileHover={{ y: -2 }}
-            >
-              <div className="flex items-center space-x-1 text-yellow-400 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300 text-sm italic">"The team responded to my inquiry within hours. Extremely professional and helpful!"</p>
-              <p className="text-gray-700 dark:text-gray-200 font-medium mt-2">YASH TAk.</p>
-            </motion.div>
-          </motion.div>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed italic">
+                &ldquo;The team responded to my inquiry within hours. Extremely professional and helpful!&rdquo;
+              </p>
+              <p className="text-xs font-semibold text-neutral-900 dark:text-white">
+                Yash Tak — Content Director
+              </p>
+            </div>
+          </aside>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </main>
   );
 }

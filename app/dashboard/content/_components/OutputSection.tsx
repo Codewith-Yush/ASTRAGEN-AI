@@ -260,11 +260,15 @@ function OutputSection({
     }
   }, [aiOutput, originalSnapshot, loading]);
 
-  // When AI generates new output stream
+  // Capture original snapshot only when generation completes, not on every streaming token
+  const wasLoadingRef = useRef(false);
   useEffect(() => {
-    if (loading && aiOutput) {
+    if (wasLoadingRef.current && !loading && aiOutput) {
       setOriginalSnapshot(aiOutput);
+      setHistory([aiOutput]);
+      setHistoryIndex(0);
     }
+    wasLoadingRef.current = loading;
   }, [loading, aiOutput]);
 
   // Esc key to exit fullscreen or search

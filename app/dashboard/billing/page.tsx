@@ -108,7 +108,7 @@ function Billing() {
         email: user?.primaryEmailAddress?.emailAddress || "user@astragen.ai",
       },
       theme: {
-        color: "#4F46E5",
+        color: "#3B3BFF",
       },
       handler: async (resp: any) => {
         try {
@@ -144,17 +144,17 @@ function Billing() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-6 sm:py-10 space-y-12">
+    <div className="max-w-4xl mx-auto py-4 sm:py-8 space-y-12">
       {/* Header */}
-      <div className="text-center space-y-3 px-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
+      <div className="text-center space-y-2 px-2">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+          <Sparkles className="w-3 h-3 text-neutral-500" />
           <span>Simple, Transparent Pricing</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
           Choose the plan that fits your ambition
         </h1>
-        <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
           Start for free, or unlock high-speed unlimited generation with Astragen Pro.
         </p>
       </div>
@@ -162,32 +162,32 @@ function Billing() {
       {/* Pricing Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
         {/* Free Plan */}
-        <div className="bg-white dark:bg-[#0E131F] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-sm space-y-6">
+        <div className="bg-white dark:bg-[#121418] border border-neutral-200/80 dark:border-neutral-800/80 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-xs space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                <h3 className="font-semibold text-base text-neutral-900 dark:text-white">
                   Starter Plan
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Essential tools for individuals
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Free forever
                 </p>
               </div>
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                 Default
               </span>
             </div>
 
-            <div className="pt-2 flex items-baseline gap-1">
-              <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+            <div className="pt-1 flex items-baseline gap-1">
+              <span className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
                 ₹0
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-neutral-400">
                 / forever
               </span>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/70 space-y-3">
+            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800/60 space-y-2.5">
               {[
                 "300,000 Words per month",
                 "Access to all 50+ AI templates",
@@ -196,8 +196,8 @@ function Billing() {
                 "Voice Text-to-Speech playback",
                 "Standard generation speed",
               ].map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
-                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-neutral-600 dark:text-neutral-400">
+                  <Check className="w-4 h-4 text-neutral-400 flex-shrink-0" />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -207,17 +207,17 @@ function Billing() {
           <button
             type="button"
             disabled={true}
-            className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+            className="w-full py-2.5 px-4 rounded-xl text-xs font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-400 dark:text-neutral-500 cursor-not-allowed"
           >
             {userSubscription ? "Basic Tier" : "Current Plan"}
           </button>
         </div>
 
         {/* Pro Plan */}
-        <div className="relative bg-white dark:bg-[#0E131F] border-2 border-indigo-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl shadow-indigo-500/10 space-y-6">
+        <div className="relative bg-white/95 dark:bg-[#0E1118]/95 border-2 border-indigo-500/80 dark:border-indigo-500/70 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-xl shadow-indigo-500/10 dark:shadow-indigo-500/20 space-y-6">
           {/* Popular Tag */}
-          <div className="absolute -top-3.5 right-6">
-            <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-[11px] font-bold tracking-wide uppercase shadow-md shadow-indigo-500/30">
+          <div className="absolute -top-3 right-6">
+            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white text-[10px] font-bold tracking-wider uppercase shadow-sm">
               Most Popular
             </span>
           </div>
@@ -227,24 +227,24 @@ function Billing() {
               <div>
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span>Astragen Pro</span>
-                  <Zap className="w-4 h-4 text-indigo-500 fill-indigo-500" />
+                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Full speed, maximum quota, zero limits
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Unlimited high-speed generation
                 </p>
               </div>
             </div>
 
-            <div className="pt-2 flex items-baseline gap-1">
-              <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+            <div className="pt-1 flex items-baseline gap-1">
+              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 ₹99
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-slate-400 font-medium">
                 / month (billed monthly)
               </span>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/70 space-y-3">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
               {[
                 "Unlimited words & content quota",
                 "High-speed priority Gemini streaming",
@@ -254,8 +254,8 @@ function Billing() {
                 "One-Click AI Polish & Refine tools",
                 "Priority email & technical support",
               ].map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-200 font-medium">
-                  <div className="w-4 h-4 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                  <div className="w-4 h-4 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
                     <Check className="w-3 h-3" />
                   </div>
                   <span>{feature}</span>
@@ -269,68 +269,68 @@ function Billing() {
             disabled={loading || Boolean(userSubscription)}
             onClick={CreateSubscription}
             className={`
-              w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-md active:scale-[0.99]
+              w-full py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-150 shadow-md active:scale-[0.98] cursor-pointer
               ${
                 userSubscription
-                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/25 hover:shadow-indigo-500/40"
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                  : "bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.01]"
               }
             `}
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin text-current" />
                 <span>Processing with Razorpay...</span>
               </>
             ) : userSubscription ? (
               <span>✓ Pro Plan Active</span>
             ) : (
-              <span>Upgrade to Pro Now</span>
+              <span>Upgrade to Pro — ₹99/mo</span>
             )}
           </button>
         </div>
       </div>
 
       {/* Security Reassurance */}
-      <div className="flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-slate-500 pt-2 text-center">
+      <div className="flex items-center justify-center gap-2 text-xs text-neutral-400 dark:text-neutral-500 pt-2 text-center">
         <Lock className="w-3.5 h-3.5 flex-shrink-0" />
         <span>End-to-end encrypted 256-bit checkout powered by Razorpay. Cancel anytime.</span>
       </div>
 
       {/* FAQ Section */}
-      <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800/80 space-y-5">
+      <div className="pt-6 border-t border-neutral-200/80 dark:border-neutral-800/80 space-y-4">
         <div className="text-center space-y-1">
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center justify-center gap-2">
-            <HelpCircle className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white flex items-center justify-center gap-2">
+            <HelpCircle className="w-4 h-4 text-neutral-400" />
             <span>Frequently Asked Questions</span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
             Everything you need to know about Astragen subscriptions.
           </p>
         </div>
 
-        <div className="space-y-2.5 max-w-2xl mx-auto">
+        <div className="space-y-2 max-w-xl mx-auto">
           {FAQS.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
               <div
                 key={idx}
-                className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0E131F] overflow-hidden transition-colors"
+                className="rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] overflow-hidden transition-colors"
               >
                 <button
                   type="button"
                   onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full px-5 py-4 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  className="w-full px-4 py-3 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white"
                 >
                   <span>{faq.question}</span>
                   <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                    className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
                       isOpen ? "rotate-180" : ""
                     }`}
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 pt-3">
+                  <div className="px-4 pb-3.5 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed border-t border-neutral-100 dark:border-neutral-800/60 pt-2.5">
                     {faq.answer}
                   </div>
                 )}
