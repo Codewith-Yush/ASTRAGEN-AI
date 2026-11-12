@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { z } from "zod";
 import Templates from "@/app/(data)/Templates";
-import { streamContent } from "@/utils/AiModal";
+import { streamText } from "@/utils/AiModal";
 import { db } from "@/utils/db";
 import { AIOutput, UserSubscription } from "@/utils/schema";
 import { eq, sql } from "drizzle-orm";
@@ -14,7 +14,18 @@ const generateSchema = z.object({
 
 export const runtime = "nodejs";
 
+const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
+
 export async function POST(req: NextRequest) {
+  let reservedId: number | null = null;
+
+  // Releases the provisional quota row if nothing was generated
+  const releaseReservation = async () => {
+    if (reservedId) {
+      await db.delete(AIOutput).where(eq(AIOutput.id, reservedId)).catch(() => {});
+    }
+  };
+
   try {
     const user = await currentUser();
     const email = user?.primaryEmailAddress?.emailAddress;
@@ -56,7 +67,6 @@ export async function POST(req: NextRequest) {
     const isSubscribed = subs.length > 0 && subs[0].active === true;
 
     // Check usage limits if not subscribed
-    let reservedId: number | null = null;
     if (!isSubscribed) {
       const usageResult = await db
         .select({
@@ -73,7 +83,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Concurrency safety: provisionally reserve quota before initiating generation
+      // Concurrency safety: provisionally reserve quota before generation
       const [reserved] = await db
         .insert(AIOutput)
         .values({
@@ -88,70 +98,103 @@ export async function POST(req: NextRequest) {
       reservedId = reserved?.id ?? null;
     }
 
-    // Build the final prompt securely on the server
+    // Build the final prompt on the server
     const prompt = `${JSON.stringify(formData)}, ${template.aiPrompt}`;
 
-    // Initiate streaming with Gemini (with automatic fallback and timeout)
-    const streamResult = await streamContent(prompt);
+    // Start generation and wait for the FIRST chunk here, so model fallback,
+    // timeouts and API errors return a proper JSON error instead of a broken stream.
+    const iterator = streamText(prompt)[Symbol.asyncIterator]();
+    let first: IteratorResult<string>;
+    try {
+      first = await iterator.next();
+    } catch (err: any) {
+      console.error("Gemini failed before first token:", err);
+      await releaseReservation();
+      return NextResponse.json(
+        { error: "AI service is busy right now. Please try again in a moment." },
+        { status: 503 }
+      );
+    }
 
     const encoder = new TextEncoder();
     let accumulatedText = "";
+    let finalized = false;
 
-    const stream = new ReadableStream({
+    // Saves the result once (full or partial)
+    const finalize = async () => {
+      if (finalized) return;
+      finalized = true;
+
+      if (!accumulatedText) {
+        await releaseReservation();
+        return;
+      }
+
+      const wordCount = countWords(accumulatedText);
+      if (reservedId) {
+        await db
+          .update(AIOutput)
+          .set({ aiResponse: accumulatedText, wordCount })
+          .where(eq(AIOutput.id, reservedId));
+      } else {
+        await db.insert(AIOutput).values({
+          formData: JSON.stringify(formData),
+          templateSlug,
+          aiResponse: accumulatedText,
+          createdBy: email,
+          wordCount,
+          createdAt: new Date(),
+        });
+      }
+    };
+
+    const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
         try {
-          for await (const chunk of streamResult.stream) {
-            const chunkText = chunk.text();
-            accumulatedText += chunkText;
-            controller.enqueue(encoder.encode(chunkText));
+          if (!first.done) {
+            accumulatedText += first.value;
+            controller.enqueue(encoder.encode(first.value));
           }
 
-          // Stream completed; update or persist record to database
-          const wordCount = accumulatedText.trim().split(/\s+/).filter(Boolean).length;
-          if (reservedId) {
-            await db
-              .update(AIOutput)
-              .set({
-                aiResponse: accumulatedText,
-                wordCount,
-              })
-              .where(eq(AIOutput.id, reservedId));
-          } else {
-            await db.insert(AIOutput).values({
-              formData: JSON.stringify(formData),
-              templateSlug,
-              aiResponse: accumulatedText,
-              createdBy: email,
-              wordCount,
-              createdAt: new Date(),
-            });
+          while (!first.done) {
+            const next = await iterator.next();
+            if (next.done) break;
+            accumulatedText += next.value;
+            controller.enqueue(encoder.encode(next.value));
           }
 
+          await finalize();
           controller.close();
         } catch (streamError) {
           console.error("Stream processing error:", streamError);
-          // If aborted or failed before generation, cleanup reservation
-          if (reservedId && !accumulatedText) {
-            await db.delete(AIOutput).where(eq(AIOutput.id, reservedId)).catch(() => {});
+          await finalize().catch((e) => console.error("Finalize error:", e));
+          try {
+            controller.error(streamError);
+          } catch {
+            // stream already closed/cancelled by the client
           }
-          controller.error(streamError);
         }
+      },
+      // User navigated away or clicked stop: keep what was generated
+      async cancel() {
+        await iterator.return?.(undefined);
+        await finalize().catch((e) => console.error("Finalize error:", e));
       },
     });
 
     return new Response(stream, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        "Transfer-Encoding": "chunked",
         "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
       },
     });
   } catch (error: any) {
     console.error("AI Generation error:", error);
+    await releaseReservation();
     return NextResponse.json(
       { error: error?.message || "Internal server error during content generation" },
       { status: 500 }
     );
   }
 }
-
