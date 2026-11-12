@@ -36,19 +36,24 @@ async function History() {
     );
   }
 
-  const historyList = (await db
-    .select({
-      id: AIOutput.id,
-      formData: AIOutput.formData,
-      aiResponse: AIOutput.aiResponse,
-      templateSlug: AIOutput.templateSlug,
-      createdBy: AIOutput.createdBy,
-      createdAt: AIOutput.createdAt,
-    })
-    .from(AIOutput)
-    .where(eq(AIOutput.createdBy, email))
-    .orderBy(desc(AIOutput.id))
-    .limit(100)) as HISTORY[];
+  let historyList: HISTORY[] = [];
+  try {
+    historyList = (await db
+      .select({
+        id: AIOutput.id,
+        formData: AIOutput.formData,
+        aiResponse: AIOutput.aiResponse,
+        templateSlug: AIOutput.templateSlug,
+        createdBy: AIOutput.createdBy,
+        createdAt: AIOutput.createdAt,
+      })
+      .from(AIOutput)
+      .where(eq(AIOutput.createdBy, email))
+      .orderBy(desc(AIOutput.id))
+      .limit(100)) as HISTORY[];
+  } catch (error) {
+    console.error("Failed to query history from database:", error);
+  }
 
   return (
     <div className="space-y-6 pb-12">
