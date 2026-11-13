@@ -366,6 +366,7 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
             selectedTemplate={selectedTemplate as any}
             userFormInput={GenerateAIContent}
             loading={loading}
+            onStop={handleStopGeneration}
           />
         </div>
 
