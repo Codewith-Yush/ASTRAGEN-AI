@@ -35,6 +35,7 @@ import {
   RotateCcw,
   RotateCw,
   Search,
+  Sparkles,
   Square,
   Volume2,
   Wand2,
@@ -95,7 +96,7 @@ const REMARK_PLUGINS = [remarkGfm];
 const DOC_SIZE: Record<FontSize, string> = {
   sm: "text-[15px]",
   base: "text-[17px]",
-  lg: "text-[19px]",
+  lg: "text-[19.5px]",
 };
 
 const FONT_LABEL: Record<FontSize, string> = {
@@ -104,13 +105,14 @@ const FONT_LABEL: Record<FontSize, string> = {
   lg: "Large",
 };
 
-const REFINE_ACTIONS: { id: RefineAction; label: string }[] = [
-  { id: "summarize", label: "Shorter" },
-  { id: "expand", label: "Expand" },
-  { id: "professional", label: "Professional" },
-  { id: "casual", label: "Casual" },
-  { id: "bullet_points", label: "Bullet points" },
-  { id: "fix_grammar", label: "Fix grammar" },
+const REFINE_ACTIONS: { id: RefineAction; label: string; hint: string }[] = [
+  { id: "summarize", label: "Make shorter", hint: "Condense" },
+  { id: "expand", label: "Expand", hint: "Add depth" },
+  { id: "professional", label: "Professional", hint: "Tone" },
+  { id: "casual", label: "Casual", hint: "Tone" },
+  { id: "bullet_points", label: "Bullet points", hint: "Format" },
+  { id: "fix_grammar", label: "Fix grammar", hint: "Polish" },
+  { id: "simplify", label: "Simplify", hint: "Clarity" },
 ];
 
 const MODES: { id: ViewMode; label: string; editing?: boolean }[] = [
@@ -120,11 +122,16 @@ const MODES: { id: ViewMode; label: string; editing?: boolean }[] = [
   { id: "raw", label: "Raw" },
 ];
 
+/* Design tokens: warm paper palette with a terracotta accent. */
+const ACCENT = "#c96442";
+
 const iconBtn =
-  "inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:pointer-events-none disabled:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100";
+  "inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#6b6a63] transition-all duration-150 hover:bg-[#f0eee6] hover:text-[#141413] active:scale-95 disabled:pointer-events-none disabled:opacity-40 dark:text-[#9c9a92] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c96442]/40";
 
 const textBtn =
-  "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:pointer-events-none disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white";
+  "inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 font-sans text-[13px] font-medium text-[#55534b] transition-all duration-150 hover:bg-[#f0eee6] hover:text-[#141413] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 dark:text-[#c2c0b6] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c96442]/40";
+
+const divider = "border-[#e8e6dc] dark:border-[#3d3d3a]";
 
 /* -------------------------------------------------------------------------- */
 /*                                  Helpers                                   */
@@ -166,7 +173,7 @@ function highlight(children: React.ReactNode, re: RegExp | null): React.ReactNod
         i % 2 === 1 ? (
           <mark
             key={i}
-            className="rounded-sm bg-yellow-200 px-0.5 text-neutral-950 dark:bg-yellow-300/80"
+            className="rounded-[3px] bg-[#f5d9a0] px-0.5 text-[#141413] ring-1 ring-[#e8b95c]/60 dark:bg-[#e8b95c]/80"
           >
             {part}
           </mark>
@@ -208,9 +215,9 @@ const LazyHighlighter = lazy(async () => {
         PreTag="div"
         customStyle={{
           margin: 0,
-          padding: "1rem",
+          padding: "1.1rem 1.25rem",
           fontSize: "0.8125rem",
-          lineHeight: 1.65,
+          lineHeight: 1.7,
           background: "transparent",
         }}
       >
@@ -223,7 +230,7 @@ const LazyHighlighter = lazy(async () => {
 
 function PlainCode({ value }: { value: string }) {
   return (
-    <pre className="m-0 p-4 font-mono text-[13px] leading-relaxed text-neutral-200">
+    <pre className="m-0 px-5 py-4 font-mono text-[13px] leading-[1.7] text-[#d6d3c9]">
       {value}
     </pre>
   );
@@ -260,18 +267,16 @@ const CodeBlock = memo(function CodeBlock({
   };
 
   return (
-    <div className="not-prose my-5 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-950 dark:border-neutral-800">
-      <div className="flex h-9 items-center justify-between border-b border-white/10 px-3 text-[11px] text-neutral-400">
-        <span className="font-mono uppercase tracking-wider">
-          {language || "text"}
-        </span>
+    <div className="not-prose group/code my-6 overflow-hidden rounded-xl border border-[#2f2e2b] bg-[#1f1e1d] shadow-[0_1px_2px_rgba(20,20,19,0.08)]">
+      <div className="flex h-10 items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 font-sans text-[11px] text-[#9c9a92]">
+        <span className="font-mono uppercase tracking-[0.12em]">{language || "text"}</span>
         <button
           type="button"
           onClick={copy}
           aria-label="Copy code"
-          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-white/10 hover:text-white"
         >
-          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
@@ -292,7 +297,9 @@ const CodeBlock = memo(function CodeBlock({
 /*                                 Markdown                                   */
 /* -------------------------------------------------------------------------- */
 
-const HEAD = "font-sans font-semibold tracking-tight text-neutral-950 first:mt-0 dark:text-white";
+const HEAD =
+  "font-serif font-medium tracking-[-0.015em] text-[#141413] first:mt-0 dark:text-[#faf9f5]";
+const BODY = "text-[#3d3929] dark:text-[#d6d3c9]";
 
 /** Builds a styled element that also highlights search matches. */
 function el(tag: string, base: string, re: RegExp | null) {
@@ -306,20 +313,20 @@ function el(tag: string, base: string, re: RegExp | null) {
 
 function buildComponents(re: RegExp | null, streaming: boolean): any {
   return {
-    h1: el("h1", `${HEAD} mb-5 mt-12 text-[1.75em] leading-[1.2]`, re),
-    h2: el("h2", `${HEAD} mb-3 mt-10 text-[1.35em] leading-[1.3]`, re),
-    h3: el("h3", `${HEAD} mb-2 mt-8 text-[1.12em] leading-[1.4]`, re),
+    h1: el("h1", `${HEAD} mb-5 mt-14 text-[1.9em] leading-[1.15]`, re),
+    h2: el("h2", `${HEAD} mb-3 mt-11 text-[1.45em] leading-[1.25]`, re),
+    h3: el("h3", `${HEAD} mb-2 mt-8 text-[1.17em] leading-[1.35]`, re),
     h4: el("h4", `${HEAD} mb-2 mt-6 text-[1em]`, re),
-    p: el("p", "my-5 leading-[1.85] text-neutral-700 dark:text-neutral-300", re),
-    strong: el("strong", "font-semibold text-neutral-950 dark:text-white", re),
+    p: el("p", `my-[1.1em] leading-[1.8] ${BODY}`, re),
+    strong: el("strong", "font-semibold text-[#141413] dark:text-[#faf9f5]", re),
     em: el("em", "italic", re),
     ul: ({ node, className, children, ...props }: any) => (
       <ul
         {...props}
-        className={`my-5 space-y-2.5 ${
+        className={`my-5 space-y-2 ${
           String(className).includes("contains-task-list")
             ? "list-none pl-0"
-            : "list-disc pl-6 marker:text-neutral-400"
+            : "list-disc pl-6 marker:text-[#c96442]/70"
         }`}
       >
         {children}
@@ -328,23 +335,28 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
     ol: ({ node, children, ...props }: any) => (
       <ol
         {...props}
-        className="my-5 list-decimal space-y-2.5 pl-6 marker:font-medium marker:text-neutral-400"
+        className="my-5 list-decimal space-y-2 pl-6 marker:font-sans marker:text-sm marker:font-medium marker:text-[#c96442]/80"
       >
         {children}
       </ol>
     ),
-    li: el("li", "pl-1 leading-[1.8] text-neutral-700 dark:text-neutral-300", re),
+    li: el("li", `pl-1.5 leading-[1.75] ${BODY}`, re),
     blockquote: ({ node, children, ...props }: any) => (
       <blockquote
         {...props}
-        className="my-7 border-l-2 border-neutral-900 pl-5 text-neutral-600 dark:border-white dark:text-neutral-400 [&>p]:my-2"
+        className="my-7 rounded-r-lg border-l-[3px] border-[#c96442]/60 bg-[#f5f4ed] py-1 pl-5 pr-4 italic text-[#55534b] dark:bg-[#2b2a27] dark:text-[#b8b6ac] [&>p]:my-2"
       >
         {children}
       </blockquote>
     ),
-    hr: () => <hr className="my-10 border-0 border-t border-neutral-200 dark:border-neutral-800" />,
+    hr: () => (
+      <hr className="my-12 h-px border-0 bg-gradient-to-r from-transparent via-[#d6d3c9] to-transparent dark:via-[#4a4945]" />
+    ),
     input: ({ node, ...props }: any) => (
-      <input {...props} className="mr-2.5 h-3.5 w-3.5 translate-y-[1px] accent-neutral-900 dark:accent-white" />
+      <input
+        {...props}
+        className="mr-2.5 h-3.5 w-3.5 translate-y-[1px] rounded accent-[#c96442]"
+      />
     ),
     pre: ({ children }: any) => <>{children}</>,
     code({ node, inline, className, children, ...props }: any) {
@@ -356,7 +368,7 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
       }
       return (
         <code
-          className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[0.85em] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
+          className="rounded-md border border-[#e8e6dc] bg-[#f5f4ed] px-1.5 py-0.5 font-mono text-[0.84em] text-[#a8452a] dark:border-[#3d3d3a] dark:bg-[#2b2a27] dark:text-[#e8967a]"
           {...props}
         >
           {children}
@@ -364,25 +376,25 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
       );
     },
     table: ({ node, ...props }: any) => (
-      <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <div className="my-7 overflow-x-auto rounded-xl border border-[#e8e6dc] bg-white shadow-[0_1px_2px_rgba(20,20,19,0.04)] dark:border-[#3d3d3a] dark:bg-[#2b2a27]">
         <table
-          className="min-w-full divide-y divide-neutral-200 font-sans text-sm dark:divide-neutral-800"
+          className="min-w-full divide-y divide-[#e8e6dc] font-sans text-sm dark:divide-[#3d3d3a]"
           {...props}
         />
       </div>
     ),
     th: el(
       "th",
-      "bg-neutral-50 px-4 py-2.5 text-left text-xs font-medium text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400",
+      "bg-[#f5f4ed] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b6a63] dark:bg-[#33322f] dark:text-[#9c9a92]",
       re
     ),
-    td: el("td", "px-4 py-2.5 text-neutral-700 dark:text-neutral-300", re),
+    td: el("td", `border-t border-[#efede4] px-4 py-3 dark:border-[#3a3936] ${BODY}`, re),
     a: ({ node, href, children, ...props }: any) => (
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950 dark:text-white dark:decoration-neutral-600 dark:hover:decoration-white"
+        className="font-medium text-[#a8452a] underline decoration-[#c96442]/40 decoration-[1.5px] underline-offset-[3px] transition-colors hover:decoration-[#c96442] dark:text-[#e8967a]"
         {...props}
       >
         {children}
@@ -438,7 +450,7 @@ function IconButton({
       disabled={disabled}
       onClick={onClick}
       className={`${iconBtn} ${
-        active ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white" : ""
+        active ? "bg-[#f0eee6] !text-[#c96442] dark:bg-[#3a3936] dark:!text-[#e8967a]" : ""
       }`}
     >
       {children}
@@ -451,7 +463,8 @@ function DropMenu({
   onToggle,
   label,
   icon,
-  width = "w-52",
+  width = "w-56",
+  accent,
   children,
 }: {
   open: boolean;
@@ -459,6 +472,7 @@ function DropMenu({
   label: string;
   icon: React.ReactNode;
   width?: string;
+  accent?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -468,16 +482,20 @@ function DropMenu({
         onClick={onToggle}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`${textBtn} ${open ? "bg-neutral-100 dark:bg-neutral-800" : ""}`}
+        className={`${textBtn} ${open ? "bg-[#f0eee6] dark:bg-[#3a3936]" : ""} ${
+          accent ? "!text-[#a8452a] dark:!text-[#e8967a]" : ""
+        }`}
       >
         {icon}
         <span>{label}</span>
-        <ChevronDown className="h-3 w-3 opacity-60" />
+        <ChevronDown
+          className={`h-3 w-3 opacity-60 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
       </button>
       {open && (
         <div
           role="menu"
-          className={`absolute right-0 top-full z-30 mt-1.5 ${width} rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900`}
+          className={`absolute right-0 top-full z-30 mt-2 ${width} origin-top-right animate-[menuIn_140ms_ease-out] rounded-xl border border-[#e8e6dc] bg-white p-1.5 shadow-[0_8px_30px_rgba(20,20,19,0.12)] dark:border-[#3d3d3a] dark:bg-[#30302e] dark:shadow-[0_8px_30px_rgba(0,0,0,0.45)]`}
         >
           {children}
         </div>
@@ -500,10 +518,10 @@ function MenuItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className="flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-left text-xs text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+      className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left font-sans text-[13px] text-[#3d3929] transition-colors hover:bg-[#f5f4ed] dark:text-[#d6d3c9] dark:hover:bg-[#3a3936]"
     >
       <span>{children}</span>
-      {hint && <span className="text-[10px] text-neutral-400">{hint}</span>}
+      {hint && <span className="text-[10.5px] text-[#9c9a92]">{hint}</span>}
     </button>
   );
 }
@@ -530,6 +548,8 @@ function OutputSection({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fontSize, setFontSize] = useState<FontSize>("base");
   const [menu, setMenu] = useState<MenuId | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [quickCopied, setQuickCopied] = useState(false);
 
   // Search
   const [showSearch, setShowSearch] = useState(false);
@@ -550,11 +570,14 @@ function OutputSection({
   // Toast
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const quickCopyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRafRef = useRef(0);
 
   // Heavy derived work runs on a deferred copy so streaming/typing stays smooth.
   const deferredOutput = useDeferredValue(aiOutput);
@@ -583,6 +606,19 @@ function OutputSection({
     setToast({ message, type });
     toastTimerRef.current = setTimeout(() => setToast(null), TOAST_MS);
   }, []);
+
+  /* ------------------------------ Scroll progress -------------------------- */
+
+  const handleScroll = () => {
+    if (scrollRafRef.current) return;
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = 0;
+      const node = scrollRef.current;
+      if (!node) return;
+      const max = node.scrollHeight - node.clientHeight;
+      setProgress(max > 0 ? Math.min(100, (node.scrollTop / max) * 100) : 0);
+    });
+  };
 
   /* ------------------------------- History --------------------------------- */
 
@@ -682,8 +718,7 @@ function OutputSection({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const inside =
-        isFullscreen || containerRef.current?.contains(document.activeElement);
+      const inside = isFullscreen || containerRef.current?.contains(document.activeElement);
       if (!inside) return;
       if (e.key === "Escape") {
         if (menu) setMenu(null);
@@ -721,7 +756,9 @@ function OutputSection({
   useEffect(
     () => () => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      if (quickCopyTimerRef.current) clearTimeout(quickCopyTimerRef.current);
       if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
+      if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
       refineAbortRef.current?.abort();
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -804,6 +841,17 @@ function OutputSection({
       notify("Copy failed", "error");
     }
     setMenu(null);
+  };
+
+  const handleQuickCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(aiOutput);
+      setQuickCopied(true);
+      if (quickCopyTimerRef.current) clearTimeout(quickCopyTimerRef.current);
+      quickCopyTimerRef.current = setTimeout(() => setQuickCopied(false), 1800);
+    } catch {
+      notify("Copy failed", "error");
+    }
   };
 
   const handleCopyRich = async () => {
@@ -947,67 +995,89 @@ function OutputSection({
   const busy = loading || isRefining;
   const streamingMarkdown = loading || isRefining;
 
-  const proseClass = `font-serif ${DOC_SIZE[fontSize]} antialiased`;
+  const proseClass = `font-serif ${DOC_SIZE[fontSize]} antialiased [text-rendering:optimizeLegibility]`;
 
-  const textareaClass = `h-full min-h-[420px] w-full resize-none rounded-lg border border-neutral-200 bg-transparent p-4 font-mono leading-relaxed text-neutral-800 outline-none transition-colors focus:border-neutral-400 dark:border-neutral-800 dark:text-neutral-200 dark:focus:border-neutral-600 ${
-    fontSize === "sm" ? "text-xs" : fontSize === "lg" ? "text-base" : "text-sm"
-  }`;
+  const monoSize = fontSize === "sm" ? "text-xs" : fontSize === "lg" ? "text-base" : "text-sm";
 
-  const fmtBtn = "inline-flex h-7 w-7 items-center justify-center rounded text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white";
+  const textareaClass = `h-full min-h-[420px] w-full resize-none rounded-xl border border-[#e8e6dc] bg-white p-5 font-mono leading-[1.75] text-[#3d3929] outline-none transition-all placeholder:text-[#9c9a92] focus:border-[#c96442]/50 focus:ring-4 focus:ring-[#c96442]/10 dark:border-[#3d3d3a] dark:bg-[#30302e] dark:text-[#d6d3c9] dark:focus:border-[#c96442]/60 ${monoSize}`;
+
+  const fmtBtn =
+    "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#6b6a63] transition-all hover:bg-[#f0eee6] hover:text-[#141413] active:scale-90 disabled:opacity-30 dark:text-[#9c9a92] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5]";
+
+  const toastDot =
+    toast?.type === "success"
+      ? "bg-emerald-400"
+      : toast?.type === "error"
+      ? "bg-rose-400"
+      : toast?.type === "warning"
+      ? "bg-amber-400"
+      : "bg-[#c96442]";
 
   return (
     <div
       ref={containerRef}
       tabIndex={-1}
-      className={`relative flex flex-col bg-[#fcfcfa] outline-none dark:bg-neutral-950 ${
+      className={`relative flex flex-col bg-[#faf9f5] text-[#141413] outline-none dark:bg-[#262624] dark:text-[#faf9f5] ${
         isFullscreen
           ? "fixed inset-0 z-50"
-          : "h-full min-h-[560px] rounded-xl border border-neutral-200 dark:border-neutral-800"
+          : "h-full min-h-[560px] overflow-hidden rounded-2xl border border-[#e8e6dc] shadow-[0_1px_3px_rgba(20,20,19,0.04),0_8px_24px_-12px_rgba(20,20,19,0.08)] dark:border-[#3d3d3a]"
       }`}
     >
+      <style>{`
+        @keyframes menuIn { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
+        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @keyframes caret { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+        @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; } }
+      `}</style>
+
       {/* Toast */}
       {toast && (
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none absolute bottom-14 left-1/2 z-50 -translate-x-1/2"
+          className="pointer-events-none absolute bottom-16 left-1/2 z-50 -translate-x-1/2 animate-[toastIn_200ms_ease-out]"
         >
-          <div className="flex items-center gap-2 rounded-full bg-neutral-900 px-3.5 py-1.5 text-xs text-white shadow-lg dark:bg-white dark:text-neutral-900">
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                toast.type === "success"
-                  ? "bg-emerald-400"
-                  : toast.type === "error"
-                  ? "bg-rose-400"
-                  : toast.type === "warning"
-                  ? "bg-amber-400"
-                  : "bg-neutral-400"
-              }`}
-            />
+          <div className="flex items-center gap-2.5 rounded-full bg-[#141413] px-4 py-2 font-sans text-[13px] font-medium text-[#faf9f5] shadow-[0_8px_24px_rgba(20,20,19,0.25)] dark:bg-[#faf9f5] dark:text-[#141413]">
+            <span className={`h-1.5 w-1.5 rounded-full ${toastDot}`} />
             {toast.message}
           </div>
         </div>
       )}
 
       {/* Header */}
-      <header className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-3 py-2 dark:border-neutral-800">
+      <header className="relative z-20 flex min-h-[52px] flex-wrap items-center justify-between gap-2 border-b border-[#e8e6dc] bg-[#faf9f5]/90 px-3.5 py-2 font-sans backdrop-blur dark:border-[#3d3d3a] dark:bg-[#262624]/90">
         <div className="flex min-w-0 items-center gap-3">
-          <h2 className="max-w-[14rem] truncate text-sm font-medium text-neutral-900 dark:text-white">
-            {title}
-          </h2>
+          <div className="flex min-w-0 items-center gap-2">
+            <span
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-white"
+              style={{ background: ACCENT }}
+              aria-hidden
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+            </span>
+            <h2 className="max-w-[14rem] truncate font-serif text-[15px] font-medium tracking-tight text-[#141413] dark:text-[#faf9f5]">
+              {title}
+            </h2>
+          </div>
 
           {hasOutput && (
-            <div className="flex items-center gap-0.5 rounded-lg bg-neutral-100 p-0.5 dark:bg-neutral-900" role="group" aria-label="View mode">
+            <div
+              className="flex items-center gap-0.5 rounded-xl bg-[#f0eee6] p-0.5 dark:bg-[#1f1e1d]"
+              role="group"
+              aria-label="View mode"
+            >
               {visibleModes.map((m) => (
                 <button
                   key={m.id}
                   type="button"
                   aria-pressed={effectiveMode === m.id}
                   onClick={() => setViewMode(m.id)}
-                  className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                  className={`rounded-[10px] px-3 py-1 text-[12.5px] font-medium transition-all duration-200 ${
                     effectiveMode === m.id
-                      ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-white"
-                      : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                      ? "bg-white text-[#141413] shadow-[0_1px_2px_rgba(20,20,19,0.1)] dark:bg-[#3a3936] dark:text-[#faf9f5]"
+                      : "text-[#6b6a63] hover:text-[#141413] dark:text-[#9c9a92] dark:hover:text-[#faf9f5]"
                   }`}
                 >
                   {m.label}
@@ -1019,7 +1089,11 @@ function OutputSection({
 
         <div className="flex items-center gap-0.5">
           {loading && onStop && (
-            <button type="button" onClick={onStop} className={`${textBtn} text-rose-600 dark:text-rose-400`}>
+            <button
+              type="button"
+              onClick={onStop}
+              className={`${textBtn} !text-rose-600 hover:!bg-rose-50 dark:!text-rose-400 dark:hover:!bg-rose-950/40`}
+            >
               <Square className="h-3 w-3 fill-current" />
               Stop
             </button>
@@ -1047,7 +1121,7 @@ function OutputSection({
                     type="button"
                     onClick={handleCycleRate}
                     title="Playback speed"
-                    className="h-8 rounded-md px-1.5 font-mono text-[11px] text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                    className="h-8 rounded-lg px-1.5 font-mono text-[11px] text-[#6b6a63] hover:bg-[#f0eee6] dark:text-[#9c9a92] dark:hover:bg-[#3a3936]"
                   >
                     {speechRate}x
                   </button>
@@ -1062,9 +1136,12 @@ function OutputSection({
                 <Search className="h-4 w-4" />
               </IconButton>
 
+              <span className="mx-1 hidden h-4 w-px bg-[#e8e6dc] dark:bg-[#3d3d3a] sm:block" />
+
               {canEdit && (
                 <DropMenu
                   open={menu === "refine"}
+                  accent
                   onToggle={() => {
                     if (isRefining) refineAbortRef.current?.abort();
                     else setMenu((m) => (m === "refine" ? null : "refine"));
@@ -1077,43 +1154,59 @@ function OutputSection({
                       <Wand2 className="h-3.5 w-3.5" />
                     )
                   }
-                  width="w-64"
+                  width="w-72"
                 >
+                  <div className="px-2.5 pb-1 pt-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-[#9c9a92]">
+                    Quick refine
+                  </div>
                   {REFINE_ACTIONS.map((a) => (
-                    <MenuItem key={a.id} onClick={() => handleRefine(a.id)}>
+                    <MenuItem key={a.id} onClick={() => handleRefine(a.id)} hint={a.hint}>
                       {a.label}
                     </MenuItem>
                   ))}
-                  <div className="mt-1 flex gap-1 border-t border-neutral-100 p-1.5 pt-2 dark:border-neutral-800">
-                    <input
-                      type="text"
-                      value={refinePrompt}
-                      onChange={(e) => setRefinePrompt(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && refinePrompt.trim()) {
-                          handleRefine("custom", refinePrompt.trim());
-                        }
-                      }}
-                      placeholder="Custom instruction"
-                      className="min-w-0 flex-1 rounded-md border border-neutral-200 bg-transparent px-2 py-1 text-xs text-neutral-900 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:text-white"
-                    />
-                    <button
-                      type="button"
-                      disabled={!refinePrompt.trim()}
-                      onClick={() => handleRefine("custom", refinePrompt.trim())}
-                      className="rounded-md bg-neutral-900 px-2.5 text-xs font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
-                    >
-                      Go
-                    </button>
+                  <div className="mt-1.5 border-t border-[#efede4] p-1.5 pt-2.5 dark:border-[#3a3936]">
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        value={refinePrompt}
+                        onChange={(e) => setRefinePrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && refinePrompt.trim()) {
+                            handleRefine("custom", refinePrompt.trim());
+                          }
+                        }}
+                        placeholder="Tell it what to change…"
+                        className="min-w-0 flex-1 rounded-lg border border-[#e8e6dc] bg-[#faf9f5] px-2.5 py-1.5 text-[13px] text-[#141413] outline-none transition-all placeholder:text-[#9c9a92] focus:border-[#c96442]/50 focus:ring-2 focus:ring-[#c96442]/15 dark:border-[#4a4945] dark:bg-[#262624] dark:text-[#faf9f5]"
+                      />
+                      <button
+                        type="button"
+                        disabled={!refinePrompt.trim()}
+                        onClick={() => handleRefine("custom", refinePrompt.trim())}
+                        className="rounded-lg px-3 text-[13px] font-medium text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+                        style={{ background: ACCENT }}
+                      >
+                        Go
+                      </button>
+                    </div>
                   </div>
                 </DropMenu>
               )}
 
+              <button
+                type="button"
+                onClick={handleQuickCopy}
+                className={`${textBtn} ${quickCopied ? "!text-emerald-600 dark:!text-emerald-400" : ""}`}
+                aria-label="Copy Markdown"
+              >
+                {quickCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{quickCopied ? "Copied" : "Copy"}</span>
+              </button>
+
               <DropMenu
                 open={menu === "copy"}
                 onToggle={() => setMenu((m) => (m === "copy" ? null : "copy"))}
-                label="Copy"
-                icon={<Copy className="h-3.5 w-3.5" />}
+                label=""
+                icon={<span className="sr-only">Copy formats</span>}
               >
                 <MenuItem onClick={() => copyText(aiOutput, "Copied Markdown")} hint="MD">
                   Markdown
@@ -1158,20 +1251,47 @@ function OutputSection({
         </div>
       </header>
 
-      {/* Progress hairline */}
-      <div className="h-px w-full overflow-hidden bg-transparent">
-        {busy && <div className="h-full w-full animate-pulse bg-neutral-900 dark:bg-white" />}
+      {/* Progress hairline: generation activity, otherwise reading progress */}
+      <div className="relative h-[2px] w-full overflow-hidden bg-transparent">
+        {busy ? (
+          <div
+            className="h-full w-full animate-[shimmer_1.4s_linear_infinite]"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)`,
+              backgroundSize: "200% 100%",
+            }}
+          />
+        ) : (
+          hasOutput &&
+          effectiveMode === "preview" && (
+            <div
+              className="h-full transition-[width] duration-100 ease-out"
+              style={{ width: `${progress}%`, background: ACCENT }}
+            />
+          )
+        )}
       </div>
 
       {/* Refine undo notice */}
       {refineBackup !== null && !isRefining && (
-        <div className="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-1.5 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
-          <span>Refinement applied.</span>
+        <div className="flex items-center justify-between gap-3 border-b border-[#e8e6dc] bg-[#f5f4ed] px-4 py-2 font-sans text-[13px] text-[#55534b] animate-[fadeUp_200ms_ease-out] dark:border-[#3d3d3a] dark:bg-[#2b2a27] dark:text-[#b8b6ac]">
+          <span className="flex items-center gap-2">
+            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            Refinement applied
+          </span>
           <span className="flex items-center gap-3">
-            <button type="button" onClick={handleUndoRefine} className="font-medium text-neutral-900 hover:underline dark:text-white">
+            <button
+              type="button"
+              onClick={handleUndoRefine}
+              className="font-medium text-[#a8452a] hover:underline dark:text-[#e8967a]"
+            >
               Undo
             </button>
-            <button type="button" onClick={() => setRefineBackup(null)} className="hover:text-neutral-900 dark:hover:text-white">
+            <button
+              type="button"
+              onClick={() => setRefineBackup(null)}
+              className="hover:text-[#141413] dark:hover:text-[#faf9f5]"
+            >
               Dismiss
             </button>
           </span>
@@ -1180,22 +1300,33 @@ function OutputSection({
 
       {/* Search */}
       {showSearch && hasOutput && (
-        <div className="flex items-center gap-2 border-b border-neutral-200 px-4 py-2 dark:border-neutral-800">
-          <Search className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+        <div className="flex items-center gap-2.5 border-b border-[#e8e6dc] bg-white/60 px-4 py-2 font-sans animate-[fadeUp_160ms_ease-out] dark:border-[#3d3d3a] dark:bg-[#2b2a27]/60">
+          <Search className="h-3.5 w-3.5 shrink-0 text-[#9c9a92]" />
           <input
             type="text"
             autoFocus
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Find in content"
-            className="min-w-0 flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-white"
+            className="min-w-0 flex-1 bg-transparent text-sm text-[#141413] outline-none placeholder:text-[#9c9a92] dark:text-[#faf9f5]"
           />
           {searchQuery && (
-            <span className="font-mono text-xs text-neutral-500">
+            <span
+              className={`rounded-full px-2 py-0.5 font-mono text-[11px] ${
+                matchCount
+                  ? "bg-[#f5d9a0]/60 text-[#7a5a14] dark:bg-[#e8b95c]/20 dark:text-[#e8b95c]"
+                  : "bg-[#f0eee6] text-[#9c9a92] dark:bg-[#3a3936]"
+              }`}
+            >
               {matchCount} {matchCount === 1 ? "match" : "matches"}
             </span>
           )}
-          <button type="button" onClick={closeSearch} aria-label="Close search" className="rounded p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+          <button
+            type="button"
+            onClick={closeSearch}
+            aria-label="Close search"
+            className="rounded-md p-1 text-[#9c9a92] transition-colors hover:bg-[#f0eee6] hover:text-[#141413] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5]"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -1203,7 +1334,7 @@ function OutputSection({
 
       {/* Formatting toolbar */}
       {canEdit && hasOutput && (effectiveMode === "edit" || effectiveMode === "split") && (
-        <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-neutral-200 px-3 py-1.5 dark:border-neutral-800">
+        <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-[#e8e6dc] px-3 py-1.5 dark:border-[#3d3d3a]">
           <div className="flex items-center gap-0.5">
             <button type="button" className={fmtBtn} title="Bold" aria-label="Bold" onClick={() => handleInsertFormat("**", "**")}>
               <Bold className="h-3.5 w-3.5" />
@@ -1217,7 +1348,7 @@ function OutputSection({
             <button type="button" className={fmtBtn} title="Code block" aria-label="Code block" onClick={() => handleInsertFormat("```\n", "\n```")}>
               <span className="font-mono text-[11px]">{"{}"}</span>
             </button>
-            <span className="mx-1 h-3.5 w-px bg-neutral-200 dark:bg-neutral-800" />
+            <span className={`mx-1.5 h-4 w-px border-l ${divider}`} />
             <button type="button" className={fmtBtn} title="Heading 2" aria-label="Heading 2" onClick={() => handleInsertFormat("## ")}>
               <Heading2 className="h-3.5 w-3.5" />
             </button>
@@ -1249,15 +1380,28 @@ function OutputSection({
       )}
 
       {/* Canvas */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
         {loading && !hasOutput ? (
-          <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-5 p-8 text-center">
-            <div className="w-full max-w-xs space-y-2.5" aria-hidden>
-              <div className="mx-auto h-2.5 w-3/4 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
-              <div className="mx-auto h-2.5 w-full animate-pulse rounded-full bg-neutral-200 [animation-delay:150ms] dark:bg-neutral-800" />
-              <div className="mx-auto h-2.5 w-5/6 animate-pulse rounded-full bg-neutral-200 [animation-delay:300ms] dark:bg-neutral-800" />
+          <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-6 p-8 text-center font-sans">
+            <div className="w-full max-w-sm space-y-3" aria-hidden>
+              {[75, 100, 88, 60].map((w, i) => (
+                <div
+                  key={i}
+                  className="mx-auto h-3 animate-[shimmer_1.6s_linear_infinite] rounded-full"
+                  style={{
+                    width: `${w}%`,
+                    animationDelay: `${i * 120}ms`,
+                    backgroundImage:
+                      "linear-gradient(90deg, rgba(201,100,66,0.10) 25%, rgba(201,100,66,0.24) 50%, rgba(201,100,66,0.10) 75%)",
+                    backgroundSize: "200% 100%",
+                  }}
+                />
+              ))}
             </div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Generating…</p>
+            <div className="flex items-center gap-2 text-sm text-[#6b6a63] dark:text-[#9c9a92]">
+              <Sparkles className="h-4 w-4 animate-pulse" style={{ color: ACCENT }} />
+              Writing your content…
+            </div>
             {onStop && (
               <button type="button" onClick={onStop} className={textBtn}>
                 Cancel
@@ -1267,7 +1411,7 @@ function OutputSection({
         ) : hasOutput ? (
           <>
             {effectiveMode === "preview" && (
-              <div className="mx-auto w-full max-w-[42rem] px-6 py-10 sm:px-8">
+              <div className="mx-auto w-full max-w-[44rem] px-6 py-12 sm:px-10">
                 <div ref={previewRef} className={proseClass}>
                   <MarkdownView
                     content={deferredOutput}
@@ -1275,7 +1419,10 @@ function OutputSection({
                     streaming={streamingMarkdown}
                   />
                   {loading && (
-                    <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-neutral-900 align-middle dark:bg-white" />
+                    <span
+                      className="ml-0.5 inline-block h-[1.1em] w-[3px] animate-[caret_1s_ease-in-out_infinite] rounded-full align-middle"
+                      style={{ background: ACCENT }}
+                    />
                   )}
                 </div>
               </div>
@@ -1306,7 +1453,7 @@ function OutputSection({
                     className={textareaClass}
                   />
                 </div>
-                <div className="overflow-y-auto border-t border-neutral-200 p-6 dark:border-neutral-800 lg:border-l lg:border-t-0">
+                <div className="overflow-y-auto border-t border-[#e8e6dc] bg-white/50 p-7 dark:border-[#3d3d3a] dark:bg-[#2b2a27]/40 lg:border-l lg:border-t-0">
                   <div ref={previewRef} className={proseClass}>
                     <MarkdownView content={deferredOutput} query="" streaming={streamingMarkdown} />
                   </div>
@@ -1317,9 +1464,7 @@ function OutputSection({
             {effectiveMode === "raw" && (
               <div className="mx-auto w-full max-w-3xl p-4">
                 <pre
-                  className={`whitespace-pre-wrap break-words rounded-lg border border-neutral-200 p-4 font-mono leading-relaxed text-neutral-800 dark:border-neutral-800 dark:text-neutral-200 ${
-                    fontSize === "sm" ? "text-xs" : fontSize === "lg" ? "text-base" : "text-sm"
-                  }`}
+                  className={`whitespace-pre-wrap break-words rounded-xl border border-[#e8e6dc] bg-white p-5 font-mono leading-[1.75] text-[#3d3929] dark:border-[#3d3d3a] dark:bg-[#30302e] dark:text-[#d6d3c9] ${monoSize}`}
                 >
                   {aiOutput}
                 </pre>
@@ -1327,30 +1472,43 @@ function OutputSection({
             )}
           </>
         ) : (
-          <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-1.5 p-8 text-center">
-            <p className="text-sm font-medium text-neutral-900 dark:text-white">Nothing here yet</p>
-            <p className="max-w-xs text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-              Fill in the template and choose Generate. Your content will stream in here.
-            </p>
+          <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 p-8 text-center font-sans">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c96442]/10 ring-1 ring-[#c96442]/20">
+              <Sparkles className="h-5 w-5" style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-1">
+              <p className="font-serif text-lg font-medium text-[#141413] dark:text-[#faf9f5]">
+                Nothing here yet
+              </p>
+              <p className="max-w-xs text-[13px] leading-relaxed text-[#6b6a63] dark:text-[#9c9a92]">
+                Fill in the template and choose Generate. Your content will stream in here.
+              </p>
+            </div>
           </div>
         )}
       </div>
 
       {/* Status bar */}
       {showWordCount && hasOutput && (
-        <footer className="flex items-center justify-between gap-3 border-t border-neutral-200 px-4 py-2 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
-          <div className="flex min-w-0 items-center gap-2 font-mono">
-            <span>{stats.words.toLocaleString()} words</span>
-            <span aria-hidden>·</span>
+        <footer className="flex items-center justify-between gap-3 border-t border-[#e8e6dc] bg-[#faf9f5]/90 px-4 py-2 font-sans text-xs text-[#6b6a63] backdrop-blur dark:border-[#3d3d3a] dark:bg-[#262624]/90 dark:text-[#9c9a92]">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="font-medium text-[#3d3929] dark:text-[#d6d3c9]">
+              {stats.words.toLocaleString()} words
+            </span>
+            <span aria-hidden className="opacity-40">·</span>
             <span className="hidden sm:inline">{stats.charsWithSpaces.toLocaleString()} chars</span>
-            <span className="hidden sm:inline" aria-hidden>·</span>
+            <span className="hidden opacity-40 sm:inline" aria-hidden>·</span>
             <span>{stats.readingTimeString}</span>
-            <span className="hidden md:inline" aria-hidden>·</span>
+            <span className="hidden opacity-40 md:inline" aria-hidden>·</span>
             <span className="hidden md:inline">{stats.speakingTimeString}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {isModified && canEdit && (
-              <button type="button" onClick={handleResetToOriginal} className="hover:text-neutral-900 dark:hover:text-white">
+              <button
+                type="button"
+                onClick={handleResetToOriginal}
+                className="rounded-full bg-[#f0eee6] px-2.5 py-0.5 font-medium transition-colors hover:text-[#a8452a] dark:bg-[#3a3936] dark:hover:text-[#e8967a]"
+              >
                 Edited · Reset
               </button>
             )}
@@ -1359,7 +1517,7 @@ function OutputSection({
               onClick={() => setFontSize((p) => (p === "sm" ? "base" : p === "base" ? "lg" : "sm"))}
               title={`Text size: ${FONT_LABEL[fontSize]}`}
               aria-label={`Text size: ${FONT_LABEL[fontSize]}. Click to change.`}
-              className="font-medium hover:text-neutral-900 dark:hover:text-white"
+              className="rounded-md px-1.5 py-0.5 font-serif text-sm font-medium transition-colors hover:bg-[#f0eee6] hover:text-[#141413] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5]"
             >
               Aa
             </button>
