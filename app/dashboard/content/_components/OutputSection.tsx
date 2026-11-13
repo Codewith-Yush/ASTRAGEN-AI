@@ -92,10 +92,10 @@ const HISTORY_DEBOUNCE_MS = 600;
 const TOAST_MS = 2400;
 const REMARK_PLUGINS = [remarkGfm];
 
-const PROSE_SIZE: Record<FontSize, string> = {
-  sm: "prose-sm",
-  base: "prose-base",
-  lg: "prose-lg",
+const DOC_SIZE: Record<FontSize, string> = {
+  sm: "text-[15px]",
+  base: "text-[17px]",
+  lg: "text-[19px]",
 };
 
 const FONT_LABEL: Record<FontSize, string> = {
@@ -292,10 +292,60 @@ const CodeBlock = memo(function CodeBlock({
 /*                                 Markdown                                   */
 /* -------------------------------------------------------------------------- */
 
-const HIGHLIGHT_TAGS = ["p", "li", "td", "th", "h1", "h2", "h3", "h4", "strong", "em"];
+const HEAD = "font-sans font-semibold tracking-tight text-neutral-950 first:mt-0 dark:text-white";
+
+/** Builds a styled element that also highlights search matches. */
+function el(tag: string, base: string, re: RegExp | null) {
+  return ({ node, className, children, ...props }: any) =>
+    React.createElement(
+      tag,
+      { ...props, className: `${base} ${className ?? ""}`.trim() },
+      highlight(children, re)
+    );
+}
 
 function buildComponents(re: RegExp | null, streaming: boolean): any {
-  const components: Record<string, any> = {
+  return {
+    h1: el("h1", `${HEAD} mb-5 mt-12 text-[1.75em] leading-[1.2]`, re),
+    h2: el("h2", `${HEAD} mb-3 mt-10 text-[1.35em] leading-[1.3]`, re),
+    h3: el("h3", `${HEAD} mb-2 mt-8 text-[1.12em] leading-[1.4]`, re),
+    h4: el("h4", `${HEAD} mb-2 mt-6 text-[1em]`, re),
+    p: el("p", "my-5 leading-[1.85] text-neutral-700 dark:text-neutral-300", re),
+    strong: el("strong", "font-semibold text-neutral-950 dark:text-white", re),
+    em: el("em", "italic", re),
+    ul: ({ node, className, children, ...props }: any) => (
+      <ul
+        {...props}
+        className={`my-5 space-y-2.5 ${
+          String(className).includes("contains-task-list")
+            ? "list-none pl-0"
+            : "list-disc pl-6 marker:text-neutral-400"
+        }`}
+      >
+        {children}
+      </ul>
+    ),
+    ol: ({ node, children, ...props }: any) => (
+      <ol
+        {...props}
+        className="my-5 list-decimal space-y-2.5 pl-6 marker:font-medium marker:text-neutral-400"
+      >
+        {children}
+      </ol>
+    ),
+    li: el("li", "pl-1 leading-[1.8] text-neutral-700 dark:text-neutral-300", re),
+    blockquote: ({ node, children, ...props }: any) => (
+      <blockquote
+        {...props}
+        className="my-7 border-l-2 border-neutral-900 pl-5 text-neutral-600 dark:border-white dark:text-neutral-400 [&>p]:my-2"
+      >
+        {children}
+      </blockquote>
+    ),
+    hr: () => <hr className="my-10 border-0 border-t border-neutral-200 dark:border-neutral-800" />,
+    input: ({ node, ...props }: any) => (
+      <input {...props} className="mr-2.5 h-3.5 w-3.5 translate-y-[1px] accent-neutral-900 dark:accent-white" />
+    ),
     pre: ({ children }: any) => <>{children}</>,
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || "");
@@ -306,7 +356,7 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
       }
       return (
         <code
-          className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[0.9em] font-normal text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
+          className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[0.85em] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
           {...props}
         >
           {children}
@@ -314,41 +364,31 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
       );
     },
     table: ({ node, ...props }: any) => (
-      <div className="not-prose my-5 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
         <table
-          className="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800"
+          className="min-w-full divide-y divide-neutral-200 font-sans text-sm dark:divide-neutral-800"
           {...props}
         />
       </div>
     ),
-    th: ({ node, children, ...props }: any) => (
-      <th
-        className="bg-neutral-50 px-4 py-2.5 text-left text-xs font-medium text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400"
+    th: el(
+      "th",
+      "bg-neutral-50 px-4 py-2.5 text-left text-xs font-medium text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400",
+      re
+    ),
+    td: el("td", "px-4 py-2.5 text-neutral-700 dark:text-neutral-300", re),
+    a: ({ node, href, children, ...props }: any) => (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-neutral-950 underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-950 dark:text-white dark:decoration-neutral-600 dark:hover:decoration-white"
         {...props}
       >
-        {highlight(children, re)}
-      </th>
-    ),
-    td: ({ node, children, ...props }: any) => (
-      <td className="px-4 py-2.5 text-neutral-700 dark:text-neutral-300" {...props}>
-        {highlight(children, re)}
-      </td>
-    ),
-    a: ({ node, href, children, ...props }: any) => (
-      <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
         {children}
       </a>
     ),
   };
-
-  if (re) {
-    for (const tag of HIGHLIGHT_TAGS) {
-      if (tag === "th" || tag === "td") continue;
-      components[tag] = ({ node, children, ...props }: any) =>
-        React.createElement(tag, props, highlight(children, re));
-    }
-  }
-  return components;
 }
 
 const MarkdownView = memo(function MarkdownView({
@@ -907,7 +947,7 @@ function OutputSection({
   const busy = loading || isRefining;
   const streamingMarkdown = loading || isRefining;
 
-  const proseClass = `prose ${PROSE_SIZE[fontSize]} prose-neutral dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:underline-offset-4 prose-code:before:content-none prose-code:after:content-none prose-pre:bg-transparent prose-pre:p-0`;
+  const proseClass = `font-serif ${DOC_SIZE[fontSize]} antialiased`;
 
   const textareaClass = `h-full min-h-[420px] w-full resize-none rounded-lg border border-neutral-200 bg-transparent p-4 font-mono leading-relaxed text-neutral-800 outline-none transition-colors focus:border-neutral-400 dark:border-neutral-800 dark:text-neutral-200 dark:focus:border-neutral-600 ${
     fontSize === "sm" ? "text-xs" : fontSize === "lg" ? "text-base" : "text-sm"
@@ -919,7 +959,7 @@ function OutputSection({
     <div
       ref={containerRef}
       tabIndex={-1}
-      className={`relative flex flex-col bg-white outline-none dark:bg-neutral-950 ${
+      className={`relative flex flex-col bg-[#fcfcfa] outline-none dark:bg-neutral-950 ${
         isFullscreen
           ? "fixed inset-0 z-50"
           : "h-full min-h-[560px] rounded-xl border border-neutral-200 dark:border-neutral-800"
@@ -957,16 +997,16 @@ function OutputSection({
           </h2>
 
           {hasOutput && (
-            <div className="flex items-center gap-0.5" role="group" aria-label="View mode">
+            <div className="flex items-center gap-0.5 rounded-lg bg-neutral-100 p-0.5 dark:bg-neutral-900" role="group" aria-label="View mode">
               {visibleModes.map((m) => (
                 <button
                   key={m.id}
                   type="button"
                   aria-pressed={effectiveMode === m.id}
                   onClick={() => setViewMode(m.id)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
                     effectiveMode === m.id
-                      ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white"
+                      ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-white"
                       : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                   }`}
                 >
@@ -1227,7 +1267,7 @@ function OutputSection({
         ) : hasOutput ? (
           <>
             {effectiveMode === "preview" && (
-              <div className="mx-auto w-full max-w-3xl px-6 py-8">
+              <div className="mx-auto w-full max-w-[42rem] px-6 py-10 sm:px-8">
                 <div ref={previewRef} className={proseClass}>
                   <MarkdownView
                     content={deferredOutput}
