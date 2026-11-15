@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useContext, useState } from "react";
-import axios from "axios";
 import {
   Loader2,
   Check,
@@ -51,7 +50,7 @@ const FAQS = [
   {
     question: "How does the monthly quota work?",
     answer:
-      "The free tier includes 300,000 words per month, resetting monthly. Astragen Pro unlocks unlimited generations with high-priority streaming.",
+      "The free tier includes 100 credits per month, resetting monthly. Astragen Pro unlocks unlimited generations with high-priority streaming.",
   },
   {
     question: "Is my payment safe and secure?",
@@ -63,14 +62,20 @@ const FAQS = [
 function Billing() {
   const [loading, setLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isAnnual, setIsAnnual] = useState(false);
   const { user } = useUser();
   const { userSubscription } = useContext(UserSubscriptionContext);
 
   const CreateSubscription = async () => {
     try {
       setLoading(true);
-      const response = await axios.post("/api/create-subscription", {});
-      OnPayment(response.data.id);
+      const res = await fetch("/api/create-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("Failed to create subscription");
+      const data = await res.json();
+      OnPayment(data.id);
     } catch (error) {
       console.error("Subscription creation failed:", error);
       alert("Unable to initiate subscription. Please verify Razorpay credentials.");
@@ -102,24 +107,29 @@ function Billing() {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       subscription_id: subId,
       name: "Astragen AI",
-      description: "Pro Monthly Subscription",
+      description: "Pro Subscription",
       prefill: {
         name: user?.fullName || "Astragen Creator",
         email: user?.primaryEmailAddress?.emailAddress || "user@astragen.ai",
       },
       theme: {
-        color: "#3B3BFF",
+        color: "#9333EA",
       },
       handler: async (resp: any) => {
         try {
           if (resp?.razorpay_payment_id) {
-            const verifyRes = await axios.post("/api/razorpay/verify", {
-              razorpay_payment_id: resp.razorpay_payment_id,
-              razorpay_subscription_id: resp.razorpay_subscription_id,
-              razorpay_signature: resp.razorpay_signature,
+            const verifyRes = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: resp.razorpay_payment_id,
+                razorpay_subscription_id: resp.razorpay_subscription_id,
+                razorpay_signature: resp.razorpay_signature,
+              }),
             });
+            const verifyData = await verifyRes.json();
 
-            if (verifyRes.data?.success) {
+            if (verifyData?.success) {
               window.location.reload();
             } else {
               alert("Payment verification failed. Please contact support.");
@@ -144,60 +154,89 @@ function Billing() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-4 sm:py-8 space-y-12">
+    <div className="max-w-4xl mx-auto py-6 space-y-12">
       {/* Header */}
-      <div className="text-center space-y-2 px-2">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-          <Sparkles className="w-3 h-3 text-neutral-500" />
-          <span>Simple, Transparent Pricing</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
-          Choose the plan that fits your ambition
+      <div className="text-center space-y-3 px-2">
+        <span className="text-label text-accent-cyan tracking-widest inline-flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-accent-cyan" strokeWidth={1.5} />
+          <span>Membership</span>
+        </span>
+        <h1 className="text-page-title text-ink font-semibold tracking-tight">
+          Simple, transparent plans
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
-          Start for free, or unlock high-speed unlimited generation with Astragen Pro.
+        <p className="text-body-small text-ink-muted max-w-md mx-auto">
+          Start for free, or upgrade to Astragen Pro for unlimited, high-throughput generation.
         </p>
+
+        {/* Monthly / Annual Toggle Switch */}
+        <div className="pt-3 flex items-center justify-center gap-3">
+          <span className={`text-xs font-medium ${!isAnnual ? "text-ink font-semibold" : "text-ink-muted"}`}>
+            Monthly
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isAnnual}
+            aria-label="Toggle annual billing"
+            onClick={() => setIsAnnual((v) => !v)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-action ${
+              isAnnual ? "bg-action" : "bg-border"
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                isAnnual ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+          <span className={`text-xs font-medium flex items-center gap-1.5 ${isAnnual ? "text-ink font-semibold" : "text-ink-muted"}`}>
+            <span>Annual</span>
+            <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-surface-elevated text-accent-cyan border border-border">
+              Save 20%
+            </span>
+          </span>
+        </div>
       </div>
 
-      {/* Pricing Cards Grid */}
+      {/* Pricing Cards Grid (Side by side) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
         {/* Free Plan */}
-        <div className="bg-white dark:bg-[#121418] border border-neutral-200/80 dark:border-neutral-800/80 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-xs space-y-6">
+        <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-base text-neutral-900 dark:text-white">
-                  Starter Plan
+                <h3 className="font-semibold text-base text-ink">
+                  Starter
                 </h3>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-xs text-ink-muted mt-0.5">
                   Free forever
                 </p>
               </div>
-              <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+              <span className="text-label px-2.5 py-0.5 rounded-full bg-surface-elevated text-ink-muted border border-border">
                 Default
               </span>
             </div>
 
             <div className="pt-1 flex items-baseline gap-1">
-              <span className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+              <span className="text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums text-ink">
                 ₹0
               </span>
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-ink-muted">
                 / forever
               </span>
             </div>
 
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800/60 space-y-2.5">
+            <div className="pt-4 border-t border-border space-y-2.5">
               {[
-                "300,000 Words per month",
-                "Access to all 50+ AI templates",
+                "100 AI credits per month",
+                "Access to all 30+ prompt engines",
                 "Markdown and code syntax export",
                 "History archive with search & view",
                 "Voice Text-to-Speech playback",
-                "Standard generation speed",
+                "Standard streaming speed",
               ].map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 text-xs text-neutral-600 dark:text-neutral-400">
-                  <Check className="w-4 h-4 text-neutral-400 flex-shrink-0" />
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-ink-muted">
+                  <Check className="w-4 h-4 text-ink-dim flex-shrink-0" strokeWidth={1.5} />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -207,56 +246,56 @@ function Billing() {
           <button
             type="button"
             disabled={true}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-400 dark:text-neutral-500 cursor-not-allowed"
+            className="w-full py-2.5 px-4 rounded-full text-xs font-medium bg-surface-elevated border border-border text-ink-dim cursor-not-allowed text-center"
           >
             {userSubscription ? "Basic Tier" : "Current Plan"}
           </button>
         </div>
 
-        {/* Pro Plan */}
-        <div className="relative bg-white/95 dark:bg-[#0E1118]/95 border-2 border-indigo-500/80 dark:border-indigo-500/70 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-xl shadow-indigo-500/10 dark:shadow-indigo-500/20 space-y-6">
-          {/* Popular Tag */}
+        {/* Pro Plan (with 1px action border) */}
+        <div className="relative bg-surface border border-action rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-xs">
+          {/* Eyebrow badge */}
           <div className="absolute -top-3 right-6">
-            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white text-[10px] font-bold tracking-wider uppercase shadow-sm">
-              Most Popular
+            <span className="px-3 py-0.5 rounded-full bg-action text-action-ink text-[10px] font-medium tracking-wider uppercase shadow-xs">
+              Recommended
             </span>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-1.5">
+                <h3 className="font-semibold text-base text-ink flex items-center gap-1.5">
                   <span>Astragen Pro</span>
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <Zap className="w-4 h-4 text-action" strokeWidth={1.5} />
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-ink-muted mt-0.5">
                   Unlimited high-speed generation
                 </p>
               </div>
             </div>
 
             <div className="pt-1 flex items-baseline gap-1">
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                ₹99
+              <span className="text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums text-ink">
+                {isAnnual ? "₹79" : "₹99"}
               </span>
-              <span className="text-xs text-slate-400 font-medium">
-                / month (billed monthly)
+              <span className="text-xs text-ink-muted">
+                / month {isAnnual ? "(billed annually)" : "(billed monthly)"}
               </span>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
+            <div className="pt-4 border-t border-border space-y-2.5">
               {[
-                "Unlimited words & content quota",
+                "Unlimited credits & generation quota",
                 "High-speed priority Gemini streaming",
-                "Full access to 50+ templates & future additions",
-                "Unlimited content history with search & preview",
+                "Full access to 30+ templates & future engines",
+                "Unlimited content history with search & re-run",
                 "Instant Copy, Rich HTML & PDF export",
                 "One-Click AI Polish & Refine tools",
-                "Priority email & technical support",
+                "Priority technical support",
               ].map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
-                  <div className="w-4 h-4 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3 h-3" />
+                <div key={idx} className="flex items-center gap-2.5 text-xs text-ink">
+                  <div className="w-4 h-4 rounded-full bg-surface-elevated border border-border text-action flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 text-action" strokeWidth={1.5} />
                   </div>
                   <span>{feature}</span>
                 </div>
@@ -269,43 +308,43 @@ function Billing() {
             disabled={loading || Boolean(userSubscription)}
             onClick={CreateSubscription}
             className={`
-              w-full py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-150 shadow-md active:scale-[0.98] cursor-pointer
+              w-full py-3 px-6 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer
               ${
                 userSubscription
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
-                  : "bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.01]"
+                  ? "bg-surface-elevated text-accent-cyan border border-border"
+                  : "bg-action text-action-ink hover:bg-action-hover shadow-xs"
               }
             `}
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-current" />
-                <span>Processing with Razorpay...</span>
+                <span>Processing with Razorpay…</span>
               </>
             ) : userSubscription ? (
               <span>✓ Pro Plan Active</span>
             ) : (
-              <span>Upgrade to Pro — ₹99/mo</span>
+              <span>Upgrade to Pro — {isAnnual ? "₹79/mo" : "₹99/mo"}</span>
             )}
           </button>
         </div>
       </div>
 
       {/* Security Reassurance */}
-      <div className="flex items-center justify-center gap-2 text-xs text-neutral-400 dark:text-neutral-500 pt-2 text-center">
-        <Lock className="w-3.5 h-3.5 flex-shrink-0" />
-        <span>End-to-end encrypted 256-bit checkout powered by Razorpay. Cancel anytime.</span>
+      <div className="flex items-center justify-center gap-2 text-xs text-ink-dim pt-2 text-center">
+        <Lock className="w-3.5 h-3.5 flex-shrink-0" strokeWidth={1.5} />
+        <span>256-bit encrypted checkout powered by Razorpay. Cancel anytime.</span>
       </div>
 
       {/* FAQ Section */}
-      <div className="pt-6 border-t border-neutral-200/80 dark:border-neutral-800/80 space-y-4">
+      <div className="pt-6 border-t border-border space-y-4">
         <div className="text-center space-y-1">
-          <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white flex items-center justify-center gap-2">
-            <HelpCircle className="w-4 h-4 text-neutral-400" />
+          <h2 className="text-section-title font-semibold text-ink flex items-center justify-center gap-2">
+            <HelpCircle className="w-4 h-4 text-ink-muted" strokeWidth={1.5} />
             <span>Frequently Asked Questions</span>
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Everything you need to know about Astragen subscriptions.
+          <p className="text-xs text-ink-muted">
+            Details about Astragen billing and subscriptions.
           </p>
         </div>
 
@@ -315,22 +354,23 @@ function Billing() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] overflow-hidden transition-colors"
+                className="rounded-xl border border-border bg-surface overflow-hidden transition-colors"
               >
                 <button
                   type="button"
                   onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full px-4 py-3 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white"
+                  className="w-full px-4 py-3 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-medium text-ink hover:text-action transition-colors cursor-pointer"
                 >
                   <span>{faq.question}</span>
                   <ChevronDown
-                    className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
+                    className={`w-4 h-4 text-ink-muted transition-transform duration-150 ${
                       isOpen ? "rotate-180" : ""
                     }`}
+                    strokeWidth={1.5}
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-3.5 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed border-t border-neutral-100 dark:border-neutral-800/60 pt-2.5">
+                  <div className="px-4 pb-3.5 text-xs text-ink-muted leading-relaxed border-t border-border pt-2.5">
                     {faq.answer}
                   </div>
                 )}

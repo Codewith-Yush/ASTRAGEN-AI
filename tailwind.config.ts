@@ -18,11 +18,33 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Builder.io Design Tokens (Plan v3)
+        canvas: "var(--canvas)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          elevated: "var(--surface-elevated)",
+        },
+        action: {
+          DEFAULT: "var(--action)",
+          hover: "var(--action-hover)",
+          ink: "var(--action-ink)",
+        },
+        "accent-cyan": "var(--accent-cyan)",
+        ink: {
+          DEFAULT: "var(--ink)",
+          muted: "var(--ink-muted)",
+          dim: "var(--ink-dim)",
+        },
+        border: {
+          DEFAULT: "var(--border)",
+          subtle: "var(--border-subtle)",
+        },
+        glow: "var(--glow)",
+
+        input: "var(--border)",
+        ring: "var(--action)",
+        background: "var(--canvas)",
+        foreground: "var(--ink)",
         // Arc.net Design System Core Colors (from design.md)
         arc: {
           blue: "#3B3BFF",       // Electric-blue primary brand
@@ -36,36 +58,36 @@ module.exports = {
           "slate-border": "#1E2038",  // Dark developer slate border
         },
         primary: {
-          DEFAULT: "#3B3BFF", // Electric-blue as primary
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--action)",
+          foreground: "var(--action-ink)",
         },
         secondary: {
-          DEFAULT: "#1A1A8C", // Deep-indigo as secondary
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--surface-elevated)",
+          foreground: "var(--ink)",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "#EF4444",
+          foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "var(--surface-elevated)",
+          foreground: "var(--ink-muted)",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "var(--surface-elevated)",
+          foreground: "var(--ink)",
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "var(--surface)",
+          foreground: "var(--ink)",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "var(--surface)",
+          foreground: "var(--ink)",
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        sans: ["var(--font-poppins)", "Poppins", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "SF Mono", "Menlo", "monospace"],
         display: ["var(--font-display)", "Inter", "sans-serif"],
       },

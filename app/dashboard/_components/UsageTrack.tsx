@@ -3,12 +3,16 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { Zap, ArrowUpRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { Zap } from "lucide-react";
 import { TotalUsageContext } from "@/app/(context)/TotalUsageContext";
 import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext";
 import { UpdateCreditUsageContext } from "@/app/(context)/UpdateCreditUsageContext";
 
-function UsageTrack() {
+interface UsageTrackProps {
+  collapsed?: boolean;
+}
+
+function UsageTrack({ collapsed = false }: UsageTrackProps) {
   const { user, isLoaded } = useUser();
   const { totalUsage, setTotalUsage } = useContext(TotalUsageContext);
   const { userSubscription, setUserSubscription } = useContext(UserSubscriptionContext);
@@ -55,74 +59,65 @@ function UsageTrack() {
     }
   }, [isLoaded, userId, updateCreditUsage, fetchUsageData]);
 
-  const usagePercent = Math.min(100, Math.round((Number(totalUsage) / maxWords) * 100));
-  const isNearLimit = usagePercent >= 85;
+  // Percentage of the free word allowance used
+  const usedPercent = Math.min(100, Math.round((Number(totalUsage) / maxWords) * 100));
+  const percent = userSubscription ? 100 : usedPercent;
+
+  if (collapsed) {
+    return (
+      <div
+        className="flex flex-col items-center gap-1 py-1.5 text-ink-muted"
+        title={userSubscription ? "Unlimited usage" : `${usedPercent}% of free usage`}
+      >
+        <Zap className="w-3.5 h-3.5" strokeWidth={1.5} />
+        <span className="text-[10px] font-mono tabular-nums">
+          {userSubscription ? "∞" : `${usedPercent}%`}
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white via-slate-50/70 to-indigo-50/30 dark:from-slate-900/90 dark:via-[#0B0D14] dark:to-indigo-950/20 p-4 shadow-sm space-y-3">
-      {/* Background ambient light */}
-      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-xl pointer-events-none" />
-
-      {/* Header */}
-      <div className="flex items-center justify-between text-xs relative z-10">
-        <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
-          <div className="w-5 h-5 rounded-lg bg-indigo-100 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-            <Zap className="w-3 h-3 fill-current" />
-          </div>
-          <span>AI Credits</span>
-        </div>
-        <span
-          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-            userSubscription
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-              : isNearLimit
-              ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
-              : "bg-slate-200/60 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300"
-          }`}
-        >
-          {userSubscription ? "Unlimited" : `${usagePercent}% Used`}
+    <div className="space-y-2 px-1">
+      <div className="flex items-center justify-between text-[12px]">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-dim">Usage</span>
+        <span className="font-mono tabular-nums text-ink">
+          {userSubscription ? (
+            "Unlimited"
+          ) : (
+            <>
+              {usedPercent}
+              <span className="text-ink-dim">%</span>
+            </>
+          )}
         </span>
       </div>
 
-      {/* High-tech Progress Bar */}
-      <div className="space-y-1.5 relative z-10">
-        <div className="h-2 w-full bg-slate-200/80 dark:bg-slate-800/90 rounded-full overflow-hidden p-0.5">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              userSubscription
-                ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                : isNearLimit
-                ? "bg-gradient-to-r from-amber-500 to-rose-500"
-                : "bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500"
+      {/* 20-segment meter */}
+      <div
+        className="flex h-2 items-stretch gap-[2px]"
+        role="progressbar"
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Usage"
+      >
+        {Array.from({ length: 20 }).map((_, i) => (
+          <span
+            key={i}
+            className={`flex-1 rounded-[1px] transition-colors duration-300 ${
+              i < Math.round(percent / 5) ? "bg-ink" : "bg-border"
             }`}
-            style={{ width: `${userSubscription ? 100 : usagePercent}%` }}
           />
-        </div>
-        <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-          {userSubscription ? (
-            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="w-3 h-3" /> Unlimited Active
-            </span>
-          ) : (
-            <>
-              <span>{Number(totalUsage).toLocaleString()} words</span>
-              <span>{maxWords.toLocaleString()} max</span>
-            </>
-          )}
-        </div>
+        ))}
       </div>
 
-      {/* Upgrade CTA */}
       {!userSubscription && (
         <Link
           href="/dashboard/billing"
-          className="group relative z-10 flex items-center justify-between pt-1.5 mt-1 border-t border-slate-200/60 dark:border-slate-800/60 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+          className="inline-block text-[11px] text-ink-muted underline-offset-2 hover:text-ink hover:underline"
         >
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            Get Unlimited Pro
-          </span>
-          <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          Upgrade plan
         </Link>
       )}
     </div>

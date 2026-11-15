@@ -27,23 +27,23 @@ function CopyButton({ aiResponse, className }: CopyButtonProps) {
       type="button"
       aria-label={isCopied ? "Text copied" : "Copy response"}
       className={`
-        inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
+        inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer
         ${
           isCopied
-            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60"
-            : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60"
+            ? "bg-surface-elevated text-accent-cyan border border-border"
+            : "bg-surface-elevated text-ink-muted hover:text-ink border border-border hover:border-border-subtle"
         }
         ${className ?? ""}
       `}
     >
       {isCopied ? (
         <>
-          <Check className="w-3.5 h-3.5 text-emerald-500" />
+          <Check className="w-3.5 h-3.5 text-accent-cyan" strokeWidth={1.5} />
           <span>Copied</span>
         </>
       ) : (
         <>
-          <Copy className="w-3.5 h-3.5 opacity-70" />
+          <Copy className="w-3.5 h-3.5 text-ink-dim" strokeWidth={1.5} />
           <span>Copy</span>
         </>
       )}
@@ -51,4 +51,4 @@ function CopyButton({ aiResponse, className }: CopyButtonProps) {
   );
 }
 
-export default CopyButton;
+export default React.memo(CopyButton);

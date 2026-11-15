@@ -16,23 +16,23 @@ export default function HistoryLoading() {
       </div>
 
       {/* Search Bar Skeleton */}
-      <div className="h-10 w-full max-w-md bg-white dark:bg-[#121418] border border-neutral-200/80 dark:border-neutral-800/80 rounded-xl shadow-xs" />
+      <div className="h-10 w-full max-w-md bg-surface border border-border rounded-full shadow-xs" />
 
       {/* Table Skeleton */}
-      <div className="border border-neutral-200/80 dark:border-neutral-800/80 rounded-2xl bg-white dark:bg-[#121418] shadow-xs divide-y divide-neutral-100 dark:divide-neutral-800/60">
+      <div className="border border-border rounded-2xl bg-surface shadow-xs divide-y divide-border">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
             className="h-14 w-full flex items-center justify-between px-6"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800" />
+              <div className="w-8 h-8 rounded-lg bg-surface-elevated" />
               <div className="space-y-1.5">
-                <div className="h-3.5 w-32 bg-neutral-200 dark:bg-neutral-800 rounded" />
-                <div className="h-2.5 w-48 bg-neutral-100 dark:bg-neutral-800/60 rounded" />
+                <div className="h-3.5 w-32 bg-surface-elevated rounded" />
+                <div className="h-2.5 w-48 bg-surface-elevated rounded" />
               </div>
             </div>
-            <div className="h-7 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-lg" />
+            <div className="h-7 w-16 bg-surface-elevated rounded-full" />
           </div>
         ))}
       </div>

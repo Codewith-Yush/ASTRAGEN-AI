@@ -7,6 +7,16 @@ const envSchema = z.object({
   NEON_BRANCH_ID: z.string().optional(),
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required").optional(),
   GEMINI_MODEL: z.string().optional().default("gemini-3.1-flash-lite"),
+
+  // Fallback providers (optional). A provider is used only if its key is set.
+  GROQ_API_KEY: z.string().optional(),
+  GROQ_MODEL: z.string().optional(), // comma-separated, default: openai/gpt-oss-120b,openai/gpt-oss-20b
+  GROQ_MAX_TOKENS: z.string().optional(), // default: 6000
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_MODEL: z.string().optional(), // comma-separated ":free" ids, default: gemma-4-31b, gemma-4-26b, openrouter/free
+  OPENROUTER_MAX_TOKENS: z.string().optional(), // default: 8192
+  NEXT_PUBLIC_APP_URL: z.string().optional(),
+
   CLERK_SECRET_KEY: z.string().optional(),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().optional(),
   RAZORPAY_KEY_ID: z.string().optional(),
@@ -29,4 +39,3 @@ export const getEnv = () => {
   }
   return process.env;
 };
-

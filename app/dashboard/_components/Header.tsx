@@ -1,20 +1,57 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
-import { Crown, Moon, Sun, Sparkles, Menu, Search, Zap } from "lucide-react";
+import { Moon, Sun, Menu, Search, ChevronRight } from "lucide-react";
 import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext";
 
 interface HeaderProps {
   onOpenMobileMenu?: () => void;
 }
 
+const SECTION_NAMES: Record<string, string> = {
+  history: "History",
+  billing: "Billing",
+  settings: "Settings",
+};
+
+const titleFromSlug = (slug: string) =>
+  decodeURIComponent(slug)
+    .split("-")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
+/** Builds breadcrumb segments from the current dashboard path */
+function useCrumbs(pathname: string) {
+  return useMemo(() => {
+    const crumbs: { label: string; href?: string }[] = [
+      { label: "Studio", href: "/dashboard" },
+    ];
+    const parts = pathname.split("/").filter(Boolean); // ["dashboard", ...]
+    const rest = parts.slice(1);
+
+    if (rest[0] === "content" && rest[1]) {
+      crumbs.push({ label: titleFromSlug(rest[1]) });
+    } else if (rest[0] && SECTION_NAMES[rest[0]]) {
+      crumbs.push({ label: SECTION_NAMES[rest[0]] });
+    }
+
+    // Last crumb is the current page, so it is not a link
+    const last = crumbs.length - 1;
+    return crumbs.map((c, i) => (i === last ? { label: c.label } : c));
+  }, [pathname]);
+}
+
 function Header({ onOpenMobileMenu }: HeaderProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { userSubscription } = useContext(UserSubscriptionContext);
+  const pathname = usePathname();
+  const crumbs = useCrumbs(pathname);
 
   useEffect(() => {
     setMounted(true);
@@ -30,105 +67,108 @@ function Header({ onOpenMobileMenu }: HeaderProps) {
     );
   };
 
+  const iconBtn =
+    "flex h-7 w-7 cursor-pointer items-center justify-center rounded-[6px] text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink";
+
   return (
-    <header className="sticky top-0 z-30 h-16 px-4 md:px-8 border-b border-slate-200/70 dark:border-slate-800/70 bg-white/70 dark:bg-[#07080B]/75 backdrop-blur-xl flex items-center justify-between transition-colors duration-200">
-      {/* Left Side: Mobile Hamburger + Brand / Desktop Status */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        {/* Mobile Hamburger Button */}
+    <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-3 border-b border-border bg-canvas/90 px-3 backdrop-blur-md md:px-5">
+      {/* Left: mobile menu + breadcrumb */}
+      <div className="flex min-w-0 items-center gap-2">
         {onOpenMobileMenu && (
           <button
             type="button"
             onClick={onOpenMobileMenu}
             aria-label="Open navigation menu"
-            className="md:hidden w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-colors bg-white/60 dark:bg-slate-900/60"
+            className={`${iconBtn} md:hidden`}
           >
-            <Menu className="w-4 h-4" />
+            <Menu className="h-4 w-4" strokeWidth={1.5} />
           </button>
         )}
 
-        {/* Mobile Brand Logo */}
-        <Link href="/dashboard" className="flex md:hidden items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-sm">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">
-            Astragen
-          </span>
-        </Link>
-
-        {/* Desktop Active Engine Badge */}
-        <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs">
-          <div className="relative flex items-center justify-center">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="absolute w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-75" />
-          </div>
-          <span className="font-semibold text-slate-800 dark:text-slate-200">Gemini 2.0 Flash</span>
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            Ultra-Speed
-          </span>
-        </div>
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center text-[13px]">
+          {crumbs.map((c, i) => (
+            <React.Fragment key={`${c.label}-${i}`}>
+              {i > 0 && (
+                <ChevronRight
+                  className="mx-1 h-3.5 w-3.5 shrink-0 text-ink-dim"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+              )}
+              {c.href ? (
+                <Link
+                  href={c.href}
+                  className="truncate text-ink-muted transition-colors hover:text-ink"
+                >
+                  {c.label}
+                </Link>
+              ) : (
+                <span className="truncate font-medium text-ink" aria-current="page">
+                  {c.label}
+                </span>
+              )}
+            </React.Fragment>
+          ))}
+        </nav>
       </div>
 
-      {/* Center Search Pill for quick command */}
-      <div className="hidden lg:flex items-center">
+      {/* Right: search, plan, theme, user */}
+      <div className="flex shrink-0 items-center gap-1.5">
         <button
           type="button"
           onClick={triggerGlobalSearch}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/70 hover:bg-slate-200/60 dark:bg-slate-900/50 dark:hover:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800/60 transition-all cursor-pointer shadow-2xs group"
+          aria-label="Search templates"
+          className="hidden h-7 w-56 cursor-pointer items-center gap-2 rounded-[6px] border border-border bg-surface px-2 text-[12px] text-ink-dim transition-colors hover:border-border-subtle hover:text-ink-muted sm:flex"
         >
-          <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
-          <span>Quick find engine...</span>
-          <kbd className="ml-2 px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded border border-slate-200 dark:border-slate-700 shadow-2xs">
+          <Search className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <span className="flex-1 text-left">Search templates</span>
+          <kbd className="rounded-[4px] border border-border px-1 font-mono text-[10px] leading-4 text-ink-dim">
             ⌘K
           </kbd>
         </button>
-      </div>
 
-      {/* Right Side Actions */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Pro Plan CTA / Badge */}
+        <button
+          type="button"
+          onClick={triggerGlobalSearch}
+          aria-label="Search templates"
+          className={`${iconBtn} sm:hidden`}
+        >
+          <Search className="h-4 w-4" strokeWidth={1.5} />
+        </button>
+
         {userSubscription ? (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 text-xs font-semibold shadow-2xs">
-            <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-500 dark:fill-amber-400 dark:text-amber-400" />
-            <span>Pro Active</span>
-          </div>
+          <span className="hidden h-7 items-center rounded-[6px] border border-border px-2 text-[12px] text-ink-muted sm:inline-flex">
+            Pro
+          </span>
         ) : (
           <Link
             href="/dashboard/billing"
-            className="relative group overflow-hidden flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white text-xs font-semibold shadow-sm hover:shadow-indigo-500/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="hidden h-7 items-center rounded-[6px] border border-border px-2.5 text-[12px] text-ink transition-colors hover:border-border-subtle hover:bg-surface-elevated sm:inline-flex"
           >
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-            <Zap className="w-3.5 h-3.5 fill-current" />
-            <span className="relative z-10">Upgrade</span>
-            <span className="relative z-10 text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded-md bg-white/20 backdrop-blur-xs">
-              Pro
-            </span>
+            Upgrade
           </Link>
         )}
 
-        {/* Theme Toggle Button */}
         {mounted && (
           <button
             type="button"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-            className="w-9 h-9 rounded-xl border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-all duration-150 shadow-2xs"
+            aria-label="Toggle color theme"
+            className={iconBtn}
           >
             {theme === "dark" ? (
-              <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
+              <Sun className="h-4 w-4" strokeWidth={1.5} />
             ) : (
-              <Moon className="w-4 h-4 text-slate-700" />
+              <Moon className="h-4 w-4" strokeWidth={1.5} />
             )}
           </button>
         )}
 
-        {/* User Profile */}
-        <div className="pl-1 sm:pl-2 border-l border-slate-200 dark:border-slate-800 flex items-center">
+        <div className="ml-1 flex items-center border-l border-border pl-2.5">
           <UserButton
             appearance={{
               elements: {
-                avatarBox:
-                  "w-8 h-8 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-2xs hover:scale-105 transition-transform",
+                avatarBox: "w-6 h-6 rounded-full",
               },
             }}
           />

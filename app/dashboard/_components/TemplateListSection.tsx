@@ -1,36 +1,11 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Templates from "@/app/(data)/Templates";
+import TEMPLATES, { TEMPLATE } from "@/data/templates-meta";
 import TemplateCard from "./TemplateCard";
-import {
-  RotateCcw,
-  SearchX,
-  LayoutGrid,
-  List,
-  Sparkles,
-  Flame,
-  ArrowRight,
-} from "lucide-react";
+import TemplateIcon from "@/components/TemplateIcon";
+import { RotateCcw, SearchX, LayoutGrid, List, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-
-export interface TEMPLATE {
-  name: string;
-  desc: string;
-  icon: string;
-  category: string;
-  slug: string;
-  aiPrompt: string;
-  form?: FORM[];
-}
-
-export interface FORM {
-  label: string;
-  field: string;
-  name: string;
-  required?: boolean;
-}
 
 const CATEGORIES = [
   "All",
@@ -39,19 +14,8 @@ const CATEGORIES = [
   "Social Media",
   "Coding",
   "Marketing",
-  "Writing",
   "Education",
-  "Language",
-  "Professional",
-  "Academic",
-  "AI Tools",
 ];
-
-const FEATURED_SLUGS = new Set([
-  "blog-content-creator",
-  "youtube-shorts-script-generator",
-  "code-generator",
-]);
 
 function TemplateListSection({ userSearchInput }: { userSearchInput: string }) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -59,9 +23,8 @@ function TemplateListSection({ userSearchInput }: { userSearchInput: string }) {
 
   const query = userSearchInput.trim().toLowerCase();
 
-  // Templates matching the search only (used for per-category counts)
   const searchMatches = useMemo(() => {
-    return (Templates as TEMPLATE[]).filter((item) => {
+    return (TEMPLATES as TEMPLATE[]).filter((item) => {
       if (!query) return true;
       return (
         item.name.toLowerCase().includes(query) ||
@@ -87,50 +50,21 @@ function TemplateListSection({ userSearchInput }: { userSearchInput: string }) {
     );
   }, [searchMatches, selectedCategory]);
 
-  const featuredTemplates = useMemo(() => {
-    return (Templates as TEMPLATE[]).filter((t) => FEATURED_SLUGS.has(t.slug));
-  }, []);
+  const hasFilters = selectedCategory !== "All";
 
-  const hasFilters = selectedCategory !== "All" || query.length > 0;
-  const isInitialAllView = selectedCategory === "All" && !query;
+  const viewBtn = (active: boolean) =>
+    `flex h-6 w-6 items-center justify-center rounded-[5px] transition-colors cursor-pointer ${
+      active ? "bg-surface text-ink shadow-xs" : "text-ink-dim hover:text-ink"
+    }`;
 
   return (
-    <section className="space-y-8 pb-16 pt-2">
-      {/* Featured / Trending Star Engines (Hero Row) */}
-      {isInitialAllView && featuredTemplates.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                <Flame className="w-4 h-4 fill-current" />
-              </div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
-                Featured Star Engines
-              </h2>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                Trending
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              Hand-picked for highest output quality
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {featuredTemplates.map((item) => (
-              <TemplateCard key={`featured-${item.slug}`} {...item} featured={true} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Category Tabs & View Switcher Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-3">
-        {/* Scrollable Tabs */}
+    <section className="space-y-5 pb-16">
+      {/* Tabs + tools */}
+      <div className="flex flex-col gap-3 border-b border-border sm:flex-row sm:items-end sm:justify-between">
         <div
           role="tablist"
           aria-label="Template categories"
-          className="-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] sm:w-auto [&::-webkit-scrollbar]:hidden"
+          className="-mb-px flex w-full items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:w-auto [&::-webkit-scrollbar]:hidden"
         >
           {CATEGORIES.map((category) => {
             const isSelected = selectedCategory === category;
@@ -142,139 +76,120 @@ function TemplateListSection({ userSearchInput }: { userSearchInput: string }) {
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => setSelectedCategory(category)}
-                className={`inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                className={`inline-flex flex-shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-b-2 pb-2.5 pt-1 text-[13px] transition-colors ${
                   isSelected
-                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                    ? "border-ink font-medium text-ink"
+                    : "border-transparent text-ink-muted hover:text-ink"
                 }`}
               >
                 <span>{category}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                    isSelected
-                      ? "bg-slate-700 text-white dark:bg-slate-200 dark:text-slate-900 font-bold"
-                      : "text-slate-400 dark:text-slate-500"
-                  }`}
-                >
-                  {count}
-                </span>
+                <span className="font-mono text-[11px] tabular-nums text-ink-dim">{count}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Right Tools: View Mode Toggle & Reset */}
-        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">
-          <span>
-            <strong className="text-slate-800 dark:text-slate-200 font-semibold">{templateList.length}</strong>{" "}
-            {templateList.length === 1 ? "engine" : "engines"}
-          </span>
-
+        <div className="flex shrink-0 items-center gap-3 self-end pb-2 text-[12px] text-ink-muted sm:self-auto">
           {hasFilters && (
             <button
               type="button"
               onClick={() => setSelectedCategory("All")}
-              className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              className="inline-flex cursor-pointer items-center gap-1 text-ink-muted transition-colors hover:text-ink"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="h-3 w-3" strokeWidth={1.5} />
               <span>Reset</span>
             </button>
           )}
 
-          {/* Grid vs List toggle */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
+          <span className="font-mono tabular-nums">
+            {templateList.length} {templateList.length === 1 ? "template" : "templates"}
+          </span>
+
+          <div className="flex items-center gap-0.5 rounded-[6px] border border-border bg-surface-elevated p-0.5">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
               aria-label="Grid view"
-              className={`p-1.5 rounded-md transition-all ${
-                viewMode === "grid"
-                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs"
-                  : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
+              aria-pressed={viewMode === "grid"}
+              className={viewBtn(viewMode === "grid")}
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
             <button
               type="button"
               onClick={() => setViewMode("list")}
               aria-label="List view"
-              className={`p-1.5 rounded-md transition-all ${
-                viewMode === "list"
-                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs"
-                  : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
+              aria-pressed={viewMode === "list"}
+              className={viewBtn(viewMode === "list")}
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main List Section */}
       {templateList.length > 0 ? (
         viewMode === "grid" ? (
-          /* Grid View */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {templateList.map((item: TEMPLATE) => (
-              <TemplateCard key={item.slug} {...item} />
-            ))}
+          <div className="ed-wrap">
+            <div className="ed-grid">
+              {templateList.map((item: TEMPLATE, i: number) => (
+                <TemplateCard key={item.slug} {...item} index={i} />
+              ))}
+            </div>
           </div>
         ) : (
-          /* Dense List View for productivity */
-          <div className="space-y-2">
-            {templateList.map((item: TEMPLATE) => (
+          <div className="divide-y divide-border overflow-hidden rounded-[8px] border border-border bg-surface animate-in fade-in duration-200">
+            {templateList.map((item: TEMPLATE, i: number) => (
               <Link
                 key={`list-${item.slug}`}
                 href={`/dashboard/content/${item.slug}`}
-                className="group flex items-center justify-between p-3.5 rounded-xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-indigo-500/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 shadow-2xs transition-all"
+                className="group flex items-center justify-between gap-3 px-3.5 py-2.5 transition-colors hover:bg-surface-elevated focus-visible:bg-surface-elevated focus-visible:outline-none"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-1.5 shrink-0 border border-slate-200/60 dark:border-slate-700/60">
-                    <Sparkles className="w-4 h-4 text-indigo-500" />
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="w-6 shrink-0 font-mono text-[11px] tabular-nums text-ink-dim">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-border bg-surface-elevated text-ink-muted transition-colors group-hover:text-ink">
+                    <TemplateIcon slug={item.slug} className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-                      {item.desc}
-                    </p>
+                    <h3 className="truncate text-[13px] font-medium text-ink">{item.name}</h3>
+                    <p className="line-clamp-1 text-[12px] text-ink-muted">{item.desc}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0 pl-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hidden sm:inline-block">
+                <div className="flex shrink-0 items-center gap-3 pl-3">
+                  <span className="hidden font-mono text-[10.5px] uppercase tracking-wider text-ink-dim sm:inline">
                     {item.category}
                   </span>
-                  <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-500 group-hover:text-white text-slate-400 flex items-center justify-center transition-all">
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
+                  <ChevronRight
+                    className="h-4 w-4 text-ink-dim transition duration-150 group-hover:translate-x-0.5 group-hover:text-ink"
+                    strokeWidth={1.5}
+                  />
                 </div>
               </Link>
             ))}
           </div>
         )
       ) : (
-        /* Empty State */
-        <div className="py-16 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-8 space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 flex items-center justify-center mx-auto">
-            <SearchX className="w-6 h-6" />
+        <div className="space-y-4 rounded-[8px] border border-dashed border-border bg-surface px-6 py-14 text-center">
+          <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[6px] border border-border bg-surface-elevated text-ink-muted">
+            <SearchX className="h-4 w-4" strokeWidth={1.5} />
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              No matching engines found
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
-              We couldn&apos;t find any engines matching &quot;{userSearchInput}&quot;. Try exploring other categories or clearing your search.
+          <div className="space-y-1">
+            <h3 className="text-[14px] font-medium text-ink">No matching templates</h3>
+            <p className="mx-auto max-w-sm text-[12.5px] leading-relaxed text-ink-muted">
+              {userSearchInput.trim()
+                ? <>Nothing matches &quot;{userSearchInput}&quot;. Try another keyword or category.</>
+                : <>Nothing in this category yet.</>}
             </p>
           </div>
           <button
             type="button"
             onClick={() => setSelectedCategory("All")}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white hover:opacity-95 shadow-sm shadow-indigo-500/25 transition-opacity cursor-pointer"
+            className="h-8 cursor-pointer rounded-[6px] border border-border bg-surface px-3 text-[13px] text-ink transition-colors hover:border-border-subtle hover:bg-surface-elevated"
           >
-            Clear All Filters
+            Show all templates
           </button>
         </div>
       )}

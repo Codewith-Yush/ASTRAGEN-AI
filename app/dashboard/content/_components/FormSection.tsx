@@ -17,7 +17,6 @@ import {
   Minus,
   Plus,
   RotateCcw,
-  Sparkles,
   Square,
   Wand2,
   X,
@@ -229,12 +228,21 @@ const validate = (form: FormItem[] = [], values: FormValues): FormErrors => {
 };
 
 const baseFieldClasses =
-  "w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-white border transition-all duration-150 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 disabled:opacity-60 disabled:cursor-not-allowed";
+  "w-full px-2.5 py-1.5 rounded-[6px] text-[13px] bg-surface text-ink border transition-colors duration-100 placeholder:text-ink-dim focus:outline-none focus:ring-[3px] focus:ring-action/15 disabled:opacity-60 disabled:cursor-not-allowed";
 
 const fieldStateClasses = (hasError: boolean) =>
   hasError
-    ? "border-rose-400 dark:border-rose-500/80 focus:border-rose-500 focus:ring-rose-500/15"
-    : "border-slate-200/90 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/15";
+    ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/15"
+    : "border-border hover:border-border-subtle focus:border-action";
+
+const chipBase =
+  "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] border text-[12px] transition-colors duration-100 cursor-pointer select-none";
+const chipOn = "bg-surface-elevated border-ink-dim text-ink";
+const chipOff =
+  "bg-surface border-border text-ink-muted hover:text-ink hover:border-border-subtle";
+
+const ghostBtn =
+  "inline-flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[12px] text-ink-muted hover:text-ink hover:bg-surface-elevated transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed";
 
 function FormSection({
   selectedTemplate,
@@ -488,18 +496,18 @@ function FormSection({
               placeholder={item.placeholder || `Enter ${item.label.toLowerCase()}...`}
               autoComplete="off"
               className={`${baseFieldClasses} ${fieldStateClasses(hasError)} ${
-                textVal ? "pr-9" : ""
+                textVal ? "pr-8" : ""
               }`}
             />
             {textVal && (
               <button
                 type="button"
                 onClick={() => clearField(item.name, "")}
-                title="Clear input"
+                title="Clear"
                 aria-label={`Clear ${item.label}`}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-md"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 text-ink-dim hover:text-ink transition-colors rounded-[4px]"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3.5 h-3.5" strokeWidth={1.5} />
               </button>
             )}
           </div>
@@ -512,7 +520,7 @@ function FormSection({
         const length = textVal.length;
         const nearLimit = length > limit * 0.9;
         return (
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <div className="relative">
               <textarea
                 {...common}
@@ -522,30 +530,27 @@ function FormSection({
                 placeholder={item.placeholder || `Enter ${item.label.toLowerCase()}...`}
                 className={`${baseFieldClasses} ${fieldStateClasses(
                   hasError
-                )} resize-y min-h-[105px] leading-relaxed ${textVal ? "pr-9" : ""}`}
+                )} resize-y min-h-[96px] leading-relaxed ${textVal ? "pr-8" : ""}`}
               />
               {textVal && (
                 <button
                   type="button"
                   onClick={() => clearField(item.name, "")}
-                  title="Clear text"
+                  title="Clear"
                   aria-label={`Clear ${item.label}`}
-                  className="absolute right-2.5 top-3 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-md bg-white/70 dark:bg-slate-900/70"
+                  className="absolute right-1.5 top-1.5 p-1 text-ink-dim hover:text-ink transition-colors rounded-[4px] bg-surface/80"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3.5 h-3.5" strokeWidth={1.5} />
                 </button>
               )}
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 px-0.5">
-              <span className="hidden sm:inline">
-                Shortcut: <kbd className="font-mono font-medium">Ctrl/⌘ + Enter</kbd> to generate
-              </span>
+            <div className="flex justify-end text-[11px] text-ink-dim px-0.5">
               <span
-                className={`ml-auto tabular-nums ${
+                className={`tabular-nums font-mono ${
                   length > limit
-                    ? "text-rose-500 font-semibold"
+                    ? "text-rose-500"
                     : nearLimit
-                    ? "text-amber-500 font-medium"
+                    ? "text-amber-500"
                     : ""
                 }`}
                 aria-live="polite"
@@ -575,70 +580,62 @@ function FormSection({
           setValue(item.name, next);
         };
 
-        return (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <input
-                  {...common}
-                  type="number"
-                  min={min}
-                  max={max}
-                  step={step}
-                  value={numVal}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    setValue(item.name, raw === "" ? "" : Number(raw));
-                  }}
-                  placeholder={
-                    item.placeholder ||
-                    (min !== undefined && max !== undefined
-                      ? `${min} – ${max}`
-                      : "Enter number")
-                  }
-                  className={`${baseFieldClasses} ${fieldStateClasses(hasError)} tabular-nums`}
-                />
-              </div>
+        const stepBtn =
+          "h-[30px] w-[30px] inline-flex items-center justify-center rounded-[6px] border border-border bg-surface text-ink-muted hover:text-ink hover:border-border-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors";
 
-              {/* Stepper Buttons for best UX */}
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleStep(-step)}
-                  disabled={min !== undefined && typeof numVal === "number" && numVal <= min}
-                  aria-label={`Decrease ${item.label}`}
-                  className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleStep(step)}
-                  disabled={max !== undefined && typeof numVal === "number" && numVal >= max}
-                  aria-label={`Increase ${item.label}`}
-                  className="p-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+        return (
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5">
+              <input
+                {...common}
+                type="number"
+                min={min}
+                max={max}
+                step={step}
+                value={numVal}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  setValue(item.name, raw === "" ? "" : Number(raw));
+                }}
+                placeholder={
+                  item.placeholder ||
+                  (min !== undefined && max !== undefined
+                    ? `${min} – ${max}`
+                    : "Enter number")
+                }
+                className={`${baseFieldClasses} ${fieldStateClasses(hasError)} tabular-nums font-mono flex-1`}
+              />
+              <button
+                type="button"
+                onClick={() => handleStep(-step)}
+                disabled={min !== undefined && typeof numVal === "number" && numVal <= min}
+                aria-label={`Decrease ${item.label}`}
+                className={stepBtn}
+              >
+                <Minus className="w-3.5 h-3.5" strokeWidth={1.5} />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStep(step)}
+                disabled={max !== undefined && typeof numVal === "number" && numVal >= max}
+                aria-label={`Increase ${item.label}`}
+                className={stepBtn}
+              >
+                <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+              </button>
             </div>
 
             {(min !== undefined || max !== undefined) && (
-              <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
-                <span>
-                  Allowed range:{" "}
-                  <strong className="text-slate-600 dark:text-slate-300">
-                    {min ?? "–"} to {max ?? "–"}
-                  </strong>
-                </span>
-              </div>
+              <p className="text-[11px] text-ink-dim font-mono tabular-nums">
+                range {min ?? "–"} … {max ?? "–"}
+              </p>
             )}
           </div>
         );
       }
 
       case "select": {
-        // Multi-select pill selector
+        // Multi-select chips
         if (item.multiple) {
           const rawArr = Array.isArray(value)
             ? value
@@ -670,39 +667,33 @@ function FormSection({
           };
 
           return (
-            <div
-              className="space-y-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-slate-50/50 dark:bg-slate-900/40 p-3"
-              role="group"
-              aria-label={item.label}
-              id={item.name}
-            >
+            <div className="space-y-2" role="group" aria-label={item.label} id={item.name}>
               {allOptions.length > 3 && (
-                <div className="flex items-center justify-between text-[11px] pb-1 border-b border-slate-200/60 dark:border-slate-800/60">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    {selectedSet.size} of {allOptions.length} selected
+                <div className="flex items-center justify-between text-[11px] text-ink-dim">
+                  <span className="tabular-nums">
+                    {selectedSet.size}/{allOptions.length} selected
                   </span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={selectAll}
-                      className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                      className="text-ink-muted hover:text-ink underline-offset-2 hover:underline"
                     >
-                      Select all
+                      All
                     </button>
-                    <span className="text-slate-300 dark:text-slate-700">·</span>
                     <button
                       type="button"
                       onClick={clearAll}
                       disabled={selectedSet.size === 0}
-                      className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="text-ink-muted hover:text-ink underline-offset-2 hover:underline disabled:opacity-40 disabled:no-underline"
                     >
-                      Clear
+                      None
                     </button>
                   </div>
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2 pt-0.5">
+              <div className="flex flex-wrap gap-1.5">
                 {allOptions.map((opt) => {
                   const isSelected = selectedSet.has(opt.value);
                   return (
@@ -712,24 +703,9 @@ function FormSection({
                       role="checkbox"
                       aria-checked={isSelected}
                       onClick={() => toggleOption(opt.value)}
-                      className={`
-                        inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer select-none
-                        ${
-                          isSelected
-                            ? "bg-indigo-600 text-white shadow-xs shadow-indigo-500/25 ring-2 ring-indigo-500/30"
-                            : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 hover:border-indigo-400 dark:hover:border-indigo-500/60 hover:bg-slate-50 dark:hover:bg-slate-800"
-                        }
-                      `}
+                      className={`${chipBase} ${isSelected ? chipOn : chipOff}`}
                     >
-                      <span
-                        className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${
-                          isSelected
-                            ? "bg-white/20 text-white"
-                            : "border border-slate-300 dark:border-slate-600"
-                        }`}
-                      >
-                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                      </span>
+                      {isSelected && <Check className="w-3 h-3" strokeWidth={2} />}
                       <span>{opt.label}</span>
                     </button>
                   );
@@ -739,7 +715,7 @@ function FormSection({
           );
         }
 
-        // Standard Single Select
+        // Standard single select
         return (
           <div className="relative">
             <select
@@ -748,7 +724,7 @@ function FormSection({
               onChange={(e) => setValue(item.name, e.target.value)}
               className={`${baseFieldClasses} ${fieldStateClasses(
                 hasError
-              )} cursor-pointer appearance-none pr-9`}
+              )} cursor-pointer appearance-none pr-8`}
             >
               <option value="" disabled>
                 {item.placeholder || `Select ${item.label.toLowerCase()}...`}
@@ -762,7 +738,10 @@ function FormSection({
                 );
               })}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+            <ChevronDown
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-dim"
+              strokeWidth={1.5}
+            />
           </div>
         );
       }
@@ -775,7 +754,7 @@ function FormSection({
           <div
             role="radiogroup"
             aria-label={item.label}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5"
+            className="flex flex-wrap gap-1.5"
             id={item.name}
           >
             {allOptions.map((opt) => {
@@ -791,23 +770,14 @@ function FormSection({
                     markTouched(item.name);
                     setValue(item.name, opt.value);
                   }}
-                  className={`
-                    flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer select-none text-left
-                    ${
-                      isSelected
-                        ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500/80 dark:border-indigo-500 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/20"
-                        : "bg-slate-50/80 dark:bg-slate-900/60 border-slate-200/90 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
-                    }
-                  `}
+                  className={`${chipBase} ${isSelected ? chipOn : chipOff}`}
                 >
                   <span
-                    className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
-                      isSelected
-                        ? "border-indigo-600 bg-indigo-600 text-white"
-                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                    className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ${
+                      isSelected ? "border-ink" : "border-border-subtle"
                     }`}
                   >
-                    {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-ink" />}
                   </span>
                   <span>{opt.label}</span>
                 </button>
@@ -822,27 +792,23 @@ function FormSection({
         return (
           <label
             htmlFor={item.name}
-            className="group flex items-start gap-3 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/70 transition-colors cursor-pointer select-none"
+            className="group flex items-start gap-2.5 py-1 cursor-pointer select-none"
           >
-            <div className="relative flex items-center pt-0.5">
-              <input
-                {...common}
-                type="checkbox"
-                checked={isChecked}
-                onChange={(e) => setValue(item.name, e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-800 cursor-pointer"
-              />
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {item.placeholder || item.label}
-              </span>
+            <input
+              {...common}
+              type="checkbox"
+              checked={isChecked}
+              onChange={(e) => setValue(item.name, e.target.checked)}
+              className="mt-0.5 h-3.5 w-3.5 rounded-[4px] border-border-subtle accent-[var(--ink)] cursor-pointer"
+            />
+            <span className="space-y-0.5">
+              <span className="block text-[13px] text-ink">{item.placeholder || item.label}</span>
               {(item.helperText || item.hint) && (
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="block text-[11px] text-ink-dim">
                   {item.helperText || item.hint}
-                </p>
+                </span>
               )}
-            </div>
+            </span>
           </label>
         );
       }
@@ -851,33 +817,33 @@ function FormSection({
         const min = item.min ?? 0;
         const max = item.max ?? 100;
         const current = Number(value ?? min);
-        const percent = max === min ? 0 : Math.max(0, Math.min(100, ((current - min) / (max - min)) * 100));
+        const percent =
+          max === min ? 0 : Math.max(0, Math.min(100, ((current - min) / (max - min)) * 100));
 
         return (
-          <div className="space-y-2 pt-1 px-1">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 dark:text-slate-400">Level:</span>
-              <span className="font-semibold text-xs px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/50 tabular-nums">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <input
+                {...common}
+                type="range"
+                min={min}
+                max={max}
+                step={item.step ?? 1}
+                value={current}
+                onChange={(e) => setValue(item.name, Number(e.target.value))}
+                aria-valuetext={`${current}`}
+                style={{
+                  background: `linear-gradient(to right, var(--ink-muted) ${percent}%, var(--border) ${percent}%)`,
+                }}
+                className="flex-1 h-1 rounded-full cursor-pointer appearance-none accent-[var(--ink)]"
+              />
+              <span className="min-w-[2.25rem] text-right font-mono text-[12px] tabular-nums text-ink">
                 {current}
               </span>
             </div>
-            <input
-              {...common}
-              type="range"
-              min={min}
-              max={max}
-              step={item.step ?? 1}
-              value={current}
-              onChange={(e) => setValue(item.name, Number(e.target.value))}
-              aria-valuetext={`${current}`}
-              style={{
-                background: `linear-gradient(to right, rgb(99 102 241) ${percent}%, rgb(203 213 225 / 0.5) ${percent}%)`,
-              }}
-              className="w-full h-2 rounded-lg cursor-pointer appearance-none accent-indigo-600 dark:accent-indigo-400"
-            />
-            <div className="flex justify-between text-[11px] text-slate-400 dark:text-slate-500 tabular-nums">
-              <span>Min: {min}</span>
-              <span>Max: {max}</span>
+            <div className="flex justify-between text-[11px] text-ink-dim font-mono tabular-nums">
+              <span>{min}</span>
+              <span>{max}</span>
             </div>
           </div>
         );
@@ -894,7 +860,7 @@ function FormSection({
 
   if (!form || form.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#121324] border border-dashed border-slate-300 dark:border-[#1E2038] rounded-2xl p-8 text-center text-sm text-slate-500 dark:text-slate-400 shadow-sm">
+      <div className="flex h-full items-center justify-center bg-surface p-8 text-center text-[13px] text-ink-muted">
         Select a template to configure parameters.
       </div>
     );
@@ -903,85 +869,36 @@ function FormSection({
   const submitDisabled = loading;
 
   return (
-    <div className="bg-white dark:bg-[#121324] border border-slate-200 dark:border-[#1E2038] rounded-2xl p-5 sm:p-6 shadow-sm space-y-6">
-      {/* Header bar */}
-      <div className="border-b border-slate-100 dark:border-[#1E2038] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-            {selectedTemplate?.name ? `${selectedTemplate.name} — Parameters` : "Engine Parameters"}
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Configure prompt parameters for tailored Gemini AI generation.
-          </p>
-        </div>
+    <div className="flex h-full min-h-0 flex-col bg-surface">
+      {/* Panel header */}
+      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+        <h2 className="truncate text-[13px] font-medium text-ink">
+          {selectedTemplate?.name || "Parameters"}
+        </h2>
 
-        {/* Action buttons: Try Sample & Reset */}
-        <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
             onClick={handleFillExample}
             disabled={loading}
-            title="Populate form with a realistic example"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/80 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Fill the form with an example"
+            className={ghostBtn}
           >
-            <Wand2 className="w-3.5 h-3.5" />
-            <span>Try Sample</span>
+            <Wand2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+            <span>Sample</span>
           </button>
-
           <button
             type="button"
             onClick={handleReset}
             disabled={!isDirty || loading}
-            title="Reset form to defaults"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Reset to defaults"
+            className={ghostBtn}
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.5} />
             <span>Reset</span>
           </button>
         </div>
       </div>
-
-      {/* Notice: Sample Loaded feedback toast */}
-      {sampleLoaded && (
-        <div
-          role="status"
-          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/80 text-xs text-indigo-700 dark:text-indigo-300 animate-in fade-in slide-in-from-top-1 duration-200"
-        >
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Loaded realistic sample parameters! Ready to generate.</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSampleLoaded(false)}
-            aria-label="Dismiss notice"
-            className="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded"
-          >
-            <X className="w-3 h-3" />
-          </button>
-        </div>
-      )}
-
-      {/* Notice: Restored Draft notice */}
-      {hasRestoredDraft && !sampleLoaded && (
-        <div
-          role="status"
-          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-xs text-slate-600 dark:text-slate-300"
-        >
-          <div className="flex items-center gap-2">
-            <Info className="w-3.5 h-3.5 text-slate-500" />
-            <span>Restored your unsaved draft.</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setHasRestoredDraft(false)}
-            aria-label="Dismiss draft notice"
-            className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-          >
-            <X className="w-3 h-3" />
-          </button>
-        </div>
-      )}
 
       <form
         ref={formRef}
@@ -989,119 +906,135 @@ function FormSection({
         onKeyDown={handleFormKeyDown}
         noValidate
         aria-busy={loading}
-        className="space-y-5"
+        className="flex min-h-0 flex-1 flex-col"
       >
-        <fieldset disabled={loading} className="space-y-5 border-0 p-0 m-0 min-w-0">
-          {form.map((item) => {
-            const helpText = item.helperText || item.hint;
-            const hasError = Boolean(visibleErrors[item.name]);
-
-            return (
-              <div key={item.name} className="space-y-1.5">
-                {item.field !== "checkbox" && (
-                  <label
-                    htmlFor={item.name}
-                    className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
-                  >
-                    {item.label}
-                    {item.required ? (
-                      <span className="text-rose-500 ml-1" aria-hidden="true">
-                        *
-                      </span>
-                    ) : (
-                      <span className="ml-1.5 font-normal text-slate-400 dark:text-slate-500">
-                        (optional)
-                      </span>
-                    )}
-                  </label>
-                )}
-
-                {renderField(item)}
-
-                {/* Helper text or Hint */}
-                {helpText && !hasError && item.field !== "checkbox" && (
-                  <p
-                    id={`${item.name}-help`}
-                    className="text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-1"
-                  >
-                    <Info className="w-3 h-3 mt-0.5 shrink-0 opacity-70" />
-                    <span>{helpText}</span>
-                  </p>
-                )}
-
-                {/* Error message */}
-                {hasError && (
-                  <p
-                    id={`${item.name}-error`}
-                    role="alert"
-                    className="flex items-center gap-1.5 text-[11px] text-rose-500 font-medium animate-in fade-in slide-in-from-top-0.5 duration-150"
-                  >
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                    <span>{visibleErrors[item.name]}</span>
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </fieldset>
-
-        {/* Submit & Stop Actions */}
-        <div className="pt-2 space-y-2.5">
-          {submitAttempted && errorCount > 0 && (
+        {/* Scrollable fields */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          {sampleLoaded && (
             <div
-              role="alert"
-              className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 text-xs text-rose-600 dark:text-rose-400 font-medium"
+              role="status"
+              className="mb-4 flex items-center justify-between gap-2 rounded-[6px] border border-border bg-surface-elevated px-2.5 py-1.5 text-[12px] text-ink-muted"
             >
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>
-                Please check {errorCount} required {errorCount === 1 ? "field" : "fields"} highlighted above.
-              </span>
+              <span>Sample values loaded.</span>
+              <button
+                type="button"
+                onClick={() => setSampleLoaded(false)}
+                aria-label="Dismiss notice"
+                className="p-0.5 text-ink-dim hover:text-ink"
+              >
+                <X className="w-3 h-3" strokeWidth={1.5} />
+              </button>
             </div>
+          )}
+
+          {hasRestoredDraft && !sampleLoaded && (
+            <div
+              role="status"
+              className="mb-4 flex items-center justify-between gap-2 rounded-[6px] border border-border bg-surface-elevated px-2.5 py-1.5 text-[12px] text-ink-muted"
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-ink-dim" strokeWidth={1.5} />
+                Draft restored.
+              </span>
+              <button
+                type="button"
+                onClick={() => setHasRestoredDraft(false)}
+                aria-label="Dismiss draft notice"
+                className="p-0.5 text-ink-dim hover:text-ink"
+              >
+                <X className="w-3 h-3" strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
+
+          <fieldset disabled={loading} className="m-0 min-w-0 space-y-4 border-0 p-0">
+            {form.map((item) => {
+              const helpText = item.helperText || item.hint;
+              const hasError = Boolean(visibleErrors[item.name]);
+
+              return (
+                <div key={item.name} className="space-y-1.5">
+                  {item.field !== "checkbox" && (
+                    <label
+                      htmlFor={item.name}
+                      className="flex items-baseline gap-1.5 text-[12px] font-medium text-ink"
+                    >
+                      {item.label}
+                      {!item.required && (
+                        <span className="font-normal text-ink-dim">optional</span>
+                      )}
+                    </label>
+                  )}
+
+                  {renderField(item)}
+
+                  {helpText && !hasError && item.field !== "checkbox" && (
+                    <p id={`${item.name}-help`} className="text-[11px] leading-snug text-ink-dim">
+                      {helpText}
+                    </p>
+                  )}
+
+                  {hasError && (
+                    <p
+                      id={`${item.name}-error`}
+                      role="alert"
+                      className="flex items-center gap-1.5 text-[11px] text-rose-500"
+                    >
+                      <AlertCircle className="w-3 h-3 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+                      <span>{visibleErrors[item.name]}</span>
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </fieldset>
+        </div>
+
+        {/* Sticky action bar */}
+        <div className="shrink-0 space-y-2 border-t border-border bg-surface px-4 py-3">
+          {submitAttempted && errorCount > 0 && (
+            <p role="alert" className="flex items-center gap-1.5 text-[12px] text-rose-500">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+              {errorCount} required {errorCount === 1 ? "field needs" : "fields need"} attention.
+            </p>
           )}
 
           <div className="flex items-center gap-2">
             <button
               type="submit"
               disabled={submitDisabled}
-              className={`
-                flex-1 py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200
-                focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/30
-                ${
-                  submitDisabled
-                    ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.008] active:scale-[0.985] cursor-pointer"
-                }
-              `}
+              className={`inline-flex h-8 flex-1 items-center justify-center gap-2 rounded-[6px] text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-action/30 ${
+                submitDisabled
+                  ? "cursor-not-allowed border border-border bg-surface-elevated text-ink-dim"
+                  : "cursor-pointer bg-action text-action-ink hover:bg-action-hover"
+              }`}
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                  <span>Generating with Gemini AI...</span>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                  <span>Generating…</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" aria-hidden="true" />
-                  <span>Generate Content</span>
+                  <span>Generate</span>
+                  <kbd className="rounded-[4px] bg-white/20 px-1 font-mono text-[10px] leading-4">
+                    Ctrl ↵
+                  </kbd>
                 </>
               )}
             </button>
 
-            {/* Stop Generation Button when generating */}
             {loading && onStop && (
               <button
                 type="button"
                 onClick={onStop}
-                title="Stop current generation"
-                className="py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-colors cursor-pointer shrink-0"
+                title="Stop generation"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[6px] border border-border bg-surface px-3 text-[13px] text-ink hover:border-border-subtle hover:bg-surface-elevated transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <Square className="w-3 h-3 fill-current" strokeWidth={1.5} />
                 <span>Stop</span>
               </button>
             )}
-          </div>
-
-          <div className="flex items-center justify-center text-[11px] text-slate-400 dark:text-slate-500">
-            <span>Press <kbd className="font-mono font-medium">Ctrl + Enter</kbd> (or <kbd className="font-mono font-medium">⌘ + Enter</kbd>) to generate</span>
           </div>
         </div>
       </form>

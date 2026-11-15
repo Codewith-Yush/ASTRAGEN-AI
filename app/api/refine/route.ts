@@ -2,45 +2,45 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { streamText } from "@/utils/AiModal";
+import { buildRefineMessages } from "@/lib/ai/refinePrompts";
 import { db } from "@/utils/db";
 import { AIOutput, UserSubscription } from "@/utils/schema";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { eq, sql } from "drizzle-orm";
 
-const refineSchema = z.object({
-  content: z.string().min(1, "Content is required to refine"),
-  action: z.enum([
-    "summarize",
-    "expand",
-    "professional",
-    "casual",
-    "bullet_points",
-    "fix_grammar",
-    "simplify",
-    "custom",
-  ]),
-  customPrompt: z.string().optional(),
-});
+const RATE_LIMIT_MAX = 30; // refinements per user
+const RATE_LIMIT_WINDOW_MS = 60_000; // per minute
+
+const MAX_CONTENT_CHARS = 60_000;
+const MAX_CUSTOM_CHARS = 500;
+
+const refineSchema = z
+  .object({
+    content: z
+      .string()
+      .min(1, "Content is required to refine")
+      .max(MAX_CONTENT_CHARS, `Content is too long to refine (max ${MAX_CONTENT_CHARS.toLocaleString()} characters)`),
+    action: z.enum([
+      "summarize",
+      "expand",
+      "professional",
+      "casual",
+      "bullet_points",
+      "fix_grammar",
+      "simplify",
+      "custom",
+    ]),
+    customPrompt: z.string().max(MAX_CUSTOM_CHARS, `Instruction is too long (max ${MAX_CUSTOM_CHARS} characters)`).optional(),
+  })
+  .refine((d) => d.action !== "custom" || !!d.customPrompt?.trim(), {
+    message: "Please type what you want to change",
+    path: ["customPrompt"],
+  });
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
-
-const INSTRUCTIONS: Record<string, string> = {
-  summarize:
-    "Summarize the following content concisely and powerfully, retaining all key takeaways and core insights:",
-  expand:
-    "Expand upon the following content with additional depth, detailed explanations, actionable examples, and structured sections:",
-  professional:
-    "Rewrite the following content in an authoritative, executive, polished, and professional tone:",
-  casual:
-    "Rewrite the following content in a friendly, conversational, engaging, and accessible tone:",
-  bullet_points:
-    "Transform and restructure the following content into clean, punchy bullet points and actionable takeaways:",
-  fix_grammar:
-    "Proofread, fix all grammar, punctuation, and spelling errors, and enhance readability and sentence flow:",
-  simplify:
-    "Simplify the following content so that it is crystal-clear, jargon-free, and easy for any reader to understand:",
-};
 
 export async function POST(req: NextRequest) {
   let reservedId: number | null = null;
@@ -63,7 +63,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const json = await req.json();
+    // Best-effort throttle per user (cheap check, runs before any DB or AI work)
+    const limit = checkRateLimit(`refine:${email}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: `Too many requests. Please wait ${limit.retryAfterSeconds}s and try again.` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+      );
+    }
+
+    let json: unknown;
+    try {
+      json = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
+    }
+
     const parsed = refineSchema.safeParse(json);
     if (!parsed.success) {
       return NextResponse.json(
@@ -118,24 +133,22 @@ export async function POST(req: NextRequest) {
       reservedId = reserved?.id ?? null;
     }
 
-    const instruction =
-      action === "custom"
-        ? customPrompt?.trim() || "Refine and enhance the following content to improve quality:"
-        : INSTRUCTIONS[action];
+    // Rules + the one edit instruction live in lib/ai/refinePrompts.ts
+    const { system, user: userMessage } = buildRefineMessages(content, action, customPrompt);
+    const fullPrompt = `${system}\n\n${userMessage}`;
 
-    const fullPrompt = `${instruction}
+    // Output is about as long as the input (expand needs more headroom).
+    // Rough rule: 1 token ~ 2-4 characters, so chars/2 is a safe upper bound.
+    const maxOutputTokens = Math.min(16384, Math.max(4096, Math.ceil(content.length / 2)));
 
-Content to refine:
-${content}
-
-Strict Instructions:
-1. Return ONLY the refined content in Markdown formatting.
-2. Do NOT add any preamble, conversational introduction (e.g., "Here is your summary"), or concluding commentary.
-3. Preserve key facts, figures, and technical accuracy while applying the requested transformation.`;
+    // Editing should stay faithful to the text, so keep randomness low.
+    const temperature = action === "fix_grammar" ? 0.2 : 0.5;
 
     // Wait for the FIRST chunk here, so fallback, timeouts and API errors
     // return a proper JSON error instead of a broken stream.
-    const iterator = streamText(fullPrompt)[Symbol.asyncIterator]();
+    const iterator = streamText(fullPrompt, {
+      generationConfig: { temperature, maxOutputTokens },
+    })[Symbol.asyncIterator]();
     let first: IteratorResult<string>;
     try {
       first = await iterator.next();

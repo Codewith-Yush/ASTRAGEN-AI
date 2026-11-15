@@ -2,7 +2,6 @@ import { db } from "@/utils/db";
 import { AIOutput } from "@/utils/schema";
 import { currentUser } from "@clerk/nextjs/server";
 import { desc, eq } from "drizzle-orm";
-import Link from "next/link";
 import React from "react";
 import { Clock3, Sparkles } from "lucide-react";
 import HistoryClient from "./_components/HistoryClient";
@@ -24,13 +23,13 @@ async function History() {
 
   if (!email) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center bg-white dark:bg-[#0E131F] rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
-        <Clock3 className="w-10 h-10 text-slate-400 mb-3" />
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center bg-surface rounded-2xl border border-border">
+        <Clock3 className="w-10 h-10 text-ink-muted mb-3" strokeWidth={1.5} />
+        <h2 className="text-base font-semibold text-ink">
           Sign in required
         </h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Please sign in to view your saved AI generation history.
+        <p className="text-xs text-ink-muted mt-1">
+          Please sign in to view your generation history.
         </p>
       </div>
     );
@@ -61,28 +60,25 @@ async function History() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Content History
+            <h1 className="text-page-title text-ink font-semibold tracking-tight">
+              History
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20">
+            <span className="text-xs tabular-nums font-medium px-2.5 py-0.5 rounded-full bg-surface-elevated text-accent-cyan border border-border">
               {historyList.length} saved
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Browse, search, inspect, and copy all your previously generated AI drafts in one place.
+          <p className="text-xs text-ink-muted mt-1">
+            Search, preview, and re-run previously generated content.
           </p>
         </div>
 
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all self-start sm:self-auto"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>New Generation</span>
-        </Link>
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-ink-dim">
+          <Sparkles className="w-3.5 h-3.5 text-accent-cyan" strokeWidth={1.5} />
+          <span>Saved to Neon PostgreSQL</span>
+        </div>
       </div>
 
-      {/* Interactive History Component with Search & Modal Preview */}
+      {/* Main Interactive Table & Inspection Drawer */}
       <HistoryClient historyList={historyList} />
     </div>
   );

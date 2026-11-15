@@ -12,7 +12,7 @@ export async function GET() {
       desc: t.desc,
       category: t.category,
       icon: t.icon,
-      fieldsCount: t.form.length,
+      fieldsCount: t.form?.length ?? 0,
     }));
 
     return NextResponse.json(

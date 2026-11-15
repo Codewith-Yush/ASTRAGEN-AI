@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Zap, Cpu, Layers, ShieldCheck, Terminal, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Zap, Cpu, Layers, ShieldCheck, Sparkles } from "lucide-react";
 
 const TECH_FEATURES = [
   {
@@ -32,13 +32,13 @@ const TECH_FEATURES = [
 
 export default function TechnologyPage() {
   return (
-    <div className="min-h-screen bg-neutral-50/60 dark:bg-[#090A0C] text-neutral-900 dark:text-neutral-100 py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-canvas text-ink py-12 sm:py-20 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto space-y-12">
         {/* Navigation Breadcrumb */}
         <div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Home</span>
@@ -47,14 +47,14 @@ export default function TechnologyPage() {
 
         {/* Page Header */}
         <header className="text-center space-y-3 max-w-xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-            <Sparkles className="w-3 h-3 text-neutral-500" />
-            <span>Under the Hood</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-elevated border border-border text-[11px] font-medium text-accent-cyan">
+            <Sparkles className="w-3 h-3 text-accent-cyan" />
+            <span>UNDER THE HOOD</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
             Architecture &amp; Core Technology
           </h1>
-          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
             Astragen is built from the ground up for high token throughput, instant reactivity, and reliable serverless scale.
           </p>
         </header>
@@ -64,21 +64,21 @@ export default function TechnologyPage() {
           {TECH_FEATURES.map(({ title, description, icon: Icon, tag }, index) => (
             <div
               key={index}
-              className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#121418] border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors space-y-4"
+              className="p-6 sm:p-7 rounded-2xl bg-surface border border-border shadow-xs hover:border-border-subtle transition-colors space-y-4"
             >
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
+                <div className="w-10 h-10 rounded-xl bg-surface-elevated border border-border flex items-center justify-center text-action">
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-accent-cyan px-2.5 py-0.5 rounded-full bg-surface-elevated border border-border">
                   {tag}
                 </span>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-neutral-900 dark:text-white">
+                <h2 className="text-base font-semibold text-ink">
                   {title}
                 </h2>
-                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
+                <p className="text-xs sm:text-sm text-ink-muted mt-1.5 leading-relaxed">
                   {description}
                 </p>
               </div>
@@ -87,43 +87,43 @@ export default function TechnologyPage() {
         </div>
 
         {/* Live System Specs Bar */}
-        <div className="p-6 rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] shadow-xs">
+        <div className="p-6 rounded-2xl border border-border bg-surface shadow-xs">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
             <div>
-              <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white">100+ t/s</p>
-              <p className="text-[11px] text-neutral-400 mt-0.5">Streaming Throughput</p>
+              <p className="text-xl sm:text-2xl font-semibold text-ink tabular-nums">100+ t/s</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">Streaming Throughput</p>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white">&lt;250ms</p>
-              <p className="text-[11px] text-neutral-400 mt-0.5">Time to First Token</p>
+              <p className="text-xl sm:text-2xl font-semibold text-ink tabular-nums">&lt;250ms</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">Time to First Token</p>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white">50+</p>
-              <p className="text-[11px] text-neutral-400 mt-0.5">Active AI Engines</p>
+              <p className="text-xl sm:text-2xl font-semibold text-ink tabular-nums">50+</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">Active AI Engines</p>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white">99.9%</p>
-              <p className="text-[11px] text-neutral-400 mt-0.5">API Availability</p>
+              <p className="text-xl sm:text-2xl font-semibold text-ink tabular-nums">99.9%</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">API Availability</p>
             </div>
           </div>
         </div>
 
         {/* CTA Section */}
-        <div className="text-center space-y-4 pt-4 border-t border-neutral-200/80 dark:border-neutral-800/80">
-          <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+        <div className="text-center space-y-4 pt-4 border-t border-border">
+          <h2 className="text-lg sm:text-xl font-semibold text-ink">
             Ready to experience the technology?
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/dashboard"
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-all shadow-xs inline-flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-full font-medium text-xs sm:text-sm bg-action text-action-ink hover:bg-action-hover transition-all shadow-xs inline-flex items-center justify-center gap-2"
             >
               <span>Launch Studio</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link
               href="/about/learnmore"
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#121418] text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors inline-flex items-center justify-center"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-full font-medium text-xs sm:text-sm border border-border bg-surface text-ink hover:bg-surface-elevated transition-colors inline-flex items-center justify-center"
             >
               <span>Learn More</span>
             </Link>

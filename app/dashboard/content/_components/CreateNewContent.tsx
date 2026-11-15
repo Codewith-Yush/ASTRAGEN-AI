@@ -10,7 +10,6 @@ import React, {
 } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -18,12 +17,11 @@ import {
   Eye,
   Loader2,
   SlidersHorizontal,
-  Sparkles,
   X,
 } from "lucide-react";
 
 import FormSection from "./FormSection";
-import Templates from "@/app/(data)/Templates";
+import TEMPLATES from "@/data/templates-meta";
 import { TotalUsageContext } from "@/app/(context)/TotalUsageContext";
 import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext";
 import { UpdateCreditUsageContext } from "@/app/(context)/UpdateCreditUsageContext";
@@ -31,9 +29,9 @@ import { UpdateCreditUsageContext } from "@/app/(context)/UpdateCreditUsageConte
 const OutputSection = dynamic(() => import("./OutputSection"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[620px] flex-col items-center justify-center rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/60">
-      <Loader2 className="h-6 w-6 animate-spin text-neutral-500" />
-      <span className="mt-2 text-xs text-neutral-400">Loading output workspace...</span>
+    <div className="flex h-full flex-1 flex-col items-center justify-center gap-2 text-ink-dim">
+      <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+      <span className="text-[12px]">Loading output…</span>
     </div>
   ),
 });
@@ -65,7 +63,7 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
   const loadingRef = useRef(false); // guards against double submits
 
   const selectedTemplate = useMemo(
-    () => (templateSlug ? Templates?.find((item) => item.slug === templateSlug) : undefined),
+    () => (templateSlug ? TEMPLATES?.find((item) => item.slug === templateSlug) : undefined),
     [templateSlug]
   );
 
@@ -208,107 +206,73 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
     [selectedTemplate, totalUsage, userSubscription, setUpdateCreditUsage]
   );
 
+
   const handleEdit = useCallback((newContent: string) => setAiOutput(newContent), []);
+
+  const wordCount = useMemo(() => {
+    const t = aiOutput.trim();
+    return t ? t.split(/\s+/).length : 0;
+  }, [aiOutput]);
 
   // ---- Template not found -------------------------------------------------
   if (!selectedTemplate) {
     return (
-      <div className="mx-auto max-w-md space-y-4 rounded-2xl border border-neutral-200/80 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900/60">
-        <AlertCircle className="mx-auto h-8 w-8 text-neutral-400" aria-hidden="true" />
+      <div className="mx-auto mt-16 max-w-sm space-y-4 rounded-[8px] border border-border bg-surface p-6 text-center">
+        <AlertCircle className="mx-auto h-5 w-5 text-ink-dim" strokeWidth={1.5} aria-hidden="true" />
         <div className="space-y-1">
-          <h1 className="text-base font-semibold text-neutral-900 dark:text-white">
-            Template not found
-          </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <h1 className="text-[14px] font-medium text-ink">Template not found</h1>
+          <p className="text-[13px] text-ink-muted">
             We couldn&apos;t find the template you&apos;re looking for.
           </p>
         </div>
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[6px] bg-action px-3 text-[13px] font-medium text-action-ink transition-colors hover:bg-action-hover"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to dashboard
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.5} />
+          Back to studio
         </Link>
       </div>
     );
   }
 
   const tabClasses = (active: boolean) =>
-    `flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+    `flex h-full flex-1 items-center justify-center gap-1.5 text-[12px] transition-colors ${
       active
-        ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs"
-        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+        ? "border-b-2 border-ink font-medium text-ink"
+        : "border-b-2 border-transparent text-ink-muted hover:text-ink"
     }`;
 
   const quotaError = error?.toLowerCase().includes("quota");
 
+  const statusLabel = loading ? "Generating" : error ? "Error" : aiOutput ? "Done" : "Ready";
+
   return (
-    <div className="space-y-5 pb-12">
-      {/* Header / breadcrumb */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="flex-shrink-0 rounded-xl border border-neutral-200/80 bg-white p-2 text-neutral-500 shadow-xs transition-colors hover:bg-neutral-50 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
-            aria-label="Back to dashboard"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white p-2 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
-              <Image
-                src={selectedTemplate.icon}
-                alt=""
-                width={24}
-                height={24}
-                className="object-contain"
-              />
-            </div>
-            <div className="min-w-0">
-              <h1 className="line-clamp-1 text-base font-bold tracking-tight text-neutral-900 dark:text-white sm:text-lg md:text-xl">
-                {selectedTemplate.name}
-              </h1>
-              <p className="line-clamp-1 text-xs text-neutral-500 dark:text-neutral-400">
-                {selectedTemplate.desc}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden items-center gap-2 text-xs text-neutral-400 dark:text-neutral-500 sm:flex">
-          <Sparkles className="h-3.5 w-3.5 text-neutral-500" aria-hidden="true" />
-          <span>Real-time Gemini Streaming</span>
-        </div>
-      </div>
-
-      {/* Inline error banner (replaces blocking alert() dialogs) */}
+    <div className="flex h-[calc(100dvh-3rem)] min-h-[520px] flex-col bg-surface">
+      {/* Inline error banner */}
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+          className="flex shrink-0 items-center gap-2.5 border-b border-rose-500/30 bg-rose-500/10 px-4 py-2 text-[13px] text-rose-600 dark:text-rose-300"
         >
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-          <div className="flex-1 space-y-2">
-            <p>{error}</p>
-            {quotaError && (
-              <button
-                type="button"
-                onClick={() => router.push("/dashboard/billing")}
-                className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
-              >
-                Upgrade to Pro
-              </button>
-            )}
-          </div>
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+          <p className="flex-1">{error}</p>
+          {quotaError && (
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard/billing")}
+              className="h-6 rounded-[6px] bg-rose-600 px-2.5 text-[12px] font-medium text-white transition-colors hover:bg-rose-700"
+            >
+              Upgrade
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setError(null)}
             aria-label="Dismiss error"
-            className="rounded-md p-1 transition-colors hover:bg-rose-100 dark:hover:bg-rose-500/20"
+            className="rounded-[4px] p-1 transition-colors hover:bg-rose-500/20"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" strokeWidth={1.5} />
           </button>
         </div>
       )}
@@ -317,7 +281,7 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
       <div
         role="tablist"
         aria-label="Workspace view"
-        className="flex rounded-xl border border-neutral-200/60 bg-neutral-100 p-1 dark:border-neutral-700/60 dark:bg-neutral-800/80 lg:hidden"
+        className="flex h-10 shrink-0 border-b border-border lg:hidden"
       >
         <button
           type="button"
@@ -327,8 +291,8 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
           onClick={() => setMobileTab("form")}
           className={tabClasses(mobileTab === "form")}
         >
-          <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>Configuration</span>
+          <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+          <span>Input</span>
         </button>
         <button
           type="button"
@@ -338,29 +302,25 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
           onClick={() => setMobileTab("output")}
           className={tabClasses(mobileTab === "output")}
         >
-          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>AI Output</span>
+          <Eye className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+          <span>Output</span>
           {loading && (
-            <span className="relative flex h-2 w-2" aria-label="Generating">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-action" aria-label="Generating" />
           )}
           {aiOutput && !loading && (
-            <span
-              className="inline-block h-1.5 w-1.5 rounded-full bg-neutral-900 dark:bg-white"
-              aria-label="Output ready"
-            />
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-dim" aria-label="Output ready" />
           )}
         </button>
       </div>
 
-      {/* Form (left) + Output (right) */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+      {/* Workbench: form | output in one frame */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(340px,400px)_minmax(0,1fr)]">
         <div
           id="panel-form"
           role="tabpanel"
-          className={`lg:col-span-5 ${mobileTab === "form" ? "block" : "hidden lg:block"}`}
+          className={`min-h-0 flex-col border-border lg:flex lg:border-r ${
+            mobileTab === "form" ? "flex" : "hidden"
+          }`}
         >
           <FormSection
             selectedTemplate={selectedTemplate as any}
@@ -373,7 +333,9 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
         <div
           id="panel-output"
           role="tabpanel"
-          className={`lg:col-span-7 ${mobileTab === "output" ? "block" : "hidden lg:block"}`}
+          className={`min-h-0 min-w-0 flex-col bg-canvas lg:flex ${
+            mobileTab === "output" ? "flex" : "hidden"
+          }`}
         >
           <OutputSection
             aiOutput={aiOutput}
@@ -386,6 +348,32 @@ export default function CreateNewContent({ templateSlug: propSlug }: CreateNewCo
             theme="light"
           />
         </div>
+      </div>
+
+      {/* Status line */}
+      <div
+        className="flex h-7 shrink-0 items-center justify-between border-t border-border bg-surface px-4 font-mono text-[11px] text-ink-dim"
+        role="status"
+        aria-live="polite"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              loading
+                ? "animate-pulse bg-action"
+                : error
+                ? "bg-rose-500"
+                : aiOutput
+                ? "bg-emerald-500"
+                : "bg-ink-dim"
+            }`}
+          />
+          {statusLabel}
+        </span>
+        <span className="tabular-nums">
+          {wordCount > 0 ? `${wordCount.toLocaleString()} words · ` : ""}
+          Gemini
+        </span>
       </div>
     </div>
   );

@@ -9,80 +9,111 @@ import {
   CreditCard,
   Settings2,
   X,
-  Sparkles,
   ArrowUpRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   LifeBuoy,
-  Globe,
   PlaySquare,
-  Flame,
+  Globe,
 } from "lucide-react";
 import UsageTrack from "./UsageTrack";
 
 const MENU_LIST = [
-  { id: "home", name: "Studio Home", icon: LayoutGrid, path: "/dashboard", badge: "Live" },
-  { id: "history", name: "Content History", icon: Clock3, path: "/dashboard/history" },
-  { id: "billing", name: "Subscription", icon: CreditCard, path: "/dashboard/billing", badge: "Upgrade" },
+  { id: "home", name: "Studio", icon: LayoutGrid, path: "/dashboard" },
+  { id: "history", name: "History", icon: Clock3, path: "/dashboard/history" },
+  { id: "billing", name: "Billing", icon: CreditCard, path: "/dashboard/billing" },
   { id: "settings", name: "Settings", icon: Settings2, path: "/dashboard/settings" },
 ];
 
 const QUICK_LINKS = [
-  { id: "landing", name: "Landing Showcase", icon: Globe, path: "/" },
-  { id: "demo", name: "Interactive Demo", icon: PlaySquare, path: "/demo" },
-  { id: "help", name: "Help & Support", icon: LifeBuoy, path: "/contact" },
+  { id: "landing", name: "Overview", icon: Globe, path: "/" },
+  { id: "demo", name: "Demo", icon: PlaySquare, path: "/demo" },
+  { id: "help", name: "Support", icon: LifeBuoy, path: "/contact" },
 ];
 
 interface SideNavProps {
   mobileOpen?: boolean;
   onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
+
+const itemBase =
+  "group relative flex h-8 items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-action/40";
+
+/** Small mono section label */
+const sectionLabel =
+  "font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-ink-dim";
 
 function NavContent({
   pathname,
   onNavigate,
+  collapsed = false,
+  onToggleCollapse,
 }: {
   pathname: string;
   onNavigate?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col justify-between p-4 overflow-y-auto">
-      <div className="space-y-6">
+    <div className="flex h-full flex-col justify-between overflow-y-auto p-2">
+      <div className="space-y-5">
         {/* Brand */}
-        <Link
-          href="/dashboard"
-          onClick={onNavigate}
-          className="group flex items-center gap-3 px-2 py-1.5 transition-all"
+        <div
+          className={`flex h-10 items-center ${
+            collapsed ? "justify-center" : "justify-between pl-2.5 pr-1"
+          }`}
         >
-          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/25 transition-transform duration-200 group-hover:scale-105">
-            <Sparkles className="w-4.5 h-4.5" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-white dark:ring-[#07080B]" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">
-                Astragen
-              </span>
-              <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                PRO
-              </span>
-            </div>
-            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
-              <span>Next-Gen Content Studio</span>
-            </p>
-          </div>
-        </Link>
-
-        {/* Main Navigation */}
-        <nav aria-label="Main" className="space-y-1">
-          <div className="px-2.5 pb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Workspace
+          <Link
+            href="/dashboard"
+            onClick={onNavigate}
+            className={`flex min-w-0 items-center gap-2 ${collapsed ? "hidden" : ""}`}
+            title="Astragen AI"
+          >
+            <span
+              aria-hidden="true"
+              className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-ink font-mono text-[12px] font-bold leading-none text-canvas"
+            >
+              A
             </span>
-          </div>
+            <span className="truncate text-[13px] font-semibold tracking-tight text-ink">
+              Astragen
+            </span>
+            <span className="rounded-[4px] border border-border px-1 font-mono text-[9px] leading-[14px] text-ink-dim">
+              AI
+            </span>
+          </Link>
 
-          {MENU_LIST.map((menu) => {
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="hidden h-7 w-7 cursor-pointer items-center justify-center rounded-[6px] text-ink-dim transition-colors hover:bg-surface-elevated hover:text-ink md:flex"
+            >
+              {collapsed ? (
+                <PanelLeftOpen className="h-4 w-4" strokeWidth={1.5} />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" strokeWidth={1.5} />
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Workspace */}
+        <nav aria-label="Main" className="space-y-0.5">
+          {!collapsed && (
+            <div className="px-2.5 pb-1.5">
+              <span className={sectionLabel}>Workspace</span>
+            </div>
+          )}
+
+          {MENU_LIST.map((menu, i) => {
             const isActive =
               menu.path === "/dashboard"
-                ? pathname === "/dashboard"
+                ? pathname === "/dashboard" || pathname.startsWith("/dashboard/content")
                 : pathname.startsWith(menu.path);
             const Icon = menu.icon;
 
@@ -91,42 +122,40 @@ function NavContent({
                 key={menu.id}
                 href={menu.path}
                 onClick={onNavigate}
+                title={collapsed ? menu.name : undefined}
                 aria-current={isActive ? "page" : undefined}
-                className={`group relative flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-150 ${
+                className={`${itemBase} ${collapsed ? "justify-center px-0" : ""} ${
                   isActive
-                    ? "bg-gradient-to-r from-indigo-500/10 via-blue-500/10 to-transparent dark:from-indigo-500/20 dark:via-blue-500/10 dark:to-transparent text-indigo-600 dark:text-indigo-400 font-semibold shadow-2xs border-l-[3px] border-indigo-600 dark:border-indigo-400"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40"
+                    ? "bg-surface-elevated font-medium text-ink before:absolute before:bottom-1.5 before:left-0 before:top-1.5 before:w-[2px] before:rounded-full before:bg-ink"
+                    : "text-ink-muted hover:bg-surface-elevated hover:text-ink"
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <Icon
-                    className={`h-4.5 w-4.5 transition-colors ${
-                      isActive
-                        ? "text-indigo-600 dark:text-indigo-400"
-                        : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
-                    }`}
-                    strokeWidth={isActive ? 2.2 : 1.8}
-                  />
-                  <span className="truncate">{menu.name}</span>
-                </div>
-
-                {menu.badge && !isActive && menu.id === "billing" && (
-                  <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    {menu.badge}
-                  </span>
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-colors ${
+                    isActive ? "text-ink" : "text-ink-dim group-hover:text-ink"
+                  }`}
+                  strokeWidth={1.5}
+                />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 truncate">{menu.name}</span>
+                    <span className="font-mono text-[10px] tabular-nums text-ink-dim">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </>
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Quick Links */}
-        <nav aria-label="Explore" className="space-y-1 pt-1">
-          <div className="px-2.5 pb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Resources & Suite
-            </span>
-          </div>
+        {/* Resources */}
+        <nav aria-label="Explore" className="space-y-0.5">
+          {!collapsed && (
+            <div className="px-2.5 pb-1.5">
+              <span className={sectionLabel}>Resources</span>
+            </div>
+          )}
 
           {QUICK_LINKS.map((link) => {
             const Icon = link.icon;
@@ -135,28 +164,44 @@ function NavContent({
                 key={link.id}
                 href={link.path}
                 onClick={onNavigate}
-                className="group flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-all"
+                title={collapsed ? link.name : undefined}
+                className={`${itemBase} ${
+                  collapsed ? "justify-center px-0" : ""
+                } text-ink-muted hover:bg-surface-elevated hover:text-ink`}
               >
-                <div className="flex items-center gap-2.5">
-                  <Icon className="h-4 w-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300" />
-                  <span>{link.name}</span>
-                </div>
-                <ArrowUpRight className="h-3.5 w-3.5 opacity-0 -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0 text-slate-400" />
+                <Icon
+                  className="h-4 w-4 shrink-0 text-ink-dim transition-colors group-hover:text-ink"
+                  strokeWidth={1.5}
+                />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 truncate">{link.name}</span>
+                    <ArrowUpRight
+                      className="h-3.5 w-3.5 -translate-x-0.5 translate-y-0.5 text-ink-dim opacity-0 transition duration-150 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
+                      strokeWidth={1.5}
+                      aria-hidden="true"
+                    />
+                  </>
+                )}
               </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Usage Tracker Widget */}
-      <div className="mt-6 pt-2">
-        <UsageTrack />
+      <div className="border-t border-border pt-3 pb-1">
+        <UsageTrack collapsed={collapsed} />
       </div>
     </div>
   );
 }
 
-function SideNav({ mobileOpen = false, onClose }: SideNavProps) {
+function SideNav({
+  mobileOpen = false,
+  onClose,
+  collapsed = false,
+  onToggleCollapse,
+}: SideNavProps) {
   const pathname = usePathname();
 
   const onCloseRef = useRef(onClose);
@@ -192,30 +237,36 @@ function SideNav({ mobileOpen = false, onClose }: SideNavProps) {
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop sidebar (widths must match the md:pl-* offset in dashboard/layout.tsx) */}
       <aside
         aria-label="Sidebar"
-        className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#07080B]/85 backdrop-blur-xl transition-colors duration-200 md:flex"
+        className={`fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-border bg-surface transition-[width] duration-150 md:flex ${
+          collapsed ? "w-14" : "w-[232px]"
+        }`}
       >
-        <NavContent pathname={pathname} />
+        <NavContent
+          pathname={pathname}
+          collapsed={collapsed}
+          onToggleCollapse={onToggleCollapse}
+        />
       </aside>
 
-      {/* Mobile Backdrop */}
+      {/* Mobile backdrop */}
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity duration-200 md:hidden ${
+        className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-150 md:hidden ${
           mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
 
-      {/* Mobile Drawer */}
+      {/* Mobile drawer */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
         aria-hidden={!mobileOpen}
-        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] overflow-y-auto border-r border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#07080B]/95 backdrop-blur-2xl shadow-2xl transition-transform duration-200 ease-out md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] overflow-y-auto border-r border-border bg-surface transition-transform duration-150 ease-out md:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -223,9 +274,9 @@ function SideNav({ mobileOpen = false, onClose }: SideNavProps) {
           type="button"
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="absolute right-3.5 top-3.5 z-10 w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors bg-white/80 dark:bg-slate-900/80"
+          className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-[6px] text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" strokeWidth={1.5} />
         </button>
         <NavContent pathname={pathname} onNavigate={onClose} />
       </aside>

@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useDeferredValue,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -18,6 +19,7 @@ import {
   Check,
   CheckSquare,
   ChevronDown,
+  ChevronUp,
   Code2,
   Copy,
   Download,
@@ -122,16 +124,16 @@ const MODES: { id: ViewMode; label: string; editing?: boolean }[] = [
   { id: "raw", label: "Raw" },
 ];
 
-/* Design tokens: warm paper palette with a terracotta accent. */
-const ACCENT = "#c96442";
+/* Design tokens: Builder.io action system */
+const ACCENT = "var(--action)";
 
 const iconBtn =
-  "inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#6b6a63] transition-all duration-150 hover:bg-[#f0eee6] hover:text-[#141413] active:scale-95 disabled:pointer-events-none disabled:opacity-40 dark:text-[#9c9a92] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c96442]/40";
+  "inline-flex h-8 w-8 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink active:scale-95 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action/40";
 
 const textBtn =
-  "inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 font-sans text-[13px] font-medium text-[#55534b] transition-all duration-150 hover:bg-[#f0eee6] hover:text-[#141413] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 dark:text-[#c2c0b6] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c96442]/40";
+  "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action/40";
 
-const divider = "border-[#e8e6dc] dark:border-[#3d3d3a]";
+const divider = "border-border";
 
 /* -------------------------------------------------------------------------- */
 /*                                  Helpers                                   */
@@ -162,6 +164,99 @@ function splitForSpeech(text: string, max = 220): string[] {
   return chunks;
 }
 
+/* ------------------- In-page find (CSS Custom Highlight API) ------------------- */
+
+const FIND_ALL = "astragen-find";
+const FIND_CURRENT = "astragen-find-current";
+const FIND_BLOCKS = "p,li,h1,h2,h3,h4,h5,h6,td,th,pre,blockquote,div";
+const FIND_MAX = 2000;
+
+/** Chrome, Edge, Safari 17.2+ and Firefox 140+. Older browsers fall back to <mark>. */
+function supportsFindHighlight(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof (window as any).Highlight !== "undefined" &&
+    typeof CSS !== "undefined" &&
+    !!(CSS as any).highlights
+  );
+}
+
+/**
+ * Returns a DOM Range for every case-insensitive match of the query under root.
+ * Text nodes inside one block (e.g. the token spans of a highlighted code line)
+ * are joined first, so a phrase that crosses several spans is still found.
+ */
+function collectMatchRanges(root: HTMLElement, query: string): Range[] {
+  const q = query.toLowerCase();
+  if (!q) return [];
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!node.nodeValue || !parent || parent.closest("textarea,script,style")) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  const groups: Text[][] = [];
+  let lastBlock: Element | null = null;
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const block = (n.parentElement as Element).closest(FIND_BLOCKS);
+    if (!groups.length || block !== lastBlock) {
+      groups.push([]);
+      lastBlock = block;
+    }
+    groups[groups.length - 1].push(n as Text);
+  }
+
+  const ranges: Range[] = [];
+  for (const nodes of groups) {
+    const starts: number[] = [];
+    let full = "";
+    for (const n of nodes) {
+      starts.push(full.length);
+      full += n.nodeValue;
+    }
+    const lower = full.toLowerCase();
+    const locate = (pos: number, isEnd: boolean) => {
+      for (let k = nodes.length - 1; k >= 0; k--) {
+        const len = (nodes[k].nodeValue as string).length;
+        const inside = isEnd
+          ? starts[k] < pos && pos <= starts[k] + len
+          : starts[k] <= pos && pos < starts[k] + len;
+        if (inside) return { node: nodes[k], offset: pos - starts[k] };
+      }
+      return null;
+    };
+    for (let from = 0; ; ) {
+      const i = lower.indexOf(q, from);
+      if (i === -1) break;
+      const a = locate(i, false);
+      const b = locate(i + q.length, true);
+      if (a && b) {
+        const r = document.createRange();
+        r.setStart(a.node, a.offset);
+        r.setEnd(b.node, b.offset);
+        ranges.push(r);
+        if (ranges.length >= FIND_MAX) return ranges;
+      }
+      from = i + q.length;
+    }
+  }
+  return ranges;
+}
+
+function scrollRangeIntoView(root: HTMLElement, range: Range) {
+  const r = range.getBoundingClientRect();
+  const c = root.getBoundingClientRect();
+  root.scrollTo({
+    top: root.scrollTop + (r.top - c.top) - root.clientHeight / 2,
+    behavior: "smooth",
+  });
+}
+
 /** Wraps search matches in <mark>, recursing through host elements. */
 function highlight(children: React.ReactNode, re: RegExp | null): React.ReactNode {
   if (!re) return children;
@@ -173,7 +268,7 @@ function highlight(children: React.ReactNode, re: RegExp | null): React.ReactNod
         i % 2 === 1 ? (
           <mark
             key={i}
-            className="rounded-[3px] bg-[#f5d9a0] px-0.5 text-[#141413] ring-1 ring-[#e8b95c]/60 dark:bg-[#e8b95c]/80"
+            className="rounded-[3px] bg-action/20 px-0.5 text-ink ring-1 ring-action/40"
           >
             {part}
           </mark>
@@ -230,7 +325,7 @@ const LazyHighlighter = lazy(async () => {
 
 function PlainCode({ value }: { value: string }) {
   return (
-    <pre className="m-0 px-5 py-4 font-mono text-[13px] leading-[1.7] text-[#d6d3c9]">
+    <pre className="m-0 px-5 py-4 font-mono text-[13px] leading-[1.7] text-zinc-300">
       {value}
     </pre>
   );
@@ -267,14 +362,14 @@ const CodeBlock = memo(function CodeBlock({
   };
 
   return (
-    <div className="not-prose group/code my-6 overflow-hidden rounded-xl border border-[#2f2e2b] bg-[#1f1e1d] shadow-[0_1px_2px_rgba(20,20,19,0.08)]">
-      <div className="flex h-10 items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 font-sans text-[11px] text-[#9c9a92]">
-        <span className="font-mono uppercase tracking-[0.12em]">{language || "text"}</span>
+    <div className="not-prose group/code my-6 overflow-hidden rounded-xl border border-border bg-[#151515] shadow-xs">
+      <div className="flex h-10 items-center justify-between border-b border-border bg-[#1A1A1A] px-4 font-sans text-xs text-ink-muted">
+        <span className="font-mono text-[11px] uppercase tracking-wider">{language || "text"}</span>
         <button
           type="button"
           onClick={copy}
           aria-label="Copy code"
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-white/10 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-ink-muted hover:text-ink bg-surface-elevated border border-border hover:border-border-subtle transition-colors"
         >
           {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
           <span>{copied ? "Copied" : "Copy"}</span>
@@ -297,9 +392,8 @@ const CodeBlock = memo(function CodeBlock({
 /*                                 Markdown                                   */
 /* -------------------------------------------------------------------------- */
 
-const HEAD =
-  "font-serif font-medium tracking-[-0.015em] text-[#141413] first:mt-0 dark:text-[#faf9f5]";
-const BODY = "text-[#3d3929] dark:text-[#d6d3c9]";
+const HEAD = "font-sans font-semibold tracking-tight text-ink first:mt-0";
+const BODY = "font-sans text-ink";
 
 /** Builds a styled element that also highlights search matches. */
 function el(tag: string, base: string, re: RegExp | null) {
@@ -318,15 +412,15 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
     h3: el("h3", `${HEAD} mb-2 mt-8 text-[1.17em] leading-[1.35]`, re),
     h4: el("h4", `${HEAD} mb-2 mt-6 text-[1em]`, re),
     p: el("p", `my-[1.1em] leading-[1.8] ${BODY}`, re),
-    strong: el("strong", "font-semibold text-[#141413] dark:text-[#faf9f5]", re),
-    em: el("em", "italic", re),
+    strong: el("strong", "font-semibold text-ink", re),
+    em: el("em", "italic text-ink", re),
     ul: ({ node, className, children, ...props }: any) => (
       <ul
         {...props}
         className={`my-5 space-y-2 ${
           String(className).includes("contains-task-list")
             ? "list-none pl-0"
-            : "list-disc pl-6 marker:text-[#c96442]/70"
+            : "list-disc pl-6 marker:text-action"
         }`}
       >
         {children}
@@ -335,7 +429,7 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
     ol: ({ node, children, ...props }: any) => (
       <ol
         {...props}
-        className="my-5 list-decimal space-y-2 pl-6 marker:font-sans marker:text-sm marker:font-medium marker:text-[#c96442]/80"
+        className="my-5 list-decimal space-y-2 pl-6 marker:font-sans marker:text-sm marker:font-medium marker:text-action"
       >
         {children}
       </ol>
@@ -344,18 +438,18 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
     blockquote: ({ node, children, ...props }: any) => (
       <blockquote
         {...props}
-        className="my-7 rounded-r-lg border-l-[3px] border-[#c96442]/60 bg-[#f5f4ed] py-1 pl-5 pr-4 italic text-[#55534b] dark:bg-[#2b2a27] dark:text-[#b8b6ac] [&>p]:my-2"
+        className="my-7 rounded-r-lg border-l-[3px] border-action bg-surface-elevated py-1 pl-5 pr-4 italic text-ink-muted [&>p]:my-2"
       >
         {children}
       </blockquote>
     ),
     hr: () => (
-      <hr className="my-12 h-px border-0 bg-gradient-to-r from-transparent via-[#d6d3c9] to-transparent dark:via-[#4a4945]" />
+      <hr className="my-12 h-px border-0 bg-border" />
     ),
     input: ({ node, ...props }: any) => (
       <input
         {...props}
-        className="mr-2.5 h-3.5 w-3.5 translate-y-[1px] rounded accent-[#c96442]"
+        className="mr-2.5 h-3.5 w-3.5 translate-y-[1px] rounded accent-action"
       />
     ),
     pre: ({ children }: any) => <>{children}</>,
@@ -368,7 +462,7 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
       }
       return (
         <code
-          className="rounded-md border border-[#e8e6dc] bg-[#f5f4ed] px-1.5 py-0.5 font-mono text-[0.84em] text-[#a8452a] dark:border-[#3d3d3a] dark:bg-[#2b2a27] dark:text-[#e8967a]"
+          className="rounded-md border border-border bg-surface-elevated px-1.5 py-0.5 font-mono text-[0.84em] text-action"
           {...props}
         >
           {children}
@@ -376,25 +470,25 @@ function buildComponents(re: RegExp | null, streaming: boolean): any {
       );
     },
     table: ({ node, ...props }: any) => (
-      <div className="my-7 overflow-x-auto rounded-xl border border-[#e8e6dc] bg-white shadow-[0_1px_2px_rgba(20,20,19,0.04)] dark:border-[#3d3d3a] dark:bg-[#2b2a27]">
+      <div className="my-7 overflow-x-auto rounded-xl border border-border bg-surface shadow-xs">
         <table
-          className="min-w-full divide-y divide-[#e8e6dc] font-sans text-sm dark:divide-[#3d3d3a]"
+          className="min-w-full divide-y divide-border font-sans text-sm"
           {...props}
         />
       </div>
     ),
     th: el(
       "th",
-      "bg-[#f5f4ed] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b6a63] dark:bg-[#33322f] dark:text-[#9c9a92]",
+      "bg-surface-elevated px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-muted",
       re
     ),
-    td: el("td", `border-t border-[#efede4] px-4 py-3 dark:border-[#3a3936] ${BODY}`, re),
+    td: el("td", `border-t border-border px-4 py-3 ${BODY}`, re),
     a: ({ node, href, children, ...props }: any) => (
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-medium text-[#a8452a] underline decoration-[#c96442]/40 decoration-[1.5px] underline-offset-[3px] transition-colors hover:decoration-[#c96442] dark:text-[#e8967a]"
+        className="font-medium text-action underline decoration-action/40 decoration-[1.5px] underline-offset-[3px] transition-colors hover:decoration-action"
         {...props}
       >
         {children}
@@ -450,7 +544,7 @@ function IconButton({
       disabled={disabled}
       onClick={onClick}
       className={`${iconBtn} ${
-        active ? "bg-[#f0eee6] !text-[#c96442] dark:bg-[#3a3936] dark:!text-[#e8967a]" : ""
+        active ? "bg-surface-elevated !text-action" : ""
       }`}
     >
       {children}
@@ -475,6 +569,24 @@ function DropMenu({
   accent?: boolean;
   children: React.ReactNode;
 }) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [alignLeft, setAlignLeft] = useState(false);
+
+  // The menu opens right-aligned. If that would push it past the left edge of the
+  // output panel (which clips overflow), flip it to open left-aligned instead.
+  useLayoutEffect(() => {
+    if (!open) {
+      setAlignLeft(false);
+      return;
+    }
+    const menu = menuRef.current;
+    const root = menu?.closest("[data-output-root]") as HTMLElement | null;
+    if (!menu || !root) return;
+    if (menu.getBoundingClientRect().left < root.getBoundingClientRect().left + 8) {
+      setAlignLeft(true);
+    }
+  }, [open]);
+
   return (
     <div className="relative" data-menu>
       <button
@@ -482,8 +594,8 @@ function DropMenu({
         onClick={onToggle}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`${textBtn} ${open ? "bg-[#f0eee6] dark:bg-[#3a3936]" : ""} ${
-          accent ? "!text-[#a8452a] dark:!text-[#e8967a]" : ""
+        className={`${textBtn} ${open ? "bg-surface-elevated" : ""} ${
+          accent ? "!text-action" : ""
         }`}
       >
         {icon}
@@ -494,8 +606,9 @@ function DropMenu({
       </button>
       {open && (
         <div
+          ref={menuRef}
           role="menu"
-          className={`absolute right-0 top-full z-30 mt-2 ${width} origin-top-right animate-[menuIn_140ms_ease-out] rounded-xl border border-[#e8e6dc] bg-white p-1.5 shadow-[0_8px_30px_rgba(20,20,19,0.12)] dark:border-[#3d3d3a] dark:bg-[#30302e] dark:shadow-[0_8px_30px_rgba(0,0,0,0.45)]`}
+          className={`absolute ${alignLeft ? "left-0 origin-top-left" : "right-0 origin-top-right"} top-full z-30 mt-2 ${width} max-w-[calc(100vw-1.5rem)] animate-[menuIn_140ms_ease-out] rounded-xl border border-border bg-surface p-1.5 shadow-xl`}
         >
           {children}
         </div>
@@ -518,10 +631,10 @@ function MenuItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left font-sans text-[13px] text-[#3d3929] transition-colors hover:bg-[#f5f4ed] dark:text-[#d6d3c9] dark:hover:bg-[#3a3936]"
+      className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left font-sans text-[13px] text-ink transition-colors hover:bg-surface-elevated"
     >
       <span>{children}</span>
-      {hint && <span className="text-[10.5px] text-[#9c9a92]">{hint}</span>}
+      {hint && <span className="text-[10.5px] text-ink-muted">{hint}</span>}
     </button>
   );
 }
@@ -554,6 +667,10 @@ function OutputSection({
   // Search
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [matchTotal, setMatchTotal] = useState(0);
+  const [matchIndex, setMatchIndex] = useState(0);
+  const rangesRef = useRef<Range[]>([]);
+  const canHighlight = useMemo(() => supportsFindHighlight(), []);
 
   // Refine
   const [isRefining, setIsRefining] = useState(false);
@@ -995,14 +1112,68 @@ function OutputSection({
   const busy = loading || isRefining;
   const streamingMarkdown = loading || isRefining;
 
+  // Number shown in the search bar: exact DOM matches when supported, text count otherwise.
+  const searchTotal = canHighlight ? matchTotal : matchCount;
+
+  // Highlight every match without touching React's DOM, so it also works inside
+  // code blocks, bold text, links and tables.
+  useEffect(() => {
+    if (!canHighlight) return;
+    const registry = (CSS as any).highlights;
+    const root = scrollRef.current;
+    const q = deferredQuery.trim();
+    registry.delete(FIND_ALL);
+    registry.delete(FIND_CURRENT);
+    if (!root || !q || !showSearch || !hasOutput) {
+      rangesRef.current = [];
+      setMatchTotal(0);
+      setMatchIndex(0);
+      return;
+    }
+    const ranges = collectMatchRanges(root, q);
+    rangesRef.current = ranges;
+    setMatchTotal(ranges.length);
+    setMatchIndex(0);
+    if (ranges.length) {
+      registry.set(FIND_ALL, new (window as any).Highlight(...ranges));
+      if (!streamingMarkdown) scrollRangeIntoView(root, ranges[0]);
+    }
+    return () => {
+      registry.delete(FIND_ALL);
+      registry.delete(FIND_CURRENT);
+    };
+  }, [canHighlight, deferredQuery, deferredOutput, effectiveMode, showSearch, hasOutput, streamingMarkdown]);
+
+  // The match you are on gets a stronger colour.
+  useEffect(() => {
+    if (!canHighlight) return;
+    const registry = (CSS as any).highlights;
+    const range = rangesRef.current[matchIndex];
+    registry.delete(FIND_CURRENT);
+    if (!range) return;
+    registry.set(FIND_CURRENT, new (window as any).Highlight(range));
+    return () => {
+      registry.delete(FIND_CURRENT);
+    };
+  }, [canHighlight, matchIndex, matchTotal]);
+
+  const goToMatch = (dir: 1 | -1) => {
+    const n = rangesRef.current.length;
+    const root = scrollRef.current;
+    if (!n || !root) return;
+    const next = (matchIndex + dir + n) % n;
+    setMatchIndex(next);
+    scrollRangeIntoView(root, rangesRef.current[next]);
+  };
+
   const proseClass = `font-serif ${DOC_SIZE[fontSize]} antialiased [text-rendering:optimizeLegibility]`;
 
   const monoSize = fontSize === "sm" ? "text-xs" : fontSize === "lg" ? "text-base" : "text-sm";
 
-  const textareaClass = `h-full min-h-[420px] w-full resize-none rounded-xl border border-[#e8e6dc] bg-white p-5 font-mono leading-[1.75] text-[#3d3929] outline-none transition-all placeholder:text-[#9c9a92] focus:border-[#c96442]/50 focus:ring-4 focus:ring-[#c96442]/10 dark:border-[#3d3d3a] dark:bg-[#30302e] dark:text-[#d6d3c9] dark:focus:border-[#c96442]/60 ${monoSize}`;
+  const textareaClass = `h-full min-h-[420px] w-full resize-none rounded-xl border border-border bg-surface p-5 font-mono leading-[1.75] text-ink outline-none transition-all placeholder:text-ink-dim focus:border-action focus:ring-4 focus:ring-action/10 ${monoSize}`;
 
   const fmtBtn =
-    "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#6b6a63] transition-all hover:bg-[#f0eee6] hover:text-[#141413] active:scale-90 disabled:opacity-30 dark:text-[#9c9a92] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5]";
+    "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted transition-all hover:bg-surface-elevated hover:text-ink active:scale-90 disabled:opacity-30";
 
   const toastDot =
     toast?.type === "success"
@@ -1011,16 +1182,17 @@ function OutputSection({
       ? "bg-rose-400"
       : toast?.type === "warning"
       ? "bg-amber-400"
-      : "bg-[#c96442]";
+      : "bg-action";
 
   return (
     <div
       ref={containerRef}
+      data-output-root
       tabIndex={-1}
-      className={`relative flex flex-col bg-[#faf9f5] text-[#141413] outline-none dark:bg-[#262624] dark:text-[#faf9f5] ${
+      className={`relative flex flex-col bg-surface text-ink outline-none ${
         isFullscreen
           ? "fixed inset-0 z-50"
-          : "h-full min-h-[560px] overflow-hidden rounded-2xl border border-[#e8e6dc] shadow-[0_1px_3px_rgba(20,20,19,0.04),0_8px_24px_-12px_rgba(20,20,19,0.08)] dark:border-[#3d3d3a]"
+          : "h-[calc(100dvh-8rem)] min-h-[560px] overflow-hidden rounded-2xl border border-border lg:sticky lg:top-4"
       }`}
     >
       <style>{`
@@ -1028,7 +1200,8 @@ function OutputSection({
         @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-        @keyframes caret { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+        ::highlight(astragen-find) { background-color: #fde68a; color: #1a1a1a; }
+        ::highlight(astragen-find-current) { background-color: #f59e0b; color: #000000; }
         @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; } }
       `}</style>
 
@@ -1039,7 +1212,7 @@ function OutputSection({
           aria-live="polite"
           className="pointer-events-none absolute bottom-16 left-1/2 z-50 -translate-x-1/2 animate-[toastIn_200ms_ease-out]"
         >
-          <div className="flex items-center gap-2.5 rounded-full bg-[#141413] px-4 py-2 font-sans text-[13px] font-medium text-[#faf9f5] shadow-[0_8px_24px_rgba(20,20,19,0.25)] dark:bg-[#faf9f5] dark:text-[#141413]">
+          <div className="flex items-center gap-2.5 rounded-full bg-surface-elevated border border-border px-4 py-2 font-sans text-xs font-medium text-ink shadow-md">
             <span className={`h-1.5 w-1.5 rounded-full ${toastDot}`} />
             {toast.message}
           </div>
@@ -1047,24 +1220,23 @@ function OutputSection({
       )}
 
       {/* Header */}
-      <header className="relative z-20 flex min-h-[52px] flex-wrap items-center justify-between gap-2 border-b border-[#e8e6dc] bg-[#faf9f5]/90 px-3.5 py-2 font-sans backdrop-blur dark:border-[#3d3d3a] dark:bg-[#262624]/90">
+      <header className="relative z-20 flex min-h-[52px] flex-wrap items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2 font-sans">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <span
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-white"
-              style={{ background: ACCENT }}
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-action text-action-ink"
               aria-hidden
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
             </span>
-            <h2 className="max-w-[14rem] truncate font-serif text-[15px] font-medium tracking-tight text-[#141413] dark:text-[#faf9f5]">
+            <h2 className="max-w-[14rem] truncate text-sm font-semibold tracking-tight text-ink">
               {title}
             </h2>
           </div>
 
           {hasOutput && (
             <div
-              className="flex items-center gap-0.5 rounded-xl bg-[#f0eee6] p-0.5 dark:bg-[#1f1e1d]"
+              className="flex items-center gap-0.5 rounded-full bg-surface-elevated border border-border p-0.5"
               role="group"
               aria-label="View mode"
             >
@@ -1074,10 +1246,10 @@ function OutputSection({
                   type="button"
                   aria-pressed={effectiveMode === m.id}
                   onClick={() => setViewMode(m.id)}
-                  className={`rounded-[10px] px-3 py-1 text-[12.5px] font-medium transition-all duration-200 ${
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                     effectiveMode === m.id
-                      ? "bg-white text-[#141413] shadow-[0_1px_2px_rgba(20,20,19,0.1)] dark:bg-[#3a3936] dark:text-[#faf9f5]"
-                      : "text-[#6b6a63] hover:text-[#141413] dark:text-[#9c9a92] dark:hover:text-[#faf9f5]"
+                      ? "bg-surface text-ink shadow-xs"
+                      : "text-ink-muted hover:text-ink"
                   }`}
                 >
                   {m.label}
@@ -1121,7 +1293,7 @@ function OutputSection({
                     type="button"
                     onClick={handleCycleRate}
                     title="Playback speed"
-                    className="h-8 rounded-lg px-1.5 font-mono text-[11px] text-[#6b6a63] hover:bg-[#f0eee6] dark:text-[#9c9a92] dark:hover:bg-[#3a3936]"
+                    className="h-8 rounded-full px-2 font-mono text-[11px] text-ink-muted hover:bg-surface-elevated hover:text-ink"
                   >
                     {speechRate}x
                   </button>
@@ -1136,7 +1308,7 @@ function OutputSection({
                 <Search className="h-4 w-4" />
               </IconButton>
 
-              <span className="mx-1 hidden h-4 w-px bg-[#e8e6dc] dark:bg-[#3d3d3a] sm:block" />
+              <span className="mx-1 hidden h-4 w-px bg-border sm:block" />
 
               {canEdit && (
                 <DropMenu
@@ -1156,7 +1328,7 @@ function OutputSection({
                   }
                   width="w-72"
                 >
-                  <div className="px-2.5 pb-1 pt-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-[#9c9a92]">
+                  <div className="px-2.5 pb-1 pt-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-accent-cyan">
                     Quick refine
                   </div>
                   {REFINE_ACTIONS.map((a) => (
@@ -1164,7 +1336,7 @@ function OutputSection({
                       {a.label}
                     </MenuItem>
                   ))}
-                  <div className="mt-1.5 border-t border-[#efede4] p-1.5 pt-2.5 dark:border-[#3a3936]">
+                  <div className="mt-1.5 border-t border-border p-1.5 pt-2.5">
                     <div className="flex gap-1.5">
                       <input
                         type="text"
@@ -1176,14 +1348,13 @@ function OutputSection({
                           }
                         }}
                         placeholder="Tell it what to change…"
-                        className="min-w-0 flex-1 rounded-lg border border-[#e8e6dc] bg-[#faf9f5] px-2.5 py-1.5 text-[13px] text-[#141413] outline-none transition-all placeholder:text-[#9c9a92] focus:border-[#c96442]/50 focus:ring-2 focus:ring-[#c96442]/15 dark:border-[#4a4945] dark:bg-[#262624] dark:text-[#faf9f5]"
+                        className="min-w-0 flex-1 rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-[13px] text-ink outline-none transition-all placeholder:text-ink-dim focus:border-action focus:ring-2 focus:ring-action/20"
                       />
                       <button
                         type="button"
                         disabled={!refinePrompt.trim()}
                         onClick={() => handleRefine("custom", refinePrompt.trim())}
-                        className="rounded-lg px-3 text-[13px] font-medium text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
-                        style={{ background: ACCENT }}
+                        className="rounded-full px-3 text-[13px] font-medium bg-action text-action-ink hover:bg-action-hover transition-all active:scale-95 disabled:opacity-40"
                       >
                         Go
                       </button>
@@ -1274,23 +1445,23 @@ function OutputSection({
 
       {/* Refine undo notice */}
       {refineBackup !== null && !isRefining && (
-        <div className="flex items-center justify-between gap-3 border-b border-[#e8e6dc] bg-[#f5f4ed] px-4 py-2 font-sans text-[13px] text-[#55534b] animate-[fadeUp_200ms_ease-out] dark:border-[#3d3d3a] dark:bg-[#2b2a27] dark:text-[#b8b6ac]">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-elevated px-4 py-2 font-sans text-[13px] text-ink-muted animate-[fadeUp_200ms_ease-out]">
           <span className="flex items-center gap-2">
-            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Check className="h-3.5 w-3.5 text-emerald-500" />
             Refinement applied
           </span>
           <span className="flex items-center gap-3">
             <button
               type="button"
               onClick={handleUndoRefine}
-              className="font-medium text-[#a8452a] hover:underline dark:text-[#e8967a]"
+              className="font-medium text-action hover:underline"
             >
               Undo
             </button>
             <button
               type="button"
               onClick={() => setRefineBackup(null)}
-              className="hover:text-[#141413] dark:hover:text-[#faf9f5]"
+              className="hover:text-ink"
             >
               Dismiss
             </button>
@@ -1300,32 +1471,62 @@ function OutputSection({
 
       {/* Search */}
       {showSearch && hasOutput && (
-        <div className="flex items-center gap-2.5 border-b border-[#e8e6dc] bg-white/60 px-4 py-2 font-sans animate-[fadeUp_160ms_ease-out] dark:border-[#3d3d3a] dark:bg-[#2b2a27]/60">
-          <Search className="h-3.5 w-3.5 shrink-0 text-[#9c9a92]" />
+        <div className="flex items-center gap-2.5 border-b border-border bg-surface-elevated/80 px-4 py-2 font-sans animate-[fadeUp_160ms_ease-out]">
+          <Search className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
           <input
             type="text"
             autoFocus
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                goToMatch(e.shiftKey ? -1 : 1);
+              }
+            }}
             placeholder="Find in content"
-            className="min-w-0 flex-1 bg-transparent text-sm text-[#141413] outline-none placeholder:text-[#9c9a92] dark:text-[#faf9f5]"
+            className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-dim"
           />
           {searchQuery && (
             <span
               className={`rounded-full px-2 py-0.5 font-mono text-[11px] ${
-                matchCount
-                  ? "bg-[#f5d9a0]/60 text-[#7a5a14] dark:bg-[#e8b95c]/20 dark:text-[#e8b95c]"
-                  : "bg-[#f0eee6] text-[#9c9a92] dark:bg-[#3a3936]"
+                searchTotal
+                  ? "bg-action/20 text-action"
+                  : "bg-surface-elevated text-ink-muted"
               }`}
             >
-              {matchCount} {matchCount === 1 ? "match" : "matches"}
+              {canHighlight && searchTotal > 0
+                ? matchIndex + 1 + " / " + searchTotal
+                : searchTotal + " " + (searchTotal === 1 ? "match" : "matches")}
             </span>
+          )}
+          {canHighlight && searchTotal > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => goToMatch(-1)}
+                aria-label="Previous match"
+                title="Previous (Shift+Enter)"
+                className="rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => goToMatch(1)}
+                aria-label="Next match"
+                title="Next (Enter)"
+                className="rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </>
           )}
           <button
             type="button"
             onClick={closeSearch}
             aria-label="Close search"
-            className="rounded-md p-1 text-[#9c9a92] transition-colors hover:bg-[#f0eee6] hover:text-[#141413] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5]"
+            className="rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-elevated hover:text-ink"
           >
             <X className="h-4 w-4" />
           </button>
@@ -1334,7 +1535,7 @@ function OutputSection({
 
       {/* Formatting toolbar */}
       {canEdit && hasOutput && (effectiveMode === "edit" || effectiveMode === "split") && (
-        <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-[#e8e6dc] px-3 py-1.5 dark:border-[#3d3d3a]">
+        <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-border px-3 py-1.5">
           <div className="flex items-center gap-0.5">
             <button type="button" className={fmtBtn} title="Bold" aria-label="Bold" onClick={() => handleInsertFormat("**", "**")}>
               <Bold className="h-3.5 w-3.5" />
@@ -1392,14 +1593,14 @@ function OutputSection({
                     width: `${w}%`,
                     animationDelay: `${i * 120}ms`,
                     backgroundImage:
-                      "linear-gradient(90deg, rgba(201,100,66,0.10) 25%, rgba(201,100,66,0.24) 50%, rgba(201,100,66,0.10) 75%)",
+                      "linear-gradient(90deg, var(--glow) 25%, var(--action) 50%, var(--glow) 75%)",
                     backgroundSize: "200% 100%",
                   }}
                 />
               ))}
             </div>
-            <div className="flex items-center gap-2 text-sm text-[#6b6a63] dark:text-[#9c9a92]">
-              <Sparkles className="h-4 w-4 animate-pulse" style={{ color: ACCENT }} />
+            <div className="flex items-center gap-2 text-sm text-ink-muted">
+              <Sparkles className="h-4 w-4 animate-pulse text-action" />
               Writing your content…
             </div>
             {onStop && (
@@ -1415,13 +1616,12 @@ function OutputSection({
                 <div ref={previewRef} className={proseClass}>
                   <MarkdownView
                     content={deferredOutput}
-                    query={deferredQuery}
+                    query={canHighlight ? "" : deferredQuery}
                     streaming={streamingMarkdown}
                   />
                   {loading && (
                     <span
-                      className="ml-0.5 inline-block h-[1.1em] w-[3px] animate-[caret_1s_ease-in-out_infinite] rounded-full align-middle"
-                      style={{ background: ACCENT }}
+                      className="ml-1 inline-block h-[1.1em] w-[8px] bg-action cursor-blink rounded-xs align-middle"
                     />
                   )}
                 </div>
@@ -1453,7 +1653,7 @@ function OutputSection({
                     className={textareaClass}
                   />
                 </div>
-                <div className="overflow-y-auto border-t border-[#e8e6dc] bg-white/50 p-7 dark:border-[#3d3d3a] dark:bg-[#2b2a27]/40 lg:border-l lg:border-t-0">
+                <div className="overflow-y-auto border-t border-border bg-surface-elevated/40 p-7 lg:border-l lg:border-t-0">
                   <div ref={previewRef} className={proseClass}>
                     <MarkdownView content={deferredOutput} query="" streaming={streamingMarkdown} />
                   </div>
@@ -1464,7 +1664,7 @@ function OutputSection({
             {effectiveMode === "raw" && (
               <div className="mx-auto w-full max-w-3xl p-4">
                 <pre
-                  className={`whitespace-pre-wrap break-words rounded-xl border border-[#e8e6dc] bg-white p-5 font-mono leading-[1.75] text-[#3d3929] dark:border-[#3d3d3a] dark:bg-[#30302e] dark:text-[#d6d3c9] ${monoSize}`}
+                  className={`whitespace-pre-wrap break-words rounded-xl border border-border bg-surface p-5 font-mono leading-[1.75] text-ink ${monoSize}`}
                 >
                   {aiOutput}
                 </pre>
@@ -1472,16 +1672,20 @@ function OutputSection({
             )}
           </>
         ) : (
-          <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 p-8 text-center font-sans">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c96442]/10 ring-1 ring-[#c96442]/20">
-              <Sparkles className="h-5 w-5" style={{ color: ACCENT }} />
+          <div className="relative flex h-full min-h-[420px] flex-col items-center justify-center gap-3 p-8 text-center font-sans">
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-24 rounded-full pointer-events-none -z-10 blur-3xl opacity-75"
+              style={{ background: "var(--glow)" }}
+            />
+            <div className="w-12 h-12 rounded-full bg-surface-elevated border border-border text-action flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-action" strokeWidth={1.5} />
             </div>
             <div className="space-y-1">
-              <p className="font-serif text-lg font-medium text-[#141413] dark:text-[#faf9f5]">
-                Nothing here yet
+              <p className="text-base font-semibold text-ink">
+                Ready to generate
               </p>
-              <p className="max-w-xs text-[13px] leading-relaxed text-[#6b6a63] dark:text-[#9c9a92]">
-                Fill in the template and choose Generate. Your content will stream in here.
+              <p className="max-w-xs text-xs text-ink-muted leading-relaxed">
+                Fill in the template parameters and choose Generate. Your content will stream in here.
               </p>
             </div>
           </div>
@@ -1490,9 +1694,9 @@ function OutputSection({
 
       {/* Status bar */}
       {showWordCount && hasOutput && (
-        <footer className="flex items-center justify-between gap-3 border-t border-[#e8e6dc] bg-[#faf9f5]/90 px-4 py-2 font-sans text-xs text-[#6b6a63] backdrop-blur dark:border-[#3d3d3a] dark:bg-[#262624]/90 dark:text-[#9c9a92]">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="font-medium text-[#3d3929] dark:text-[#d6d3c9]">
+        <footer className="flex items-center justify-between gap-3 border-t border-border bg-surface px-4 py-2 font-sans text-xs text-ink-muted">
+          <div className="flex min-w-0 items-center gap-2 tabular-nums">
+            <span className="font-medium text-ink">
               {stats.words.toLocaleString()} words
             </span>
             <span aria-hidden className="opacity-40">·</span>
@@ -1507,9 +1711,9 @@ function OutputSection({
               <button
                 type="button"
                 onClick={handleResetToOriginal}
-                className="rounded-full bg-[#f0eee6] px-2.5 py-0.5 font-medium transition-colors hover:text-[#a8452a] dark:bg-[#3a3936] dark:hover:text-[#e8967a]"
+                className="rounded-full bg-surface-elevated border border-border px-2.5 py-0.5 font-medium text-ink-muted hover:text-ink transition-colors"
               >
-                Edited · Reset
+                Reset
               </button>
             )}
             <button
@@ -1517,7 +1721,7 @@ function OutputSection({
               onClick={() => setFontSize((p) => (p === "sm" ? "base" : p === "base" ? "lg" : "sm"))}
               title={`Text size: ${FONT_LABEL[fontSize]}`}
               aria-label={`Text size: ${FONT_LABEL[fontSize]}. Click to change.`}
-              className="rounded-md px-1.5 py-0.5 font-serif text-sm font-medium transition-colors hover:bg-[#f0eee6] hover:text-[#141413] dark:hover:bg-[#3a3936] dark:hover:text-[#faf9f5]"
+              className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-ink-muted hover:text-ink hover:bg-surface-elevated transition-colors"
             >
               Aa
             </button>
